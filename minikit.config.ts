@@ -14,7 +14,7 @@ export const minikitConfig = {
     signature: "MHhhMjI3YzU2MTM4NjJmMmQzODgyNzNjZGI0YTc0M2JhNDdhYzVkOTkxYmMyNjRkMjZlZTQ5OThhZGMwZTEyMzE0MzcwYTMzZTA3OGYzY2NiYzUwMDkzZDg5YWZiMzY1NTMzYjM0NWFkNWY3ODU4M2M1MmE3MGYyY2JkNTg0ODk3NTFi"
   },
   miniapp: {
-    version: "1",
+    version: "1.0.0",
     name: "Cybercentry One", 
     subtitle: "Cybercentry One, empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.", 
     description: "Ads",
