@@ -95,13 +95,13 @@ export default function Home() {
           
           <p className={styles.subtitle}>
              Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future of<br />
-            crypto marketing strategy.
+            cyber security.
           </p>
 
           <form onSubmit={handleSubmit} className={styles.form}>
             <input
               type="email"
-              placeholder="Your amazing email"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={styles.emailInput}
