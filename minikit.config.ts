@@ -17,7 +17,7 @@ export const minikitConfig = {
     "allowedAddresses": ["0xfee13309251b632317ea2d475d6aba7e7e0219e6"]
   },
   miniapp: {
-    version: "1",
+    version: "1.0.0",
     name: "Cybercentry One", 
     subtitle: "Cyber Threat Response", 
     description: "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
