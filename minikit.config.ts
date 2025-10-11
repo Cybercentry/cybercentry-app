@@ -13,19 +13,22 @@ export const minikitConfig = {
     payload: "eyJkb21haW4iOiJjeWJlcmNlbnRyeS1vbmUtbWluaS1hcHAudmVyY2VsLmFwcCJ9",
     signature: "MHhhMjI3YzU2MTM4NjJmMmQzODgyNzNjZGI0YTc0M2JhNDdhYzVkOTkxYmMyNjRkMjZlZTQ5OThhZGMwZTEyMzE0MzcwYTMzZTA3OGYzY2NiYzUwMDkzZDg5YWZiMzY1NTMzYjM0NWFkNWY3ODU4M2M1MmE3MGYyY2JkNTg0ODk3NTFi"
   },
+    "baseBuilder": {
+    "allowedAddresses": ["0xfee13309251b632317ea2d475d6aba7e7e0219e6"]
+  },
   miniapp: {
-    version: "1.0.0",
-    name: "Cybercentry One", 
-    subtitle: "Cybercentry One, empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.", 
+    version: "1",
+    name: "Cubey", 
+    subtitle: "Your AI Ad Companion", 
     description: "Ads",
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
     iconUrl: `${ROOT_URL}/blue-icon.png`,
     splashImageUrl: `${ROOT_URL}/blue-hero.png`,
-    splashBackgroundColor: "#FFFFFF",
+    splashBackgroundColor: "#000000",
     homeUrl: ROOT_URL,
     webhookUrl: `${ROOT_URL}/api/webhook`,
-    primaryCategory: "utility",
-    tags: ["cybersecurity", "subscription", "msp", "mdr", "compliance"],
+    primaryCategory: "social",
+    tags: ["marketing", "ads", "quickstart", "waitlist"],
     heroImageUrl: `${ROOT_URL}/blue-hero.png`, 
     tagline: "",
     ogTitle: "",
