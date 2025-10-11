@@ -47,7 +47,7 @@ export default function Success() {
           
           <p className={styles.subtitle}>
             You&apos;re in! We&apos;ll notify you as soon as we launch.<br />
-            Get ready to experience the future of onchain marketing.
+            Get ready to experience the future of onchain cyber security.
           </p>
 
           <button onClick={handleShare} className={styles.shareButton}>
