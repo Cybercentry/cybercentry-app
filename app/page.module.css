@@ -116,7 +116,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-top: 1rem;
-  box-shadow: 0 4px 20px rgba(247, 217, 84, 0.3);
+  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
 }
 
 .joinButton:hover {
