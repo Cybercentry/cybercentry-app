@@ -120,7 +120,7 @@
 }
 
 .joinButton:hover {
-  background: #0d2b6b;
+  background: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(247, 217, 84, 0.4);
+  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
 }
