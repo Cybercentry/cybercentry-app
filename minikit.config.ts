@@ -27,7 +27,7 @@ export const minikitConfig = {
     splashBackgroundColor: "#ffffff",
     homeUrl: ROOT_URL,
     webhookUrl: `${ROOT_URL}/api/webhook`,
-    primaryCategory: "developer-tools",
+    primaryCategory: "utility",
     tags: ["cybersecurity", "subscription", "msp", "mdr", "compliance"],
     heroImageUrl: `${ROOT_URL}/blue-hero.png`, 
     tagline: "",
