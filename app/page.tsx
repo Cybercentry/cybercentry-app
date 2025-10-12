@@ -72,6 +72,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
+        <img src="/white-icon.png" alt="Cybercentry One Logo" className={styles.heroIcon} />
         <h1 className={styles.heroTitle}>Cybercentry One</h1>
         <p className={styles.heroSubtitle}>
           Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.
