@@ -91,7 +91,7 @@ export default function Home() {
           <div className={styles.pillar}>
             <h3 className={styles.pillarTitle}>Compliance</h3>
             <p className={styles.pillarDescription}>
-              Ensure regulatory adherence with Cyber Essentials certifications and comprehensive compliance frameworks
+              Ensure regulatory adherence with IASME Cyber Baseline certification and comprehensive compliance frameworks
               that keep you audit-ready.
             </p>
           </div>
@@ -179,7 +179,6 @@ export default function Home() {
             </p>
             <ul className={styles.features}>
               <li>IASME Cyber Baseline Certification</li>
-              <li>Cyber Essentials Certification</li>
               <li>External Vulnerability Scanning (12 months)</li>
               <li>Daily Threat Intelligence Reports</li>
             </ul>
@@ -226,7 +225,7 @@ export default function Home() {
         <div className={styles.professionalServices}>
           <h4 className={styles.serviceCategory}>Professional Services</h4>
           <p className={styles.serviceDescription}>
-            Our industry-leading experts provide comprehensive cybersecurity consulting services including Red Teaming,
+            Our industry-leading experts provide comprehensive cyber security consulting services including Red Teaming,
             ISO 27001, Cloud Security Review, MSSP, Incident Response, and Gap Analysis.
           </p>
           <p className={styles.professionalPrice}>£899 per day</p>
@@ -240,7 +239,7 @@ export default function Home() {
               <h2 className={styles.title}>Join the Waitlist</h2>
 
               <p className={styles.subtitle}>
-                Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
+                Hey {context?.user?.displayName || "there"}, get early access and be the first to experience the future
                 of cyber security.
               </p>
 
