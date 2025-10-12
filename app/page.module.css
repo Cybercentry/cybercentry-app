@@ -1,9 +1,18 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0d2b6b 0%, #1a4d8f 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+}
+
 .container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0d2b6b 0%, #0d2b6b 50%, #0d2b6b 100%);
-  color: white;
+  width: 100%;
+  background: none;
   position: relative;
 }
 
@@ -44,7 +53,7 @@
   text-align: center;
   max-width: 800px;
   width: 100%;
-  margin-bottom: 4rem;
+  margin: 2rem auto 4rem;
 }
 
 .heroTitle {
@@ -70,7 +79,7 @@
 .pillars {
   max-width: 1200px;
   width: 100%;
-  margin-bottom: 4rem;
+  margin: 0 auto 4rem;
 }
 
 .sectionTitle {
@@ -126,7 +135,7 @@
 .services {
   max-width: 1200px;
   width: 100%;
-  margin-bottom: 4rem;
+  margin: 0 auto 4rem;
 }
 
 .serviceCategory {
@@ -299,10 +308,10 @@
 }
 
 /* Original waitlist form styles preserved */
-.waitlistForm {
-  text-align: center;
-  max-width: 600px;
+.waitlistSection {
   width: 100%;
+  display: flex;
+  justify-content: center;
   margin-top: 4rem;
 }
 
@@ -384,4 +393,13 @@
   background: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+}
+
+/* Added footer styles */
+.footer {
+  text-align: center;
+  padding: 2rem;
+  margin-top: 4rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
 }
