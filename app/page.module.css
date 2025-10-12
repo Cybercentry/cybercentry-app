@@ -57,6 +57,16 @@
   margin: 2rem auto 4rem;
 }
 
+/* Added icon styling above the title */
+.heroIcon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1.5rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .heroTitle {
   font-size: clamp(2.5rem, 6vw, 4rem);
   font-weight: 700;
