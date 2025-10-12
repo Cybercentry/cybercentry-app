@@ -91,8 +91,8 @@ export default function Home() {
           <div className={styles.pillar}>
             <h3 className={styles.pillarTitle}>Compliance</h3>
             <p className={styles.pillarDescription}>
-              Ensure regulatory adherence with IASME Cyber Baseline certification and comprehensive compliance frameworks
-              that keep you audit-ready.
+              Ensure regulatory adherence with IASME Cyber Baseline certification and comprehensive compliance
+              frameworks that keep you audit-ready.
             </p>
           </div>
 
@@ -179,6 +179,7 @@ export default function Home() {
             </p>
             <ul className={styles.features}>
               <li>IASME Cyber Baseline Certification</li>
+              <li>Cyber Essentials Certification</li>
               <li>External Vulnerability Scanning (12 months)</li>
               <li>Daily Threat Intelligence Reports</li>
             </ul>
@@ -239,7 +240,7 @@ export default function Home() {
               <h2 className={styles.title}>Join the Waitlist</h2>
 
               <p className={styles.subtitle}>
-                Hey {context?.user?.displayName || "there"}, get early access and be the first to experience the future
+                Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
                 of cyber security.
               </p>
 
