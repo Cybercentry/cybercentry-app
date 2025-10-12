@@ -94,8 +94,7 @@ export default function Home() {
           <h1 className={styles.title}>Join {minikitConfig.miniapp.name.toUpperCase()}</h1>
           
           <p className={styles.subtitle}>
-             Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future of<br />
-            cyber security.
+             Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future of cyber security.
           </p>
 
           <form onSubmit={handleSubmit} className={styles.form}>
