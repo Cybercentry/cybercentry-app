@@ -4,8 +4,9 @@ import { Inter, Source_Code_Pro } from "next/font/google"
 import { SafeArea } from "@coinbase/onchainkit/minikit"
 import { minikitConfig } from "../minikit.config"
 import { RootProvider } from "./rootProvider"
-import dynamic from "next/dynamic"
+import { LiveChat } from "./livechat-widget"
 import "./globals.css"
+import dynamic from "next/dynamic"
 
 const LiveChatWidget = dynamic(() => import("@livechat/widget-react").then((mod) => mod.LiveChatWidget), { ssr: false })
 
@@ -49,10 +50,11 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${inter.variable} ${sourceCodePro.variable}`}>
           <SafeArea>{children}</SafeArea>
-          <LiveChatWidget license={process.env.NEXT_PUBLIC_LIVECHAT_LICENSE || "17134260"} />
+          <LiveChat />
         </body>
       </html>
     </RootProvider>
   )
 }
+
 
