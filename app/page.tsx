@@ -221,7 +221,6 @@ export default function Home() {
         </div>
 
         <h3 className={styles.serviceCategory}>Penetration Testing</h3>
-        <p className={styles.serviceCategoryDescription}>All Penetration Testing packages start at £135 per month.</p>
 
         <div className={styles.servicesGrid}>
           <div className={styles.serviceCard}>
