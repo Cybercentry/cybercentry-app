@@ -6,9 +6,6 @@ import { minikitConfig } from "../minikit.config"
 import { RootProvider } from "./rootProvider"
 import { LiveChat } from "./livechat-widget"
 import "./globals.css"
-import dynamic from "next/dynamic"
-
-const LiveChatWidget = dynamic(() => import("@livechat/widget-react").then((mod) => mod.LiveChatWidget), { ssr: false })
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -56,5 +53,3 @@ export default function RootLayout({
     </RootProvider>
   )
 }
-
-
