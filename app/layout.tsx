@@ -1,9 +1,13 @@
-import type { Metadata } from "next";
-import { Inter, Source_Code_Pro } from "next/font/google";
-import { SafeArea } from "@coinbase/onchainkit/minikit";
-import { minikitConfig } from "../minikit.config";
-import { RootProvider } from "./rootProvider";
-import "./globals.css";
+import type React from "react"
+import type { Metadata } from "next"
+import { Inter, Source_Code_Pro } from "next/font/google"
+import { SafeArea } from "@coinbase/onchainkit/minikit"
+import { minikitConfig } from "../minikit.config"
+import { RootProvider } from "./rootProvider"
+import dynamic from "next/dynamic"
+import "./globals.css"
+
+const LiveChatWidget = dynamic(() => import("@livechat/widget-react").then((mod) => mod.LiveChatWidget), { ssr: false })
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -22,31 +26,33 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       }),
     },
-  };
+  }
 }
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-});
+})
 
 const sourceCodePro = Source_Code_Pro({
   variable: "--font-source-code-pro",
   subsets: ["latin"],
-});
+})
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <RootProvider>
       <html lang="en">
         <body className={`${inter.variable} ${sourceCodePro.variable}`}>
           <SafeArea>{children}</SafeArea>
+          <LiveChatWidget license={process.env.NEXT_PUBLIC_LIVECHAT_LICENSE || "17134260"} />
         </body>
       </html>
     </RootProvider>
-  );
+  )
 }
+
