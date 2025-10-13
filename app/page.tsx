@@ -92,7 +92,7 @@ export default function Home() {
           <div className={styles.pillar}>
             <h3 className={styles.pillarTitle}>Compliance</h3>
             <p className={styles.pillarDescription}>
-              Ensure regulatory adherence with IASME Cyber Baseline certification and comprehensive compliance
+              Ensure regulatory adherence with Cyber Essentials certification and comprehensive compliance
               frameworks that keep you audit-ready.
             </p>
           </div>
@@ -127,9 +127,8 @@ export default function Home() {
           <div className={styles.pricingCard}>
             <h4 className={styles.pricingTier}>Core</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£4</span>
+              <span className={styles.priceAmount}>£8.99</span>
               <span className={styles.pricePeriod}>per user per month</span>
-              <span className={styles.priceNote}>(min 10 users)</span>
             </div>
             <ul className={styles.features}>
               <li>Managed EDR</li>
@@ -144,10 +143,9 @@ export default function Home() {
             <div className={styles.popularBadge}>POPULAR</div>
             <h4 className={styles.pricingTier}>Premium</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£8</span>
+              <span className={styles.priceAmount}>£16.99</span>
               <span className={styles.pricePeriod}>per user per month</span>
-              <span className={styles.priceNote}>(min 25 users)</span>
-            </div>
+           </div>
             <ul className={styles.features}>
               <li>Managed EDR with Identity and SOAR</li>
               <li>24/7 Monitoring</li>
@@ -162,9 +160,8 @@ export default function Home() {
           <div className={styles.pricingCard}>
             <h4 className={styles.pricingTier}>Enterprise</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£12</span>
+              <span className={styles.priceAmount}>£24.99</span>
               <span className={styles.pricePeriod}>per user per month</span>
-              <span className={styles.priceNote}>(min 25 users)</span>
             </div>
             <ul className={styles.features}>
               <li>Managed XDR with Identity and SOAR</li>
@@ -179,15 +176,6 @@ export default function Home() {
           </div>
         </div>
 
-        <div className={styles.boltOns}>
-          <h4 className={styles.boltOnsTitle}>Bolt-ons available for all packages</h4>
-          <ul className={styles.boltOnsList}>
-            <li>Additional MDR devices - £4</li>
-            <li>Additional vulnerability scanning IPs - £1.50</li>
-            <li>Additional web application scanning URLs - £35</li>
-          </ul>
-        </div>
-
         <h3 className={styles.serviceCategory}>Compliance Packages</h3>
         <p className={styles.serviceCategoryDescription}>
           Cyber Essentials & Cyber Essentials Plus certifications, with added vulnerability scanning for 12 months.
@@ -195,7 +183,7 @@ export default function Home() {
 
         <div className={styles.additionalServices}>
           <div className={styles.serviceBlock}>
-            <h4 className={styles.serviceTitle}>CybaAssess with Scan Guard</h4>
+            <h4 className={styles.serviceTitle}>CENTRYAssess with Scan Guard</h4>
             <p className={styles.serviceSubtitle}>The first step in the certification, Cyber Essentials only.</p>
             <ul className={styles.features}>
               <li>Cyber Essentials</li>
@@ -205,7 +193,7 @@ export default function Home() {
           </div>
 
           <div className={styles.serviceBlock}>
-            <h4 className={styles.serviceTitle}>CybaPlus with Scan Guard</h4>
+            <h4 className={styles.serviceTitle}>CENTRYPlus with Scan Guard</h4>
             <p className={styles.serviceSubtitle}>
               Tailored specifically to the Cyber Essentials Plus certification, with vulnerability scanning.
             </p>
@@ -218,7 +206,7 @@ export default function Home() {
           </div>
 
           <div className={styles.serviceBlock}>
-            <h4 className={styles.serviceTitle}>CybaAssess & CybaPlus with Scan Guard</h4>
+            <h4 className={styles.serviceTitle}>CENTRYAssess & CENTRYPlus with Scan Guard</h4>
             <p className={styles.serviceSubtitle}>
               Both parts of Cyber Essentials with advanced vulnerability scanning for clear security oversight.
             </p>
@@ -238,7 +226,7 @@ export default function Home() {
         <div className={styles.servicesGrid}>
           <div className={styles.serviceCard}>
             <h5 className={styles.serviceCardTitle}>Internal Penetration Testing</h5>
-            <p className={styles.servicePrice}>From £135/month</p>
+            <p className={styles.servicePrice}>From £199/month</p>
             <p className={styles.serviceDescription}>
               Secure internal networks by identifying vulnerabilities and simulating real-world attack scenarios.
             </p>
@@ -251,7 +239,7 @@ export default function Home() {
 
           <div className={styles.serviceCard}>
             <h5 className={styles.serviceCardTitle}>External Penetration Testing</h5>
-            <p className={styles.servicePrice}>From £135/month</p>
+            <p className={styles.servicePrice}>From £199/month</p>
             <p className={styles.serviceDescription}>
               Identify vulnerabilities that external attackers could exploit, by simulating real-world attacks.
             </p>
@@ -265,7 +253,7 @@ export default function Home() {
 
           <div className={styles.serviceCard}>
             <h5 className={styles.serviceCardTitle}>Web Application Penetration Testing</h5>
-            <p className={styles.servicePrice}>From £135/month</p>
+            <p className={styles.servicePrice}>From £199/month</p>
             <p className={styles.serviceDescription}>
               Focuses on identifying all exploitable vulnerabilities within a web application, providing a detailed
               assessment of its security.
@@ -297,7 +285,7 @@ export default function Home() {
             </ul>
           </div>
           <p className={styles.professionalPrice}>
-            All professional services are charged at a fixed rate of £800 per day
+            All professional services are charged at a fixed rate of £899 per day
           </p>
         </div>
       </section>
