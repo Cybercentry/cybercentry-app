@@ -127,8 +127,9 @@ export default function Home() {
           <div className={styles.pricingCard}>
             <h4 className={styles.pricingTier}>Core</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£8.99</span>
+              <span className={styles.priceAmount}>£4</span>
               <span className={styles.pricePeriod}>per user per month</span>
+              <span className={styles.priceNote}>(min 10 users)</span>
             </div>
             <ul className={styles.features}>
               <li>Managed EDR</li>
@@ -143,94 +144,161 @@ export default function Home() {
             <div className={styles.popularBadge}>POPULAR</div>
             <h4 className={styles.pricingTier}>Premium</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£16.99</span>
+              <span className={styles.priceAmount}>£8</span>
               <span className={styles.pricePeriod}>per user per month</span>
+              <span className={styles.priceNote}>(min 25 users)</span>
             </div>
             <ul className={styles.features}>
               <li>Managed EDR with Identity and SOAR</li>
               <li>24/7 Monitoring</li>
               <li>Free Security Assessment</li>
-              <li>External & Web App Vulnerability Scanner</li>
+              <li>External Vulnerability Scanner</li>
+              <li>Web Application Vulnerability Scanner</li>
               <li>Internal Vulnerability Scanner</li>
+              <li>Immediate Actions</li>
             </ul>
           </div>
 
           <div className={styles.pricingCard}>
             <h4 className={styles.pricingTier}>Enterprise</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£24.99</span>
+              <span className={styles.priceAmount}>£12</span>
               <span className={styles.pricePeriod}>per user per month</span>
+              <span className={styles.priceNote}>(min 25 users)</span>
             </div>
             <ul className={styles.features}>
               <li>Managed XDR with Identity and SOAR</li>
-              <li>24/7 SOC Team Monitoring</li>
               <li>Free Security Assessment</li>
-              <li>Complete Vulnerability Scanning</li>
-              <li>Enhanced Dashboard & AI Risk Scoring</li>
+              <li>24/7 Monitoring</li>
+              <li>External Vulnerability Scanner</li>
+              <li>Web Application Vulnerability Scanner</li>
+              <li>Internal Vulnerability Scanner</li>
+              <li>Enhanced main dashboard view</li>
+              <li>Immediate Actions</li>
             </ul>
           </div>
         </div>
 
+        <div className={styles.boltOns}>
+          <h4 className={styles.boltOnsTitle}>Bolt-ons available for all packages</h4>
+          <ul className={styles.boltOnsList}>
+            <li>Additional MDR devices - £4</li>
+            <li>Additional vulnerability scanning IPs - £1.50</li>
+            <li>Additional web application scanning URLs - £35</li>
+          </ul>
+        </div>
+
+        <h3 className={styles.serviceCategory}>Compliance Packages</h3>
+        <p className={styles.serviceCategoryDescription}>
+          Cyber Essentials & Cyber Essentials Plus certifications, with added vulnerability scanning for 12 months.
+        </p>
+
         <div className={styles.additionalServices}>
           <div className={styles.serviceBlock}>
-            <h4 className={styles.serviceTitle}>IASME Cyber Baseline Certification</h4>
-            <p className={styles.serviceSubtitle}>
-              IASME Cyber Baseline with Scan Guard - The first step in certification with vulnerability scanning
-              included.
-            </p>
+            <h4 className={styles.serviceTitle}>CybaAssess with Scan Guard</h4>
+            <p className={styles.serviceSubtitle}>The first step in the certification, Cyber Essentials only.</p>
             <ul className={styles.features}>
-              <li>IASME Cyber Baseline Certification</li>
-              <li>Cyber Essentials Certification</li>
-              <li>External Vulnerability Scanning (12 months)</li>
-              <li>Daily Threat Intelligence Reports</li>
+              <li>Cyber Essentials</li>
+              <li>External Vulnerability Scanning on your IPs</li>
+              <li>Access to Threat Intelligence Reporting</li>
             </ul>
           </div>
 
-          <h4 className={styles.serviceCategory}>Penetration Testing</h4>
+          <div className={styles.serviceBlock}>
+            <h4 className={styles.serviceTitle}>CybaPlus with Scan Guard</h4>
+            <p className={styles.serviceSubtitle}>
+              Tailored specifically to the Cyber Essentials Plus certification, with vulnerability scanning.
+            </p>
+            <ul className={styles.features}>
+              <li>Cyber Essentials Plus</li>
+              <li>External Vulnerability Scanning on your IPs</li>
+              <li>Internal Vulnerability Scanning on all internal devices</li>
+              <li>Access to Threat Intelligence Reporting</li>
+            </ul>
+          </div>
 
-          <div className={styles.servicesGrid}>
-            <div className={styles.serviceCard}>
-              <h5 className={styles.serviceCardTitle}>Internal Penetration Testing</h5>
-              <p className={styles.servicePrice}>From £270/month</p>
-              <p className={styles.serviceDescription}>Identify security risks within your internal network.</p>
-              <ul className={styles.features}>
-                <li>Internal Penetration Testing with Reporting</li>
-                <li>Internal Vulnerability Scanning (12 months)</li>
-                <li>Daily Threat Reports</li>
-              </ul>
-            </div>
+          <div className={styles.serviceBlock}>
+            <h4 className={styles.serviceTitle}>CybaAssess & CybaPlus with Scan Guard</h4>
+            <p className={styles.serviceSubtitle}>
+              Both parts of Cyber Essentials with advanced vulnerability scanning for clear security oversight.
+            </p>
+            <ul className={styles.features}>
+              <li>Cyber Essentials</li>
+              <li>Cyber Essentials Plus</li>
+              <li>External Vulnerability Scanning on your IPs</li>
+              <li>Internal Vulnerability Scanning on all internal devices</li>
+              <li>Access to Threat Intelligence Reporting</li>
+            </ul>
+          </div>
+        </div>
 
-            <div className={styles.serviceCard}>
-              <h5 className={styles.serviceCardTitle}>External Penetration Testing</h5>
-              <p className={styles.servicePrice}>From £270/month</p>
-              <p className={styles.serviceDescription}>Identify vulnerabilities external attackers could exploit.</p>
-              <ul className={styles.features}>
-                <li>External Penetration Testing with Reporting</li>
-                <li>External Vulnerability Scanning (12 months)</li>
-                <li>Free Retesting & Threat Reports</li>
-              </ul>
-            </div>
+        <h3 className={styles.serviceCategory}>Penetration Testing</h3>
+        <p className={styles.serviceCategoryDescription}>All Penetration Testing packages start at £135 per month.</p>
 
-            <div className={styles.serviceCard}>
-              <h5 className={styles.serviceCardTitle}>Web Application Testing</h5>
-              <p className={styles.servicePrice}>From £270/month</p>
-              <p className={styles.serviceDescription}>Identify vulnerabilities within web applications.</p>
-              <ul className={styles.features}>
-                <li>Web App Penetration Testing with Reporting</li>
-                <li>Web App Vulnerability Scanning (12 months)</li>
-                <li>Free Retesting & Threat Reports</li>
-              </ul>
-            </div>
+        <div className={styles.servicesGrid}>
+          <div className={styles.serviceCard}>
+            <h5 className={styles.serviceCardTitle}>Internal Penetration Testing</h5>
+            <p className={styles.servicePrice}>From £135/month</p>
+            <p className={styles.serviceDescription}>
+              Secure internal networks by identifying vulnerabilities and simulating real-world attack scenarios.
+            </p>
+            <ul className={styles.features}>
+              <li>Internal Penetration Testing with Reporting</li>
+              <li>Internal Vulnerability Scanning for 12 months</li>
+              <li>Threat Reports</li>
+            </ul>
+          </div>
+
+          <div className={styles.serviceCard}>
+            <h5 className={styles.serviceCardTitle}>External Penetration Testing</h5>
+            <p className={styles.servicePrice}>From £135/month</p>
+            <p className={styles.serviceDescription}>
+              Identify vulnerabilities that external attackers could exploit, by simulating real-world attacks.
+            </p>
+            <ul className={styles.features}>
+              <li>External Penetration Testing with Reporting</li>
+              <li>External Vulnerability Scanning for 12 months</li>
+              <li>Free Retesting</li>
+              <li>Threat Reports</li>
+            </ul>
+          </div>
+
+          <div className={styles.serviceCard}>
+            <h5 className={styles.serviceCardTitle}>Web Application Penetration Testing</h5>
+            <p className={styles.servicePrice}>From £135/month</p>
+            <p className={styles.serviceDescription}>
+              Focuses on identifying all exploitable vulnerabilities within a web application, providing a detailed
+              assessment of its security.
+            </p>
+            <ul className={styles.features}>
+              <li>Web Application Penetration Testing with Reporting</li>
+              <li>Web App Vulnerability Scanning for 12 months</li>
+              <li>Free Retesting</li>
+              <li>Threat Reports</li>
+            </ul>
           </div>
         </div>
 
         <div className={styles.professionalServices}>
-          <h4 className={styles.serviceCategory}>Professional Services</h4>
+          <h3 className={styles.serviceCategory}>Professional Services</h3>
           <p className={styles.serviceDescription}>
-            Our industry-leading experts provide comprehensive cyber security consulting services including Red Teaming,
-            ISO 27001, Cloud Security Review, MSSP, Incident Response, and Gap Analysis.
+            Our industry-leading experts provide comprehensive cyber security consulting services. We hold a variety of
+            awards and support a variety of technologies to ensure we give our customers the best possible support and
+            guidance.
           </p>
-          <p className={styles.professionalPrice}>£899 per day</p>
+          <div className={styles.professionalServicesList}>
+            <ul className={styles.features}>
+              <li>Red Teaming</li>
+              <li>ISO 27001</li>
+              <li>Cloud Security Review</li>
+              <li>MSSP</li>
+              <li>Incident Response</li>
+              <li>Gap Analysis</li>
+            </ul>
+          </div>
+          <p className={styles.professionalPrice}>
+            All professional services are charged at a fixed rate of £800 per day
+          </p>
         </div>
       </section>
 
