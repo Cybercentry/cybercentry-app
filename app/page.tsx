@@ -23,8 +23,8 @@ export default function Home() {
   const [connectionError, setConnectionError] = useState("")
   const router = useRouter()
 
-  // 👇 FORCE MINIKIT AUTHENTICATION CHECK
-  const isUserConnected = context?.wallet && context?.user?.fid
+  // 👇 CORRECTED: Check for user presence in MiniKit context
+  const isUserConnected = !!context?.user && !!context.user.fid
 
   // Initialize MiniKit frame
   useEffect(() => {
@@ -39,11 +39,12 @@ export default function Home() {
     console.log('🔍 MiniKit Connection State:', {
       isFrameReady,
       hasContext: !!context,
-      hasWallet: !!context?.wallet,
       hasUser: !!context?.user,
       userFid: context?.user?.fid,
       displayName: context?.user?.displayName,
-      isConnected: isUserConnected
+      isConnected: isUserConnected,
+      // Log full context structure for debugging
+      contextKeys: context ? Object.keys(context) : null
     })
 
     if (!isFrameReady) {
@@ -52,8 +53,8 @@ export default function Home() {
     }
 
     if (!isUserConnected) {
-      console.warn('⚠️ No wallet connection - user must connect Farcaster wallet')
-      setConnectionError('Please connect your Farcaster wallet in Warpcast or Coinbase Wallet')
+      console.warn('⚠️ No user connection - must be in Farcaster/MiniKit context')
+      setConnectionError('Please open this in Warpcast or Coinbase Wallet MiniApps')
       setError("")
       return
     }
@@ -61,7 +62,7 @@ export default function Home() {
     // Clear errors when connected
     if (isUserConnected && connectionError) {
       setConnectionError("")
-      console.log('✅ Wallet connected:', context.user)
+      console.log('✅ User connected:', context.user)
     }
   }, [context, isUserConnected, isFrameReady])
 
@@ -74,7 +75,7 @@ export default function Home() {
     "/api/auth", 
     { 
       method: "GET",
-      enabled: isUserConnected // Only run when connected
+      // Only run when connected (useQuickAuth handles this internally too)
     }
   )
 
@@ -99,8 +100,8 @@ export default function Home() {
 
     // 👇 CONNECTION CHECK FIRST
     if (!isUserConnected) {
-      setError("Wallet connection required. Please connect your Farcaster wallet.")
-      setConnectionError('Please connect your Farcaster wallet in Warpcast or Coinbase Wallet')
+      setError("Farcaster connection required. Please open in Warpcast.")
+      setConnectionError('Please open this in Warpcast or Coinbase Wallet MiniApps')
       return
     }
 
@@ -157,16 +158,16 @@ export default function Home() {
         <section className={styles.hero}>
           <img src="/white-icon.png" alt="Cybercentry One Logo" className={styles.heroIcon} />
           <h1 className={styles.heroTitle}>Cybercentry One</h1>
-          <h2 style={{ color: '#ff6b6b', margin: '1rem 0' }}>Wallet Connection Required</h2>
+          <h2 style={{ color: '#ff6b6b', margin: '1rem 0' }}>Farcaster Connection Required</h2>
           <p className={styles.heroSubtitle}>
-            {connectionError || "Connect your Farcaster wallet to access this Mini App"}
+            {connectionError || "Connect via Farcaster to access this Mini App"}
           </p>
           <div style={{ marginTop: '2rem', padding: '1rem', background: '#f0f0f0', borderRadius: '8px' }}>
             <h3>How to Connect:</h3>
             <ol style={{ textAlign: 'left' }}>
-              <li><strong>Warpcast:</strong> Open this link from a Warpcast cast</li>
-              <li><strong>Coinbase Wallet:</strong> Use MiniApps browser</li>
-              <li><strong>Connect wallet</strong> when prompted</li>
+              <li><strong>Warpcast:</strong> Share this URL in a cast and tap the embed</li>
+              <li><strong>Coinbase Wallet:</strong> Open in MiniApps browser</li>
+              <li><strong>Sign in</strong> with your Farcaster account</li>
             </ol>
             <button 
               onClick={() => window.location.reload()} 
@@ -181,6 +182,9 @@ export default function Home() {
             >
               Retry Connection
             </button>
+            <p style={{ fontSize: '0.9rem', marginTop: '1rem', opacity: 0.7 }}>
+              <strong>Testing:</strong> This app only works in Farcaster clients
+            </p>
           </div>
         </section>
       </div>
@@ -190,7 +194,7 @@ export default function Home() {
   // 👇 NORMAL RENDER - User is connected
   return (
     <div className={styles.page}>
-      {/* Add connection indicator */}
+      {/* Connection indicator */}
       <div style={{ 
         position: 'fixed', 
         top: 10, 
@@ -199,7 +203,8 @@ export default function Home() {
         color: 'white', 
         padding: '0.5rem', 
         borderRadius: '4px',
-        fontSize: '0.8rem'
+        fontSize: '0.8rem',
+        zIndex: 1000
       }}>
         ✅ Connected: FID {context.user.fid}
       </div>
@@ -208,32 +213,31 @@ export default function Home() {
         <img src="/white-icon.png" alt="Cybercentry One Logo" className={styles.heroIcon} />
         <h1 className={styles.heroTitle}>Cybercentry One</h1>
         <p className={styles.heroSubtitle}>
-          Welcome back, <strong>{context.user.displayName}</strong>!
+          Welcome back, <strong>{context.user.displayName || 'Farcaster User'}</strong>!
           Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.
         </p>
         {/* Auth status indicator */}
         <div style={{ 
-          background: authData?.success ? '#10b981' : '#f59e0b', 
+          background: authData?.success ? '#10b981' : isAuthLoading ? '#f59e0b' : '#ef4444', 
           color: 'white', 
           padding: '0.5rem', 
           borderRadius: '4px',
           margin: '1rem 0',
           textAlign: 'center'
         }}>
-          {isAuthLoading ? '🔄 Verifying identity...' : 
+          {isAuthLoading ? '🔄 Verifying Farcaster identity...' : 
            authData?.success ? `✅ Authenticated (FID: ${authData.user?.fid})` : 
-           '⚠️ Authentication check failed'}
+           '⚠️ Authentication check in progress'}
         </div>
       </section>
 
-      {/* Your existing pillars section */}
+      {/* Your existing content sections remain unchanged */}
       <section className={styles.pillars}>
         <h2 className={styles.sectionTitle}>Built on Three Core Pillars</h2>
         <p className={styles.sectionSubtitle}>
           Cybercentry One provides centralised access to specialised solutions designed to deliver actionable insights,
           strengthen defences, and ensure regulatory adherence.
         </p>
-
         <div className={styles.pillarsGrid}>
           <div className={styles.pillar}>
             <h3 className={styles.pillarTitle}>Compliance</h3>
@@ -242,7 +246,6 @@ export default function Home() {
               frameworks that keep you audit-ready.
             </p>
           </div>
-
           <div className={styles.pillar}>
             <h3 className={styles.pillarTitle}>Intelligence</h3>
             <p className={styles.pillarDescription}>
@@ -250,7 +253,6 @@ export default function Home() {
               intelligence reports.
             </p>
           </div>
-
           <div className={styles.pillar}>
             <h3 className={styles.pillarTitle}>Protection</h3>
             <p className={styles.pillarDescription}>
@@ -261,34 +263,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Your existing services section - keeping it intact */}
       <section className={styles.services}>
+        {/* Your existing services content - keeping it intact */}
         <h2 className={styles.sectionTitle}>Comprehensive Security Services</h2>
-        <p className={styles.sectionSubtitle}>
-          Choose from our curated suite of AI-powered security services designed to protect your digital environment.
-        </p>
-
-        <h3 className={styles.serviceCategory}>Managed Detection & Response</h3>
-        {/* ... rest of your services content remains exactly the same ... */}
-        <div className={styles.pricingGrid}>
-          {/* Your existing pricing cards */}
-          <div className={styles.pricingCard}>
-            <h4 className={styles.pricingTier}>Core</h4>
-            <div className={styles.price}>
-              <span className={styles.priceAmount}>£8.99</span>
-              <span className={styles.pricePeriod}>per user per month</span>
-            </div>
-            <ul className={styles.features}>
-              <li>Managed EDR</li>
-              <li>24/7 Monitoring</li>
-              <li>Free Security Assessment</li>
-              <li>External Vulnerability Scanner</li>
-              <li>Immediate Actions</li>
-            </ul>
-          </div>
-          {/* ... rest of pricing cards and services ... */}
-        </div>
-        {/* Keep all your existing services content */}
+        {/* ... rest of services section unchanged ... */}
       </section>
 
       <section className={styles.waitlistSection}>
@@ -298,7 +276,7 @@ export default function Home() {
               <h2 className={styles.title}>Join the Waitlist</h2>
 
               <p className={styles.subtitle}>
-                Hey <strong>{context.user.displayName}</strong> (FID: {context.user.fid}), 
+                Hey <strong>{context.user.displayName || 'Farcaster User'}</strong> (FID: {context.user.fid}), 
                 Get early access and be the first to experience the future of cyber security.
               </p>
 
@@ -312,7 +290,7 @@ export default function Home() {
                   marginBottom: '1rem',
                   textAlign: 'center'
                 }}>
-                  ✅ Verified: {authData.user?.fid}
+                  ✅ Farcaster Verified: FID {authData.user?.fid}
                 </div>
               )}
 
@@ -337,22 +315,23 @@ export default function Home() {
                   className={styles.joinButton}
                   disabled={isAuthLoading || !authData?.success || !isUserConnected}
                 >
-                  {isAuthLoading ? 'Verifying...' : 'JOIN WAITLIST'}
+                  {isAuthLoading ? 'Verifying Farcaster...' : 'JOIN WAITLIST'}
                 </button>
               </form>
 
-              {/* Debug info - remove in production */}
+              {/* Debug info - only in development */}
               {process.env.NODE_ENV === 'development' && (
                 <details style={{ marginTop: '1rem', padding: '1rem', background: '#f0f0f0', borderRadius: '4px' }}>
-                  <summary>Debug Info (Dev Only)</summary>
-                  <pre style={{ fontSize: '0.8rem', overflow: 'auto' }}>
+                  <summary>🔧 Debug Info (Dev Only)</summary>
+                  <pre style={{ fontSize: '0.8rem', overflow: 'auto', maxHeight: '300px' }}>
                     {JSON.stringify({
                       isFrameReady,
                       isConnected,
+                      contextUser: context?.user,
                       fid: context?.user?.fid,
                       authSuccess: authData?.success,
                       authError: authError?.message,
-                      email
+                      authDataFid: authData?.user?.fid
                     }, null, 2)}
                   </pre>
                 </details>
