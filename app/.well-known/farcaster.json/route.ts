@@ -1,8 +1,7 @@
-import { withValidManifest } from "@coinbase/onchainkit/minikit";
+// app/.well-known/farcaster.json/route.ts
 import { minikitConfig } from "../../../minikit.config";
 
-// Serve raw config to preserve custom properties like baseBuilder
+// Remove withValidManifest import completely
 export async function GET() {
-  // For Farcaster discovery, serve the raw config to include baseBuilder
   return Response.json(minikitConfig);
 }
