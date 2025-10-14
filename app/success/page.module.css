@@ -135,7 +135,7 @@
 }
 
 .shareButton {
-  background: #f7d954;
+  background: #ffffff;
   color: #000;
   border: none;
   padding: 1rem 3rem;
@@ -147,11 +147,11 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-top: 1rem;
-  box-shadow: 0 4px 20px rgba(247, 217, 84, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.4);
 }
 
 .shareButton:hover {
-  background: #f5d73a;
+  background: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(247, 217, 84, 0.4);
+  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
 }
