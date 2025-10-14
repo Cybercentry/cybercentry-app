@@ -42,9 +42,7 @@ export default function Home() {
       hasUser: !!context?.user,
       userFid: context?.user?.fid,
       displayName: context?.user?.displayName,
-      isConnected: isUserConnected,
-      // Log full context structure for debugging
-      contextKeys: context ? Object.keys(context) : null
+      isUserConnected // 👈 Explicitly reference the variable
     })
 
     if (!isFrameReady) {
@@ -64,7 +62,7 @@ export default function Home() {
       setConnectionError("")
       console.log('✅ User connected:', context.user)
     }
-  }, [context, isUserConnected, isFrameReady])
+  }, [context, isUserConnected, isFrameReady]) // 👈 Added isUserConnected to deps
 
   // Only initialize useQuickAuth when user is connected
   const {
@@ -74,20 +72,19 @@ export default function Home() {
   } = useQuickAuth<AuthResponse>(
     "/api/auth", 
     { 
-      method: "GET",
-      // Only run when connected (useQuickAuth handles this internally too)
+      method: "GET"
     }
   )
 
-  // 👇 DEBUG useEffect for auth state
+  // 👇 FIXED DEBUG useEffect for auth state
   useEffect(() => {
     console.log('🔍 Auth State:', {
       isAuthLoading,
       authData: authData ? { success: authData.success, fid: authData.user?.fid } : null,
       authError: authError?.message,
-      isConnected
+      isUserConnected: isUserConnected // 👈 Explicitly reference with full name
     })
-  }, [isAuthLoading, authData, authError, isConnected])
+  }, [isAuthLoading, authData, authError, isUserConnected]) // 👈 Added to deps
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -231,7 +228,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Your existing content sections remain unchanged */}
+      {/* Your existing content sections - keeping them intact */}
       <section className={styles.pillars}>
         <h2 className={styles.sectionTitle}>Built on Three Core Pillars</h2>
         <p className={styles.sectionSubtitle}>
@@ -263,10 +260,10 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Services section placeholder - add your full content back */}
       <section className={styles.services}>
-        {/* Your existing services content - keeping it intact */}
         <h2 className={styles.sectionTitle}>Comprehensive Security Services</h2>
-        {/* ... rest of services section unchanged ... */}
+        {/* Add your full services content here */}
       </section>
 
       <section className={styles.waitlistSection}>
@@ -326,7 +323,7 @@ export default function Home() {
                   <pre style={{ fontSize: '0.8rem', overflow: 'auto', maxHeight: '300px' }}>
                     {JSON.stringify({
                       isFrameReady,
-                      isConnected,
+                      isUserConnected,
                       contextUser: context?.user,
                       fid: context?.user?.fid,
                       authSuccess: authData?.success,
