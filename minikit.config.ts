@@ -22,7 +22,7 @@ export const minikitConfig = {
       "https://cybercentry-one-mini-app.vercel.app/screenshot-portrait.png"
     ],
     "iconUrl": "https://cybercentry-one-mini-app.vercel.app/blue-icon.png",
-    "splashImageUrl": "https://cybercentry-one-mini-app.vercel.app/blue-hero.png",
+    "splashImageUrl": "https://cybercentry-one-mini-app.vercel.app/blue-icon.png",
     "splashBackgroundColor": "#ffffff",
     "homeUrl": "https://cybercentry-one-mini-app.vercel.app",
     "webhookUrl": "https://cybercentry-one-mini-app.vercel.app/api/webhook",
