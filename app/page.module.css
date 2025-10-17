@@ -76,34 +76,7 @@
   pointer-events: none;
 }
 
-/* Border glow effect that follows mouse */
-.hero::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 16px;
-  padding: 2px;
-  /* Made gradient more subtle with lower opacity and wider spread */
-  background: radial-gradient(
-    800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(59, 130, 246, 0.4),
-    rgba(59, 130, 246, 0.15) 40%,
-    transparent 70%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-}
-
-.hero:hover::before {
-  opacity: 1;
-}
+/* Removed border glow effect pseudo-element entirely */
 
 .heroContent {
   position: relative;
