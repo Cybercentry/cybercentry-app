@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  /* Ensuring solid background color matches particle gradient */
+  /* Using solid blue background as requested */
   background: #0d2b6b;
   color: white;
   display: flex;
@@ -507,4 +507,5 @@
   width: 20px;
   height: 20px;
 }
+
 
