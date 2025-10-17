@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit"
 import { useRouter } from "next/navigation"
-import { Twitter, Linkedin, Facebook, Github } from "lucide-react"
 import styles from "./page.module.css"
 
 interface AuthResponse {
@@ -93,8 +92,8 @@ export default function Home() {
           <div className={styles.pillar}>
             <h3 className={styles.pillarTitle}>Compliance</h3>
             <p className={styles.pillarDescription}>
-              Ensure regulatory adherence with Cyber Essentials certification and comprehensive compliance frameworks
-              that keep you audit-ready.
+              Ensure regulatory adherence with Cyber Essentials certification and comprehensive compliance
+              frameworks that keep you audit-ready.
             </p>
           </div>
 
@@ -146,7 +145,7 @@ export default function Home() {
             <div className={styles.price}>
               <span className={styles.priceAmount}>£240.00</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
-            </div>
+           </div>
             <ul className={styles.features}>
               <li>Managed EDR with Identity and SOAR</li>
               <li>24/7 Monitoring</li>
@@ -211,26 +210,7 @@ export default function Home() {
       </section>
 
       <footer className={styles.footer}>
-        <p>© 2025 Cybercentry. All rights reserved.</p>
-        <div className={styles.socials}>
-          <a href="https://twitter.com/cybercentry" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-            <Twitter className={styles.socialIcon} />
-          </a>
-          <a
-            href="https://linkedin.com/company/cybercentry"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="LinkedIn"
-          >
-            <Linkedin className={styles.socialIcon} />
-          </a>
-          <a href="https://facebook.com/cybercentry" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-            <Facebook className={styles.socialIcon} />
-          </a>
-          <a href="https://github.com/cybercentry" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-            <Github className={styles.socialIcon} />
-          </a>
-        </div>
+        <p>© 2025 Cybercentry One. All rights reserved.</p>
       </footer>
     </div>
   )
