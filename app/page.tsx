@@ -176,118 +176,6 @@ export default function Home() {
             </ul>
           </div>
         </div>
-
-        <h3 className={styles.serviceCategory}>Compliance Packages</h3>
-        <p className={styles.serviceCategoryDescription}>
-          Cyber Essentials & Cyber Essentials Plus certifications, with added vulnerability scanning for 12 months.
-        </p>
-
-        <div className={styles.additionalServices}>
-          <div className={styles.serviceBlock}>
-            <h4 className={styles.serviceTitle}>CENTRYAssess with Scan Guard</h4>
-            <p className={styles.serviceSubtitle}>The first step in the certification, Cyber Essentials only.</p>
-            <ul className={styles.features}>
-              <li>Cyber Essentials</li>
-              <li>External Vulnerability Scanning on your IPs</li>
-              <li>Access to Threat Intelligence Reporting</li>
-            </ul>
-          </div>
-
-          <div className={styles.serviceBlock}>
-            <h4 className={styles.serviceTitle}>CENTRYPlus with Scan Guard</h4>
-            <p className={styles.serviceSubtitle}>
-              Tailored specifically to the Cyber Essentials Plus certification, with vulnerability scanning.
-            </p>
-            <ul className={styles.features}>
-              <li>Cyber Essentials Plus</li>
-              <li>External Vulnerability Scanning on your IPs</li>
-              <li>Internal Vulnerability Scanning on all internal devices</li>
-              <li>Access to Threat Intelligence Reporting</li>
-            </ul>
-          </div>
-
-          <div className={styles.serviceBlock}>
-            <h4 className={styles.serviceTitle}>CENTRYAssess & CENTRYPlus with Scan Guard</h4>
-            <p className={styles.serviceSubtitle}>
-              Both parts of Cyber Essentials with advanced vulnerability scanning for clear security oversight.
-            </p>
-            <ul className={styles.features}>
-              <li>Cyber Essentials</li>
-              <li>Cyber Essentials Plus</li>
-              <li>External Vulnerability Scanning on your IPs</li>
-              <li>Internal Vulnerability Scanning on all internal devices</li>
-              <li>Access to Threat Intelligence Reporting</li>
-            </ul>
-          </div>
-        </div>
-
-        <h3 className={styles.serviceCategory}>Penetration Testing</h3>
-
-        <div className={styles.servicesGrid}>
-          <div className={styles.serviceCard}>
-            <h5 className={styles.serviceCardTitle}>Internal Penetration Testing</h5>
-            <p className={styles.servicePrice}>From £200/month</p>
-            <p className={styles.serviceDescription}>
-              Secure internal networks by identifying vulnerabilities and simulating real-world attack scenarios.
-            </p>
-            <ul className={styles.features}>
-              <li>Internal Penetration Testing with Reporting</li>
-              <li>Internal Vulnerability Scanning for 12 months</li>
-              <li>Threat Reports</li>
-            </ul>
-          </div>
-
-          <div className={styles.serviceCard}>
-            <h5 className={styles.serviceCardTitle}>External Penetration Testing</h5>
-            <p className={styles.servicePrice}>From £200/month</p>
-            <p className={styles.serviceDescription}>
-              Identify vulnerabilities that external attackers could exploit by simulating real-world attacks.
-            </p>
-            <ul className={styles.features}>
-              <li>External Penetration Testing with Reporting</li>
-              <li>External Vulnerability Scanning for 12 months</li>
-              <li>Free Retesting</li>
-              <li>Threat Reports</li>
-            </ul>
-          </div>
-
-          <div className={styles.serviceCard}>
-            <h5 className={styles.serviceCardTitle}>Web Application Penetration Testing</h5>
-            <p className={styles.servicePrice}>From £200/month</p>
-            <p className={styles.serviceDescription}>
-              Focuses on identifying all exploitable vulnerabilities within a web application, providing a detailed
-              assessment of its security.
-            </p>
-            <ul className={styles.features}>
-              <li>Web Application Penetration Testing with Reporting</li>
-              <li>Web App Vulnerability Scanning for 12 months</li>
-              <li>Free Retesting</li>
-              <li>Threat Reports</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className={styles.professionalServices}>
-          <h3 className={styles.serviceCategory}>Professional Services</h3>
-          <p className={styles.serviceDescription}>
-            Our industry-leading experts provide comprehensive cyber security consulting services. We hold a variety of
-            awards and support a variety of technologies to ensure we give our customers the best possible support and
-            guidance.
-          </p>
-          <div className={styles.professionalServicesList}>
-            <ul className={styles.features}>
-              <li>Red Teaming</li>
-              <li>ISO 27001</li>
-              <li>Cloud Security Review</li>
-              <li>MSSP</li>
-              <li>Incident Response</li>
-              <li>Gap Analysis</li>
-            </ul>
-          </div>
-          <p className={styles.professionalPrice}>
-            All professional services are charged at a fixed rate of £900 per day
-          </p>
-        </div>
       </section>
 
       <section className={styles.waitlistSection}>
@@ -322,7 +210,7 @@ export default function Home() {
       </section>
 
       <footer className={styles.footer}>
-        <p>© 2025 Cybercentry One. All rights reserved.</p>
+        <p>© 2025 Cybercentry. All rights reserved.</p>
       </footer>
     </div>
   )
