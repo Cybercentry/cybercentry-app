@@ -68,70 +68,38 @@
   height: 80px;
 }
 
-.checkmarkCircle {
+/* Replaced CSS-based checkmark with SVG checkmark styling */
+.checkmarkSvg {
   width: 80px;
   height: 80px;
-  border-radius: 50%;
-  border: 3px solid #4caf50;
-  position: relative;
-  animation: checkmarkCircle 0.6s ease-in-out;
 }
 
-.checkmarkStem {
-  position: absolute;
-  width: 3px;
-  height: 35px;
-  background: #4caf50;
-  /* Repositioned to create proper checkmark connection */
-  left: 35px;
-  top: 28px;
-  transform-origin: bottom left;
-  animation: checkmarkStem 0.3s ease-in-out 0.3s both;
+.checkmarkCircle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 2;
+  stroke-miterlimit: 10;
+  stroke: #4caf50;
+  fill: none;
+  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
 }
 
-.checkmarkKick {
-  position: absolute;
-  width: 3px;
-  height: 18px;
-  background: #4caf50;
-  /* Repositioned to connect with stem at meeting point */
-  left: 22px;
-  top: 45px;
-  transform-origin: bottom right;
-  animation: checkmarkKick 0.2s ease-in-out 0.5s both;
+.checkmarkCheck {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  stroke: #4caf50;
+  stroke-width: 3;
+  stroke-linecap: round;
+  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
 }
 
-@keyframes checkmarkCircle {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.2);
-  }
+@keyframes stroke {
   100% {
-    transform: scale(1);
-    opacity: 1;
+    stroke-dashoffset: 0;
   }
 }
-
-@keyframes checkmarkStem {
-  0% {
-    transform: scaleY(0) rotate(45deg);
-  }
-  100% {
-    transform: scaleY(1) rotate(45deg);
-  }
-}
-
-@keyframes checkmarkKick {
-  0% {
-    transform: scaleY(0) rotate(-45deg);
-  }
-  100% {
-    transform: scaleY(1) rotate(-45deg);
-  }
-}
+/* </CHANGE> */
 
 .title {
   font-size: clamp(2rem, 5vw, 3.5rem);
