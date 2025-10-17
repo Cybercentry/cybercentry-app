@@ -58,9 +58,8 @@
   width: 100%;
   margin: 2rem auto 4rem;
   padding: 3rem 2rem;
-  border-radius: 16px;
   /* Removed border */
-  background: rgba(255, 255, 255, 0.05);
+  /* Removed border */
   overflow: visible;
 }
 
