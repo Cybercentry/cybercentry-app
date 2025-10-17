@@ -186,7 +186,12 @@ export default function Home() {
         <h3 className={styles.serviceCategory}>Managed Detection & Response</h3>
 
         <div className={styles.pricingGrid}>
-          <div ref={(el) => (cardRefs.current[0] = el)} className={styles.pricingCard}>
+          <div
+            ref={(el) => {
+              cardRefs.current[0] = el
+            }}
+            className={styles.pricingCard}
+          >
             <h4 className={styles.pricingTier}>Core</h4>
             <div className={styles.price}>
               <span className={styles.priceAmount}>£60.00</span>
@@ -201,7 +206,12 @@ export default function Home() {
             </ul>
           </div>
 
-          <div ref={(el) => (cardRefs.current[1] = el)} className={`${styles.pricingCard} ${styles.popular}`}>
+          <div
+            ref={(el) => {
+              cardRefs.current[1] = el
+            }}
+            className={`${styles.pricingCard} ${styles.popular}`}
+          >
             <div className={styles.popularBadge}>POPULAR</div>
             <h4 className={styles.pricingTier}>Edge</h4>
             <div className={styles.price}>
@@ -219,7 +229,12 @@ export default function Home() {
             </ul>
           </div>
 
-          <div ref={(el) => (cardRefs.current[2] = el)} className={styles.pricingCard}>
+          <div
+            ref={(el) => {
+              cardRefs.current[2] = el
+            }}
+            className={styles.pricingCard}
+          >
             <h4 className={styles.pricingTier}>One</h4>
             <div className={styles.price}>
               <span className={styles.priceAmount}>£960.00</span>
@@ -277,5 +292,3 @@ export default function Home() {
     </div>
   )
 }
-
-
