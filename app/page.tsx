@@ -155,6 +155,11 @@ export default function Home() {
             <stop offset="0%" stopColor="rgba(96, 165, 250, 0.8)" />
             <stop offset="100%" stopColor="rgba(13, 43, 107, 0)" />
           </radialGradient>
+          <radialGradient id="cursorGlow">
+            <stop offset="0%" stopColor="rgba(13, 43, 107, 0.4)" />
+            <stop offset="70%" stopColor="rgba(13, 43, 107, 0.1)" />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
         </defs>
 
         {[...Array(12)].map((_, i) => {
@@ -234,9 +239,9 @@ export default function Home() {
           cx={mousePos.x * 1200}
           cy={mousePos.y * 800}
           r="150"
-          fill="radial-gradient(circle, rgba(13, 43, 107, 0.15) 0%, transparent 70%)"
+          fill="url(#cursorGlow)"
           filter="url(#glow)"
-          opacity="0.5"
+          opacity="0.8"
         />
       </svg>
 
@@ -401,4 +406,3 @@ export default function Home() {
     </div>
   )
 }
-
