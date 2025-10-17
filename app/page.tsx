@@ -33,32 +33,22 @@ export default function Home() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      const x = e.clientX / window.innerWidth
+      const y = e.clientY / window.innerHeight
+      setMousePos({ x, y })
+
       if (heroRef.current) {
         const rect = heroRef.current.getBoundingClientRect()
-        const x = e.clientX - rect.left
-        const y = e.clientY - rect.top
-        heroRef.current.style.setProperty("--mouse-x", `${x}px`)
-        heroRef.current.style.setProperty("--mouse-y", `${y}px`)
-        setMousePos({ x: x / rect.width, y: y / rect.height })
+        const heroX = e.clientX - rect.left
+        const heroY = e.clientY - rect.top
+        heroRef.current.style.setProperty("--mouse-x", `${heroX}px`)
+        heroRef.current.style.setProperty("--mouse-y", `${heroY}px`)
       }
     }
 
-    const handleMouseLeave = () => {
-      if (heroRef.current) {
-        heroRef.current.style.setProperty("--mouse-x", `0px`)
-        heroRef.current.style.setProperty("--mouse-y", `0px`)
-        setMousePos({ x: 0.5, y: 0.5 })
-      }
-    }
-
-    const heroElement = heroRef.current
-    if (heroElement) {
-      heroElement.addEventListener("mousemove", handleMouseMove)
-      heroElement.addEventListener("mouseleave", handleMouseLeave)
-      return () => {
-        heroElement.removeEventListener("mousemove", handleMouseMove)
-        heroElement.removeEventListener("mouseleave", handleMouseLeave)
-      }
+    window.addEventListener("mousemove", handleMouseMove)
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove)
     }
   }, [])
 
@@ -134,68 +124,68 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
+      <svg className={styles.heroBackground} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgba(59, 130, 246, 0.3)" />
+            <stop offset="50%" stopColor="rgba(96, 165, 250, 0.2)" />
+            <stop offset="100%" stopColor="rgba(59, 130, 246, 0.1)" />
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {[...Array(8)].map((_, i) => {
+          const baseY = 100 + i * 100
+          const offsetX = (mousePos.x - 0.5) * 100 * (i % 2 === 0 ? 1 : -1)
+          const offsetY = (mousePos.y - 0.5) * 50
+
+          return (
+            <path
+              key={i}
+              d={`M 0 ${baseY + offsetY} Q ${300 + offsetX} ${baseY - 50 + offsetY}, ${600 + offsetX * 0.5} ${baseY + offsetY} T 1200 ${baseY + offsetY}`}
+              stroke="url(#lineGradient)"
+              strokeWidth="2"
+              fill="none"
+              opacity={0.3 - i * 0.03}
+              filter="url(#glow)"
+              style={{
+                transition: "d 0.3s ease-out",
+              }}
+            />
+          )
+        })}
+
+        {[...Array(20)].map((_, i) => {
+          const x = (i * 137.5) % 1200
+          const y = (i * 73) % 800
+          const distX = Math.abs(mousePos.x * 1200 - x)
+          const distY = Math.abs(mousePos.y * 800 - y)
+          const dist = Math.sqrt(distX * distX + distY * distY)
+          const scale = Math.max(0.5, 1 - dist / 500)
+
+          return (
+            <circle
+              key={`particle-${i}`}
+              cx={x + (mousePos.x - 0.5) * 30}
+              cy={y + (mousePos.y - 0.5) * 30}
+              r={2 * scale}
+              fill="rgba(96, 165, 250, 0.4)"
+              filter="url(#glow)"
+              style={{
+                transition: "cx 0.3s ease-out, cy 0.3s ease-out, r 0.3s ease-out",
+              }}
+            />
+          )
+        })}
+      </svg>
+
       <section ref={heroRef} className={styles.hero}>
-        <svg className={styles.heroBackground} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="rgba(59, 130, 246, 0.3)" />
-              <stop offset="50%" stopColor="rgba(96, 165, 250, 0.2)" />
-              <stop offset="100%" stopColor="rgba(59, 130, 246, 0.1)" />
-            </linearGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
-          {[...Array(8)].map((_, i) => {
-            const baseY = 100 + i * 100
-            const offsetX = (mousePos.x - 0.5) * 100 * (i % 2 === 0 ? 1 : -1)
-            const offsetY = (mousePos.y - 0.5) * 50
-
-            return (
-              <path
-                key={i}
-                d={`M 0 ${baseY + offsetY} Q ${300 + offsetX} ${baseY - 50 + offsetY}, ${600 + offsetX * 0.5} ${baseY + offsetY} T 1200 ${baseY + offsetY}`}
-                stroke="url(#lineGradient)"
-                strokeWidth="2"
-                fill="none"
-                opacity={0.3 - i * 0.03}
-                filter="url(#glow)"
-                style={{
-                  transition: "d 0.3s ease-out",
-                }}
-              />
-            )
-          })}
-
-          {[...Array(20)].map((_, i) => {
-            const x = (i * 137.5) % 1200
-            const y = (i * 73) % 800
-            const distX = Math.abs(mousePos.x * 1200 - x)
-            const distY = Math.abs(mousePos.y * 800 - y)
-            const dist = Math.sqrt(distX * distX + distY * distY)
-            const scale = Math.max(0.5, 1 - dist / 500)
-
-            return (
-              <circle
-                key={`particle-${i}`}
-                cx={x + (mousePos.x - 0.5) * 30}
-                cy={y + (mousePos.y - 0.5) * 30}
-                r={2 * scale}
-                fill="rgba(96, 165, 250, 0.4)"
-                filter="url(#glow)"
-                style={{
-                  transition: "cx 0.3s ease-out, cy 0.3s ease-out, r 0.3s ease-out",
-                }}
-              />
-            )
-          })}
-        </svg>
-
         <div className={styles.heroContent}>
           <img src="/white-icon.png" alt="Cybercentry One Logo" className={styles.heroIcon} />
           <h1 className={styles.heroTitle}>Cybercentry One</h1>
