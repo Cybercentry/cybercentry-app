@@ -127,8 +127,8 @@ export default function Home() {
           <div className={styles.pricingCard}>
             <h4 className={styles.pricingTier}>Core</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£8.99</span>
-              <span className={styles.pricePeriod}>per user per month</span>
+              <span className={styles.priceAmount}>£40.00</span>
+              <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
               <li>Managed EDR</li>
@@ -141,10 +141,10 @@ export default function Home() {
 
           <div className={`${styles.pricingCard} ${styles.popular}`}>
             <div className={styles.popularBadge}>POPULAR</div>
-            <h4 className={styles.pricingTier}>Premium</h4>
+            <h4 className={styles.pricingTier}>Edge</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£16.99</span>
-              <span className={styles.pricePeriod}>per user per month</span>
+              <span className={styles.priceAmount}>£140.00</span>
+              <span className={styles.pricePeriod}>per organisation per month</span>
            </div>
             <ul className={styles.features}>
               <li>Managed EDR with Identity and SOAR</li>
@@ -158,10 +158,10 @@ export default function Home() {
           </div>
 
           <div className={styles.pricingCard}>
-            <h4 className={styles.pricingTier}>Enterprise</h4>
+            <h4 className={styles.pricingTier}>One</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£24.99</span>
-              <span className={styles.pricePeriod}>per user per month</span>
+              <span className={styles.priceAmount}>£520.00</span>
+              <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
               <li>Managed XDR with Identity and SOAR</li>
@@ -240,7 +240,7 @@ export default function Home() {
             <h5 className={styles.serviceCardTitle}>External Penetration Testing</h5>
             <p className={styles.servicePrice}>From £199/month</p>
             <p className={styles.serviceDescription}>
-              Identify vulnerabilities that external attackers could exploit, by simulating real-world attacks.
+              Identify vulnerabilities that external attackers could exploit by simulating real-world attacks.
             </p>
             <ul className={styles.features}>
               <li>External Penetration Testing with Reporting</li>
