@@ -226,7 +226,7 @@ export default function Home() {
         <div className={styles.servicesGrid}>
           <div className={styles.serviceCard}>
             <h5 className={styles.serviceCardTitle}>Internal Penetration Testing</h5>
-            <p className={styles.servicePrice}>From £199/month</p>
+            <p className={styles.servicePrice}>From £200/month</p>
             <p className={styles.serviceDescription}>
               Secure internal networks by identifying vulnerabilities and simulating real-world attack scenarios.
             </p>
