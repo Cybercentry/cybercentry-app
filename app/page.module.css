@@ -428,3 +428,21 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
 }
+/* Added styles for social media links in footer */
+.socials {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.socialIcon {
+  width: 20px;
+  height: 20px;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.socialIcon:hover {
+  color: #000;
+}
