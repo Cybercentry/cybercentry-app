@@ -234,7 +234,7 @@ export default function Home() {
           cx={mousePos.x * 1200}
           cy={mousePos.y * 800}
           r="150"
-          fill="radial-gradient(circle, rgba(96, 165, 250, 0.15) 0%, transparent 70%)"
+          fill="radial-gradient(circle, rgba(13, 43, 107, 0.15) 0%, transparent 70%)"
           filter="url(#glow)"
           opacity="0.5"
         />
@@ -401,3 +401,4 @@ export default function Home() {
     </div>
   )
 }
+
