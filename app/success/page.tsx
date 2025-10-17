@@ -172,13 +172,13 @@ export default function Success() {
       <div className={styles.content}>
         <div className={styles.successMessage}>
           <div className={styles.checkmark}>
-            <div className={styles.checkmarkCircle}>
-              <div className={styles.checkmarkStem}></div>
-              <div className={styles.checkmarkKick}></div>
-            </div>
+            <svg className={styles.checkmarkSvg} viewBox="0 0 52 52">
+              <circle className={styles.checkmarkCircle} cx="26" cy="26" r="25" fill="none" />
+              <path className={styles.checkmarkCheck} fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+            </svg>
           </div>
 
-          <h1 className={styles.title}>Welcome to {minikitConfig.miniapp.name.toUpperCase()}!</h1>
+          <h1 className={styles.title}>Welcome to the {minikitConfig.miniapp.name.toUpperCase()}!</h1>
 
           <p className={styles.subtitle}>
             You&apos;re in! We&apos;ll notify you as soon as we launch.
