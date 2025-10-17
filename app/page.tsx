@@ -297,8 +297,6 @@ export default function Home() {
           Choose from our curated suite of AI-powered security services designed to protect your digital environment.
         </p>
 
-        <h3 className={styles.serviceCategory}>Managed Detection & Response</h3>
-
         <div className={styles.pricingGrid}>
           <div
             ref={(el) => {
