@@ -20,7 +20,6 @@ export default function Home() {
   const { isFrameReady, setFrameReady, context } = useMiniKit()
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const heroRef = useRef<HTMLElement>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
   const router = useRouter()
@@ -37,14 +36,16 @@ export default function Home() {
         const rect = heroRef.current.getBoundingClientRect()
         const x = e.clientX - rect.left
         const y = e.clientY - rect.top
-        setMousePosition({ x, y })
         heroRef.current.style.setProperty("--mouse-x", `${x}px`)
         heroRef.current.style.setProperty("--mouse-y", `${y}px`)
       }
     }
 
     const handleMouseLeave = () => {
-      setMousePosition({ x: 0, y: 0 })
+      if (heroRef.current) {
+        heroRef.current.style.setProperty("--mouse-x", `0px`)
+        heroRef.current.style.setProperty("--mouse-y", `0px`)
+      }
     }
 
     const heroElement = heroRef.current
