@@ -178,7 +178,7 @@ export default function Success() {
             </div>
           </div>
 
-          <h1 className={styles.title}>Welcome to the {minikitConfig.miniapp.name.toUpperCase()}!</h1>
+          <h1 className={styles.title}>Welcome to {minikitConfig.miniapp.name.toUpperCase()}!</h1>
 
           <p className={styles.subtitle}>
             You&apos;re in! We&apos;ll notify you as soon as we launch.
