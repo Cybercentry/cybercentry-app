@@ -50,6 +50,7 @@
 }
 
 /* Replaced spotlight with border glow effect */
+/* Updated hero to remove border and adjust styling */
 .hero {
   position: relative;
   text-align: center;
@@ -58,18 +59,19 @@
   margin: 2rem auto 4rem;
   padding: 3rem 2rem;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Removed border */
   background: rgba(255, 255, 255, 0.05);
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Added SVG background styling */
+/* Updated SVG background to be full-page fixed */
 .heroBackground {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   z-index: 0;
   opacity: 0.6;
   pointer-events: none;
