@@ -153,7 +153,7 @@ export default function Home() {
           </filter>
           <radialGradient id="particleGradient">
             <stop offset="0%" stopColor="rgba(96, 165, 250, 0.8)" />
-            <stop offset="100%" stopColor="rgba(13, 43, 107, 0.3)" />
+            <stop offset="100%" stopColor="rgba(13, 43, 107, 0)" />
           </radialGradient>
         </defs>
 
@@ -303,7 +303,7 @@ export default function Home() {
           >
             <h4 className={styles.pricingTier}>Core</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£59.99</span>
+              <span className={styles.priceAmount}>£60.00</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -324,7 +324,7 @@ export default function Home() {
             <div className={styles.popularBadge}>POPULAR</div>
             <h4 className={styles.pricingTier}>Edge</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£239.99</span>
+              <span className={styles.priceAmount}>£240.00</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -346,7 +346,7 @@ export default function Home() {
           >
             <h4 className={styles.pricingTier}>One</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£959.99</span>
+              <span className={styles.priceAmount}>£960.00</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -396,7 +396,7 @@ export default function Home() {
       </section>
 
       <footer className={styles.footer}>
-        <p>© 2025 Cybercentry. All rights reserved.</p>
+        <p>© 2025 Cybercentry One. All rights reserved.</p>
       </footer>
     </div>
   )
