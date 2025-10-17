@@ -22,7 +22,8 @@ export default function Home() {
   const [error, setError] = useState("")
   const heroRef = useRef<HTMLElement>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [globalMousePos, setGlobalMousePos] = useState({ x: 0.5, y: 0.5 })
+  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; vx: number; vy: number }>>([])
   const router = useRouter()
 
   useEffect(() => {
@@ -32,35 +33,67 @@ export default function Home() {
   }, [setFrameReady, isFrameReady])
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (heroRef.current) {
-        const rect = heroRef.current.getBoundingClientRect()
-        const x = e.clientX - rect.left
-        const y = e.clientY - rect.top
-        heroRef.current.style.setProperty("--mouse-x", `${x}px`)
-        heroRef.current.style.setProperty("--mouse-y", `${y}px`)
-        setMousePos({ x: x / rect.width, y: y / rect.height })
-      }
-    }
-
-    const handleMouseLeave = () => {
-      if (heroRef.current) {
-        heroRef.current.style.setProperty("--mouse-x", `0px`)
-        heroRef.current.style.setProperty("--mouse-y", `0px`)
-        setMousePos({ x: 0.5, y: 0.5 })
-      }
-    }
-
-    const heroElement = heroRef.current
-    if (heroElement) {
-      heroElement.addEventListener("mousemove", handleMouseMove)
-      heroElement.addEventListener("mouseleave", handleMouseLeave)
-      return () => {
-        heroElement.removeEventListener("mousemove", handleMouseMove)
-        heroElement.removeEventListener("mouseleave", handleMouseLeave)
-      }
-    }
+    const initialParticles = Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      vx: (Math.random() - 0.5) * 0.1,
+      vy: (Math.random() - 0.5) * 0.1,
+    }))
+    setParticles(initialParticles)
   }, [])
+
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      setGlobalMousePos({
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight,
+      })
+    }
+
+    window.addEventListener("mousemove", handleGlobalMouseMove)
+    return () => window.removeEventListener("mousemove", handleGlobalMouseMove)
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setParticles((prev) =>
+        prev.map((p) => {
+          const dx = globalMousePos.x * 100 - p.x
+          const dy = globalMousePos.y * 100 - p.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+
+          // Particles are attracted to cursor but maintain some independence
+          const force = Math.min(dist / 50, 1)
+          const attractionX = (dx / dist) * force * 0.05
+          const attractionY = (dy / dist) * force * 0.05
+
+          let newX = p.x + p.vx + attractionX
+          let newY = p.y + p.vy + attractionY
+          let newVx = p.vx + attractionX
+          let newVy = p.vy + attractionY
+
+          // Bounce off edges
+          if (newX < 0 || newX > 100) {
+            newVx = -newVx
+            newX = Math.max(0, Math.min(100, newX))
+          }
+          if (newY < 0 || newY > 100) {
+            newVy = -newVy
+            newY = Math.max(0, Math.min(100, newY))
+          }
+
+          // Damping
+          newVx *= 0.98
+          newVy *= 0.98
+
+          return { ...p, x: newX, y: newY, vx: newVx, vy: newVy }
+        }),
+      )
+    }, 50)
+
+    return () => clearInterval(interval)
+  }, [globalMousePos])
 
   useEffect(() => {
     const handleCardMouseMove = (index: number) => (e: MouseEvent) => {
@@ -134,68 +167,116 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
+      <svg className={styles.cyberBackground} viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgba(59, 130, 246, 0.6)" />
+            <stop offset="100%" stopColor="rgba(147, 51, 234, 0.4)" />
+          </linearGradient>
+          <filter id="cyberGlow">
+            <feGaussianBlur stdDeviation="0.3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <radialGradient id="cursorGlow" cx="50%" cy="50%">
+            <stop offset="0%" stopColor="rgba(59, 130, 246, 0.8)" />
+            <stop offset="50%" stopColor="rgba(59, 130, 246, 0.3)" />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
+        </defs>
+
+        {/* Scanning grid lines */}
+        {Array.from({ length: 20 }).map((_, i) => (
+          <line
+            key={`h-${i}`}
+            x1="0"
+            y1={i * 5}
+            x2="100"
+            y2={i * 5}
+            stroke="rgba(59, 130, 246, 0.1)"
+            strokeWidth="0.05"
+          />
+        ))}
+        {Array.from({ length: 20 }).map((_, i) => (
+          <line
+            key={`v-${i}`}
+            x1={i * 5}
+            y1="0"
+            x2={i * 5}
+            y2="100"
+            stroke="rgba(59, 130, 246, 0.1)"
+            strokeWidth="0.05"
+          />
+        ))}
+
+        {/* Particle network connections */}
+        {particles.map((p1, i) =>
+          particles.slice(i + 1).map((p2, j) => {
+            const dx = p2.x - p1.x
+            const dy = p2.y - p1.y
+            const dist = Math.sqrt(dx * dx + dy * dy)
+
+            if (dist < 15) {
+              const opacity = (1 - dist / 15) * 0.4
+              return (
+                <line
+                  key={`line-${i}-${j}`}
+                  x1={p1.x}
+                  y1={p1.y}
+                  x2={p2.x}
+                  y2={p2.y}
+                  stroke="url(#lineGrad)"
+                  strokeWidth="0.1"
+                  opacity={opacity}
+                  filter="url(#cyberGlow)"
+                />
+              )
+            }
+            return null
+          }),
+        )}
+
+        {/* Animated particles */}
+        {particles.map((p) => {
+          const dx = globalMousePos.x * 100 - p.x
+          const dy = globalMousePos.y * 100 - p.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          const scale = dist < 20 ? 1 + (1 - dist / 20) : 1
+
+          return (
+            <circle
+              key={p.id}
+              cx={p.x}
+              cy={p.y}
+              r={0.3 * scale}
+              fill="rgba(59, 130, 246, 0.8)"
+              filter="url(#cyberGlow)"
+            />
+          )
+        })}
+
+        {/* Cursor glow effect */}
+        <circle cx={globalMousePos.x * 100} cy={globalMousePos.y * 100} r="15" fill="url(#cursorGlow)" opacity="0.6" />
+
+        {/* Scanning radar sweep */}
+        <circle
+          cx={globalMousePos.x * 100}
+          cy={globalMousePos.y * 100}
+          r="20"
+          fill="none"
+          stroke="rgba(59, 130, 246, 0.4)"
+          strokeWidth="0.2"
+          opacity="0.6"
+        >
+          <animate attributeName="r" from="5" to="30" dur="2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" from="0.8" to="0" dur="2s" repeatCount="indefinite" />
+        </circle>
+      </svg>
+
       <section ref={heroRef} className={styles.hero}>
-        <svg className={styles.heroBackground} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="rgba(59, 130, 246, 0.3)" />
-              <stop offset="50%" stopColor="rgba(96, 165, 250, 0.2)" />
-              <stop offset="100%" stopColor="rgba(59, 130, 246, 0.1)" />
-            </linearGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
-          {[...Array(8)].map((_, i) => {
-            const baseY = 100 + i * 100
-            const offsetX = (mousePos.x - 0.5) * 100 * (i % 2 === 0 ? 1 : -1)
-            const offsetY = (mousePos.y - 0.5) * 50
-
-            return (
-              <path
-                key={i}
-                d={`M 0 ${baseY + offsetY} Q ${300 + offsetX} ${baseY - 50 + offsetY}, ${600 + offsetX * 0.5} ${baseY + offsetY} T 1200 ${baseY + offsetY}`}
-                stroke="url(#lineGradient)"
-                strokeWidth="2"
-                fill="none"
-                opacity={0.3 - i * 0.03}
-                filter="url(#glow)"
-                style={{
-                  transition: "d 0.3s ease-out",
-                }}
-              />
-            )
-          })}
-
-          {[...Array(20)].map((_, i) => {
-            const x = (i * 137.5) % 1200
-            const y = (i * 73) % 800
-            const distX = Math.abs(mousePos.x * 1200 - x)
-            const distY = Math.abs(mousePos.y * 800 - y)
-            const dist = Math.sqrt(distX * distX + distY * distY)
-            const scale = Math.max(0.5, 1 - dist / 500)
-
-            return (
-              <circle
-                key={`particle-${i}`}
-                cx={x + (mousePos.x - 0.5) * 30}
-                cy={y + (mousePos.y - 0.5) * 30}
-                r={2 * scale}
-                fill="rgba(96, 165, 250, 0.4)"
-                filter="url(#glow)"
-                style={{
-                  transition: "cx 0.3s ease-out, cy 0.3s ease-out, r 0.3s ease-out",
-                }}
-              />
-            )
-          })}
-        </svg>
-
         <div className={styles.heroContent}>
           <img src="/white-icon.png" alt="Cybercentry One Logo" className={styles.heroIcon} />
           <h1 className={styles.heroTitle}>Cybercentry One</h1>
