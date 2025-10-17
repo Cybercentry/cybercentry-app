@@ -164,6 +164,7 @@ export default function Home() {
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
+              <li>Allocated Account Manager</li>
               <li>Managed XDR with Identity and SOAR</li>
               <li>Free Security Assessment</li>
               <li>24/7 Monitoring</li>
