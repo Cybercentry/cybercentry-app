@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit"
 import { useRouter } from "next/navigation"
-import { Twitter, Linkedin, Facebook, Github } from "lucide-react"
 import styles from "./page.module.css"
 
 interface AuthResponse {
@@ -244,20 +243,6 @@ export default function Home() {
 
       <footer className={styles.footer}>
         <p>© 2025 Cybercentry One. All rights reserved.</p>
-        <div className={styles.socialLinks}>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-            <Twitter className={styles.socialIcon} />
-          </a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-            <Linkedin className={styles.socialIcon} />
-          </a>
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-            <Facebook className={styles.socialIcon} />
-          </a>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-            <Github className={styles.socialIcon} />
-          </a>
-        </div>
       </footer>
     </div>
   )
