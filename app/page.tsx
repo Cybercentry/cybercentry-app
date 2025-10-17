@@ -239,7 +239,7 @@ export default function Home() {
 
           <div className={styles.serviceCard}>
             <h5 className={styles.serviceCardTitle}>External Penetration Testing</h5>
-            <p className={styles.servicePrice}>From £199/month</p>
+            <p className={styles.servicePrice}>From £200/month</p>
             <p className={styles.serviceDescription}>
               Identify vulnerabilities that external attackers could exploit by simulating real-world attacks.
             </p>
@@ -253,7 +253,7 @@ export default function Home() {
 
           <div className={styles.serviceCard}>
             <h5 className={styles.serviceCardTitle}>Web Application Penetration Testing</h5>
-            <p className={styles.servicePrice}>From £199/month</p>
+            <p className={styles.servicePrice}>From £200/month</p>
             <p className={styles.serviceDescription}>
               Focuses on identifying all exploitable vulnerabilities within a web application, providing a detailed
               assessment of its security.
@@ -285,7 +285,7 @@ export default function Home() {
             </ul>
           </div>
           <p className={styles.professionalPrice}>
-            All professional services are charged at a fixed rate of £899 per day
+            All professional services are charged at a fixed rate of £900 per day
           </p>
         </div>
       </section>
