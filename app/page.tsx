@@ -127,7 +127,7 @@ export default function Home() {
           <div className={styles.pricingCard}>
             <h4 className={styles.pricingTier}>Core</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£50.00</span>
+              <span className={styles.priceAmount}>£60.00</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -143,7 +143,7 @@ export default function Home() {
             <div className={styles.popularBadge}>POPULAR</div>
             <h4 className={styles.pricingTier}>Edge</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£175.00</span>
+              <span className={styles.priceAmount}>£240.00</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
            </div>
             <ul className={styles.features}>
@@ -160,7 +160,7 @@ export default function Home() {
           <div className={styles.pricingCard}>
             <h4 className={styles.pricingTier}>One</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£600.00</span>
+              <span className={styles.priceAmount}>£960.00</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
