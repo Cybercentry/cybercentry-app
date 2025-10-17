@@ -22,6 +22,7 @@ export default function Home() {
   const [error, setError] = useState("")
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const heroRef = useRef<HTMLElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
   const router = useRouter()
 
   useEffect(() => {
@@ -34,17 +35,55 @@ export default function Home() {
     const handleMouseMove = (e: MouseEvent) => {
       if (heroRef.current) {
         const rect = heroRef.current.getBoundingClientRect()
-        setMousePosition({
-          x: (e.clientX - rect.left) / rect.width,
-          y: (e.clientY - rect.top) / rect.height,
-        })
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+        setMousePosition({ x, y })
+        heroRef.current.style.setProperty("--mouse-x", `${x}px`)
+        heroRef.current.style.setProperty("--mouse-y", `${y}px`)
       }
+    }
+
+    const handleMouseLeave = () => {
+      setMousePosition({ x: 0, y: 0 })
     }
 
     const heroElement = heroRef.current
     if (heroElement) {
       heroElement.addEventListener("mousemove", handleMouseMove)
-      return () => heroElement.removeEventListener("mousemove", handleMouseMove)
+      heroElement.addEventListener("mouseleave", handleMouseLeave)
+      return () => {
+        heroElement.removeEventListener("mousemove", handleMouseMove)
+        heroElement.removeEventListener("mouseleave", handleMouseLeave)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleCardMouseMove = (index: number) => (e: MouseEvent) => {
+      const card = cardRefs.current[index]
+      if (card) {
+        const rect = card.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+        card.style.setProperty("--card-mouse-x", `${x}px`)
+        card.style.setProperty("--card-mouse-y", `${y}px`)
+      }
+    }
+
+    const listeners: Array<{ element: HTMLDivElement; handler: (e: MouseEvent) => void }> = []
+
+    cardRefs.current.forEach((card, index) => {
+      if (card) {
+        const handler = handleCardMouseMove(index)
+        card.addEventListener("mousemove", handler)
+        listeners.push({ element: card, handler })
+      }
+    })
+
+    return () => {
+      listeners.forEach(({ element, handler }) => {
+        element.removeEventListener("mousemove", handler)
+      })
     }
   }, [])
 
@@ -91,17 +130,7 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      <section
-        ref={heroRef}
-        className={styles.hero}
-        style={
-          {
-            "--mouse-x": mousePosition.x,
-            "--mouse-y": mousePosition.y,
-          } as React.CSSProperties
-        }
-      >
-        <div className={styles.spotlight} />
+      <section ref={heroRef} className={styles.hero}>
         <div className={styles.heroContent}>
           <img src="/white-icon.png" alt="Cybercentry One Logo" className={styles.heroIcon} />
           <h1 className={styles.heroTitle}>Cybercentry One</h1>
@@ -156,10 +185,10 @@ export default function Home() {
         <h3 className={styles.serviceCategory}>Managed Detection & Response</h3>
 
         <div className={styles.pricingGrid}>
-          <div className={styles.pricingCard}>
+          <div ref={(el) => (cardRefs.current[0] = el)} className={styles.pricingCard}>
             <h4 className={styles.pricingTier}>Core</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£59.99</span>
+              <span className={styles.priceAmount}>£60.00</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -171,11 +200,11 @@ export default function Home() {
             </ul>
           </div>
 
-          <div className={`${styles.pricingCard} ${styles.popular}`}>
+          <div ref={(el) => (cardRefs.current[1] = el)} className={`${styles.pricingCard} ${styles.popular}`}>
             <div className={styles.popularBadge}>POPULAR</div>
             <h4 className={styles.pricingTier}>Edge</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£239.99</span>
+              <span className={styles.priceAmount}>£240.00</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -189,10 +218,10 @@ export default function Home() {
             </ul>
           </div>
 
-          <div className={styles.pricingCard}>
+          <div ref={(el) => (cardRefs.current[2] = el)} className={styles.pricingCard}>
             <h4 className={styles.pricingTier}>One</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£959.99</span>
+              <span className={styles.priceAmount}>£960.00</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -247,4 +276,5 @@ export default function Home() {
     </div>
   )
 }
+
 
