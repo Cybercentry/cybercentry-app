@@ -80,22 +80,22 @@
 .checkmarkStem {
   position: absolute;
   width: 3px;
-  height: 20px;
+  height: 30px;
   background: #4caf50;
-  left: 35px;
-  top: 32px;
-  transform-origin: center bottom;
+  left: 38px;
+  top: 25px;
+  transform-origin: left bottom;
   animation: checkmarkStem 0.3s ease-in-out 0.3s both;
 }
 
 .checkmarkKick {
   position: absolute;
   width: 3px;
-  height: 12px;
+  height: 15px;
   background: #4caf50;
-  left: 28px;
-  top: 44px;
-  transform-origin: center bottom;
+  left: 25px;
+  top: 40px;
+  transform-origin: left bottom;
   animation: checkmarkKick 0.2s ease-in-out 0.5s both;
 }
 
