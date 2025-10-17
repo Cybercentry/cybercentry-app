@@ -73,16 +73,18 @@
   bottom: 0;
   border-radius: 16px;
   padding: 2px;
+  /* Refined gradient for smoother, more subtle glow like Base.org */
   background: radial-gradient(
-    400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(100, 200, 255, 0.8),
-    transparent 40%
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(59, 130, 246, 0.6),
+    rgba(59, 130, 246, 0.3) 30%,
+    transparent 60%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.5s ease;
   pointer-events: none;
 }
 
@@ -227,16 +229,18 @@
   bottom: 0;
   border-radius: 12px;
   padding: 2px;
+  /* Refined gradient for smoother, more subtle glow like Base.org */
   background: radial-gradient(
-    300px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
-    rgba(100, 200, 255, 0.8),
-    transparent 40%
+    500px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
+    rgba(59, 130, 246, 0.5),
+    rgba(59, 130, 246, 0.2) 30%,
+    transparent 60%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.5s ease;
   pointer-events: none;
 }
 
