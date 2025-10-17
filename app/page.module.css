@@ -1,12 +1,32 @@
 .page {
   min-height: 100vh;
-  /* Using solid blue background as requested */
-  background: #0d2b6b;
+  /* Darker background for better contrast with cyber effects */
+  background: #0a1628;
   color: white;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 2rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Full-page fixed cyber background */
+.cyberBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+/* Ensure all content is above the background */
+.page > * {
+  position: relative;
+  z-index: 1;
 }
 
 .container {
@@ -49,7 +69,7 @@
   padding: 2rem;
 }
 
-/* Replaced spotlight with border glow effect */
+/* Removed border and made hero blend with full-page effect */
 .hero {
   position: relative;
   text-align: center;
@@ -57,52 +77,12 @@
   width: 100%;
   margin: 2rem auto 4rem;
   padding: 3rem 2rem;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  overflow: hidden;
+  /* Removed border-radius and border for seamless integration */
+  background: transparent;
+  overflow: visible;
 }
 
-/* Added SVG background styling */
-.heroBackground {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-/* Border glow effect that follows mouse */
-.hero::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 16px;
-  padding: 2px;
-  /* Made gradient more subtle with lower opacity and wider spread */
-  background: radial-gradient(
-    800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(59, 130, 246, 0.4),
-    rgba(59, 130, 246, 0.15) 40%,
-    transparent 70%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-}
-
-.hero:hover::before {
-  opacity: 1;
-}
+/* Removed heroBackground class as we now have full-page effect */
 
 .heroContent {
   position: relative;
@@ -116,13 +96,13 @@
   display: block;
   margin-left: auto;
   margin-right: auto;
-  filter: drop-shadow(0 0 20px rgba(100, 200, 255, 0.3));
+  filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.6));
   transition: all 0.3s ease;
 }
 
 .hero:hover .heroIcon {
-  transform: scale(1.05);
-  filter: drop-shadow(0 0 30px rgba(100, 200, 255, 0.5));
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 40px rgba(59, 130, 246, 0.9));
 }
 
 .heroTitle {
@@ -130,17 +110,19 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   margin-bottom: 1rem;
-  background: linear-gradient(135deg, #ffffff 0%, #e0f0ff 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #60a5fa 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
 }
 
 .heroSubtitle {
   font-size: 1.2rem;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 300;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .pillars {
@@ -174,23 +156,26 @@
 
 .pillar {
   padding: 2rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(59, 130, 246, 0.3);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(10, 22, 40, 0.6);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   text-align: center;
 }
 
 .pillar:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.6);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
 }
 
 .pillarTitle {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  color: #60a5fa;
 }
 
 .pillarDescription {
@@ -210,6 +195,7 @@
   font-weight: 600;
   margin: 3rem 0 2rem;
   text-align: center;
+  color: #60a5fa;
 }
 
 .pricingGrid {
@@ -219,16 +205,16 @@
   margin: 2rem 0;
 }
 
-/* Added border glow effect to pricing cards */
 .pricingCard {
   padding: 2rem;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(10, 22, 40, 0.6);
   position: relative;
   transition: all 0.3s ease;
   text-align: center;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  backdrop-filter: blur(10px);
 }
 
 /* Border glow effect for cards */
@@ -241,11 +227,10 @@
   bottom: 0;
   border-radius: 12px;
   padding: 2px;
-  /* Made gradient more subtle with lower opacity and wider spread */
   background: radial-gradient(
     600px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
-    rgba(59, 130, 246, 0.35),
-    rgba(59, 130, 246, 0.12) 40%,
+    rgba(59, 130, 246, 0.5),
+    rgba(59, 130, 246, 0.2) 40%,
     transparent 70%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -261,21 +246,22 @@
 }
 
 .pricingCard:hover {
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateY(-2px);
+  background: rgba(59, 130, 246, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
 }
 
 .pricingCard.popular {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 .popularBadge {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: #ffffff;
-  color: #0d2b6b;
+  background: #60a5fa;
+  color: #0a1628;
   padding: 0.25rem 0.75rem;
   border-radius: 6px;
   font-size: 0.75rem;
@@ -288,6 +274,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  color: #60a5fa;
 }
 
 .price {
@@ -322,7 +309,7 @@
 .features li:before {
   content: "✓ ";
   margin-right: 0.5rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: #60a5fa;
 }
 
 .additionalServices {
@@ -331,9 +318,9 @@
 
 .serviceBlock {
   padding: 2rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(59, 130, 246, 0.3);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(10, 22, 40, 0.6);
   backdrop-filter: blur(10px);
   margin-bottom: 2rem;
   text-align: center;
@@ -343,6 +330,7 @@
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: #60a5fa;
 }
 
 .serviceSubtitle {
@@ -360,23 +348,26 @@
 
 .serviceCard {
   padding: 2rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(59, 130, 246, 0.3);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(10, 22, 40, 0.6);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   text-align: center;
 }
 
 .serviceCard:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.6);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
 }
 
 .serviceCardTitle {
   font-size: 1.125rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: #60a5fa;
 }
 
 .servicePrice {
@@ -394,9 +385,9 @@
 
 .professionalServices {
   padding: 2rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(59, 130, 246, 0.3);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(10, 22, 40, 0.6);
   backdrop-filter: blur(10px);
   margin-top: 2rem;
   text-align: center;
@@ -436,18 +427,18 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   margin-bottom: 2rem;
-  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #60a5fa 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
 }
 
 .subtitle {
   font-size: 1.2rem;
   line-height: 1.6;
   margin-bottom: 3rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 300;
 }
 
@@ -464,8 +455,8 @@
   max-width: 400px;
   padding: 1rem 1.5rem;
   font-size: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(10, 22, 40, 0.6);
+  border: 2px solid rgba(59, 130, 246, 0.3);
   border-radius: 12px;
   color: white;
   backdrop-filter: blur(10px);
@@ -478,9 +469,9 @@
 
 .emailInput:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  border-color: rgba(59, 130, 246, 0.6);
+  background: rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
 }
 
 .error {
@@ -490,9 +481,9 @@
 }
 
 .joinButton {
-  background: #ffffff;
-  color: #0d2b6b;
-  border: #0d2b6b;
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+  border: none;
   padding: 1rem 3rem;
   font-size: 1rem;
   font-weight: 700;
@@ -502,16 +493,14 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-top: 1rem;
-  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4);
 }
 
 .joinButton:hover {
-  background: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 10px 35px rgba(59, 130, 246, 0.6);
 }
 
-/* Added social media links styling */
 .socialLinks {
   display: flex;
   gap: 1.5rem;
@@ -525,7 +514,7 @@
 }
 
 .socialLinks a:hover {
-  color: rgba(255, 255, 255, 1);
+  color: #60a5fa;
   transform: translateY(-3px);
 }
 
