@@ -80,22 +80,24 @@
 .checkmarkStem {
   position: absolute;
   width: 3px;
-  height: 30px;
+  height: 35px;
   background: #4caf50;
-  left: 38px;
-  top: 25px;
-  transform-origin: left bottom;
+  /* Repositioned to create proper checkmark connection */
+  left: 35px;
+  top: 28px;
+  transform-origin: bottom left;
   animation: checkmarkStem 0.3s ease-in-out 0.3s both;
 }
 
 .checkmarkKick {
   position: absolute;
   width: 3px;
-  height: 15px;
+  height: 18px;
   background: #4caf50;
-  left: 25px;
-  top: 40px;
-  transform-origin: left bottom;
+  /* Repositioned to connect with stem at meeting point */
+  left: 22px;
+  top: 45px;
+  transform-origin: bottom right;
   animation: checkmarkKick 0.2s ease-in-out 0.5s both;
 }
 
