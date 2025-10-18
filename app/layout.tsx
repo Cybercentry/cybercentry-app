@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Karla } from "next/font/google"
-import { Navigation } from "@/components/navigation"
+import { Navigation } from "../components/navigation"
 import "./globals.css"
 
 const karla = Karla({ subsets: ["latin"], variable: "--font-karla" })
@@ -26,4 +26,3 @@ export default function RootLayout({
     </html>
   )
 }
-
