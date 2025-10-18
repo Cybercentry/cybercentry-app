@@ -33,14 +33,10 @@
   opacity: 0.8;
 }
 
-.logoImage {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-}
-
 .logoText {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.5px;
 }
 
 .links {
