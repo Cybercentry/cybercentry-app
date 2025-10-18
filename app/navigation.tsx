@@ -17,8 +17,7 @@ export function Navigation() {
     <nav className={styles.nav}>
       <div className={styles.container}>
         <Link href="/" className={styles.logo}>
-          <img src="/white-icon.png" alt="Cybercentry" className={styles.logoImage} />
-          <span className={styles.logoText}>Cybercentry One</span>
+          <span className={styles.logoText}>CYBERCENTRY</span>
         </Link>
 
         <div className={styles.links}>
@@ -39,3 +38,4 @@ export function Navigation() {
     </nav>
   )
 }
+
