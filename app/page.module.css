@@ -197,7 +197,9 @@
 .pricingCard {
   padding: 2rem;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  /* Updated background to match pillar boxes */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
   position: relative;
   transition: all 0.3s ease;
   text-align: center;
@@ -507,5 +509,4 @@
   width: 20px;
   height: 20px;
 }
-
 
