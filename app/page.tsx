@@ -1,58 +1,27 @@
 "use client"
-import { useState, useEffect, useRef } from "react"
-import type React from "react"
-import Link from "next/link"
 
-import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useComposeCast } from "@coinbase/onchainkit/minikit"
 import styles from "./page.module.css"
 
-interface AuthResponse {
-  success: boolean
-  user?: {
-    fid: number
-    issuedAt?: number
-    expiresAt?: number
-  }
-  message?: string
-}
-
-export default function Home() {
-  const { isFrameReady, setFrameReady, context } = useMiniKit()
-  const [email, setEmail] = useState("")
-  const [error, setError] = useState("")
-  const heroRef = useRef<HTMLElement>(null)
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+export default function Success() {
+  const { composeCastAsync } = useComposeCast()
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
-  const prevMousePos = useRef({ x: 0.5, y: 0.5 })
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!isFrameReady) {
-      setFrameReady()
-    }
-  }, [setFrameReady, isFrameReady])
+  const prevMousePos = { x: 0.5, y: 0.5 }
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const x = e.clientX / window.innerWidth
       const y = e.clientY / window.innerHeight
 
-      const velocityX = x - prevMousePos.current.x
-      const velocityY = y - prevMousePos.current.y
+      const velocityX = x - prevMousePos.x
+      const velocityY = y - prevMousePos.y
       setMouseVelocity({ x: velocityX * 10, y: velocityY * 10 })
-      prevMousePos.current = { x, y }
+      prevMousePos.x = x
+      prevMousePos.y = y
 
       setMousePos({ x, y })
-
-      if (heroRef.current) {
-        const rect = heroRef.current.getBoundingClientRect()
-        const heroX = e.clientX - rect.left
-        const heroY = e.clientY - rect.top
-        heroRef.current.style.setProperty("--mouse-x", `${heroX}px`)
-        heroRef.current.style.setProperty("--mouse-y", `${heroY}px`)
-      }
     }
 
     window.addEventListener("mousemove", handleMouseMove)
@@ -61,78 +30,27 @@ export default function Home() {
     }
   }, [])
 
-  useEffect(() => {
-    const handleCardMouseMove = (index: number) => (e: MouseEvent) => {
-      const card = cardRefs.current[index]
-      if (card) {
-        const rect = card.getBoundingClientRect()
-        const x = e.clientX - rect.left
-        const y = e.clientY - rect.top
-        card.style.setProperty("--card-mouse-x", `${x}px`)
-        card.style.setProperty("--card-mouse-y", `${y}px`)
-      }
-    }
+  const handleShare = async () => {
+    try {
+      const text = `Yay! I just joined the waitlist for CYBERCENTRY ONE! `
 
-    const listeners: Array<{ element: HTMLDivElement; handler: (e: MouseEvent) => void }> = []
-
-    cardRefs.current.forEach((card, index) => {
-      if (card) {
-        const handler = handleCardMouseMove(index)
-        card.addEventListener("mousemove", handler)
-        listeners.push({ element: card, handler })
-      }
-    })
-
-    return () => {
-      listeners.forEach(({ element, handler }) => {
-        element.removeEventListener("mousemove", handler)
+      const result = await composeCastAsync({
+        text: text,
+        embeds: [process.env.NEXT_PUBLIC_URL || ""],
       })
+
+      if (result?.cast) {
+        console.log("Cast created successfully:", result.cast.hash)
+      } else {
+        console.log("User cancelled the cast")
+      }
+    } catch (error) {
+      console.error("Error sharing cast:", error)
     }
-  }, [])
-
-  const {
-    data: authData,
-    isLoading: isAuthLoading,
-    error: authError,
-  } = useQuickAuth<AuthResponse>("/api/auth", { method: "GET" })
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-
-    if (isAuthLoading) {
-      setError("Please wait while we verify your identity...")
-      return
-    }
-
-    if (authError || !authData?.success) {
-      setError("Please authenticate to join the waitlist")
-      return
-    }
-
-    if (!email) {
-      setError("Please enter your email address")
-      return
-    }
-
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address")
-      return
-    }
-
-    console.log("Valid email submitted:", email)
-    console.log("User authenticated:", authData.user)
-
-    router.push("/success")
   }
 
   return (
-    <div className={styles.page}>
+    <div className={styles.container}>
       <svg className={styles.heroBackground} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
         <defs>
           <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -246,174 +164,32 @@ export default function Home() {
         />
       </svg>
 
-      <section ref={heroRef} className={styles.hero}>
-        <div className={styles.heroContent}>
-          <img src="/white-icon.png" alt="Cybercentry One Logo" className={styles.heroIcon} />
-          <h1 className={styles.heroTitle}>Cybercentry One</h1>
-          <p className={styles.heroSubtitle}>
-            Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.
-            Our platform connects you to a curated suite of AI-powered security services, structured around the core
-            pillars of Compliance, Intelligence, and Protection.
+      <button className={styles.closeButton} type="button">
+        ✕
+      </button>
+
+      <div className={styles.content}>
+        <div className={styles.successMessage}>
+          <div className={styles.checkmark}>
+            <svg className={styles.checkmarkSvg} viewBox="0 0 52 52">
+              <circle className={styles.checkmarkCircle} cx="26" cy="26" r="25" fill="none" />
+              <path className={styles.checkmarkCheck} fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+            </svg>
+          </div>
+
+          <h1 className={styles.title}>Welcome to the CYBERCENTRY ONE!</h1>
+
+          <p className={styles.subtitle}>
+            You&apos;re in! We&apos;ll notify you as soon as we launch.
+            <br />
+            Get ready to experience the future of onchain cyber security.
           </p>
+
+          <button onClick={handleShare} className={styles.shareButton}>
+            SHARE
+          </button>
         </div>
-      </section>
-
-      <section className={styles.pillars}>
-        <h2 className={styles.sectionTitle}>Built on Three Core Pillars</h2>
-        <p className={styles.sectionSubtitle}>
-          Cybercentry One provides centralised access to specialised solutions designed to deliver actionable insights,
-          strengthen defences, and ensure regulatory adherence.
-        </p>
-
-        <div className={styles.pillarsGrid}>
-          <div className={styles.pillar}>
-            <h3 className={styles.pillarTitle}>Compliance</h3>
-            <p className={styles.pillarDescription}>
-              Ensure regulatory adherence with Cyber Essentials certification and comprehensive compliance frameworks
-              that keep you audit-ready.
-            </p>
-          </div>
-
-          <div className={styles.pillar}>
-            <h3 className={styles.pillarTitle}>Intelligence</h3>
-            <p className={styles.pillarDescription}>
-              Gain actionable insights through penetration testing, vulnerability scanning, and daily threat
-              intelligence reports.
-            </p>
-          </div>
-
-          <div className={styles.pillar}>
-            <h3 className={styles.pillarTitle}>Protection</h3>
-            <p className={styles.pillarDescription}>
-              Strengthen your defences with 24/7 managed detection and response, real-time monitoring, and automated
-              threat prevention.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className={styles.services}>
-        <h2 className={styles.sectionTitle}>Comprehensive Security Services</h2>
-        <p className={styles.sectionSubtitle}>
-          Choose from our curated suite of AI-powered security services designed to protect your digital environment.
-        </p>
-
-        <h3 className={styles.serviceCategory}>Managed Detection & Response</h3>
-
-        <div className={styles.pricingGrid}>
-          <div
-            ref={(el) => {
-              cardRefs.current[0] = el
-            }}
-            className={styles.pricingCard}
-          >
-            <h4 className={styles.pricingTier}>Core</h4>
-            <div className={styles.price}>
-              <span className={styles.priceAmount}>£60.00</span>
-              <span className={styles.pricePeriod}>per organisation per month</span>
-            </div>
-            <ul className={styles.features}>
-              <li>Managed EDR</li>
-              <li>24/7 Monitoring</li>
-              <li>Free Security Assessment</li>
-              <li>External Vulnerability Scanner</li>
-              <li>Immediate Actions</li>
-            </ul>
-            <Link href="/core" className={styles.learnMoreButton}>
-              Learn More
-            </Link>
-          </div>
-
-          <div
-            ref={(el) => {
-              cardRefs.current[1] = el
-            }}
-            className={`${styles.pricingCard} ${styles.popular}`}
-          >
-            <div className={styles.popularBadge}>POPULAR</div>
-            <h4 className={styles.pricingTier}>Edge</h4>
-            <div className={styles.price}>
-              <span className={styles.priceAmount}>£240.00</span>
-              <span className={styles.pricePeriod}>per organisation per month</span>
-            </div>
-            <ul className={styles.features}>
-              <li>Managed EDR with Identity and SOAR</li>
-              <li>24/7 Monitoring</li>
-              <li>Free Security Assessment</li>
-              <li>External Vulnerability Scanner</li>
-              <li>Web Application Vulnerability Scanner</li>
-              <li>Internal Vulnerability Scanner</li>
-              <li>Immediate Actions</li>
-            </ul>
-            <Link href="/edge" className={styles.learnMoreButton}>
-              Learn More
-            </Link>
-          </div>
-
-          <div
-            ref={(el) => {
-              cardRefs.current[2] = el
-            }}
-            className={styles.pricingCard}
-          >
-            <h4 className={styles.pricingTier}>One</h4>
-            <div className={styles.price}>
-              <span className={styles.priceAmount}>£960.00</span>
-              <span className={styles.pricePeriod}>per organisation per month</span>
-            </div>
-            <ul className={styles.features}>
-              <li>Allocated Account Manager</li>
-              <li>Managed XDR with Identity and SOAR</li>
-              <li>Free Security Assessment</li>
-              <li>24/7 Monitoring</li>
-              <li>External Vulnerability Scanner</li>
-              <li>Web Application Vulnerability Scanner</li>
-              <li>Internal Vulnerability Scanner</li>
-              <li>Enhanced main dashboard view</li>
-              <li>Immediate Actions</li>
-            </ul>
-            <Link href="/one" className={styles.learnMoreButton}>
-              Learn More
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className={styles.waitlistSection}>
-        <div className={styles.container}>
-          <div className={styles.content}>
-            <div className={styles.waitlistForm}>
-              <h2 className={styles.title}>Join the Waitlist</h2>
-
-              <p className={styles.subtitle}>
-                Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
-                of cyber security.
-              </p>
-
-              <form onSubmit={handleSubmit} className={styles.form}>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={styles.emailInput}
-                />
-
-                {error && <p className={styles.error}>{error}</p>}
-
-                <button type="submit" className={styles.joinButton}>
-                  JOIN WAITLIST
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <footer className={styles.footer}>
-        <p>© 2025 Cybercentry One. All rights reserved.</p>
-      </footer>
+      </div>
     </div>
   )
 }
-
