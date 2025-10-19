@@ -68,7 +68,7 @@
 }
 
 .priceAmount {
-  font-size: 2.5rem;
+  font-size: 2rem; /* Reducing price amount font size to match main page */
   font-weight: 700;
   display: block;
   margin-bottom: 0.5rem;
@@ -91,7 +91,7 @@
 }
 
 .description {
-  font-size: 1.125rem;
+  font-size: 1rem; /* Reducing description font size to match main page body text */
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.85);
 }
@@ -106,7 +106,7 @@
 .featuresList li,
 .benefitsList li {
   padding: 0.75rem 0;
-  font-size: 1.0625rem;
+  font-size: 0.9375rem; /* Reducing features and benefits list font size to match main page */
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.85);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
