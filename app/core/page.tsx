@@ -263,8 +263,8 @@ export default function CorePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Emerging Decentralized Autonomous Organizations (DAOs), Non-Fungible Token (NFT) projects, GameFi
-              platforms, and Decentralized Finance (DeFi) protocols with limited security resources who need
+              Emerging Decentralised Autonomous Organisations (DAOs), Non-Fungible Token (NFT) projects, Game Finance (GameFi)
+              platforms, and Decentralised Finance (DeFi) protocols with limited security resources that need
               professional-grade protection without the complexity of managing it themselves. Perfect for Web3 projects
               in their early growth phase.
             </p>
