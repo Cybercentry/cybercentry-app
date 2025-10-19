@@ -16,7 +16,7 @@ interface AuthResponse {
   message?: string
 }
 
-export default function EdgePage() {
+export default function CorePage() {
   const { isFrameReady, setFrameReady, context } = useMiniKit()
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
@@ -211,19 +211,18 @@ export default function EdgePage() {
         </Link>
 
         <div className={styles.content}>
-          <div className={styles.popularBadge}>POPULAR</div>
-          <h1 className={styles.title}>Edge Package</h1>
+          <h1 className={styles.title}>Core Package</h1>
           <div className={styles.price}>
-            <span className={styles.priceAmount}>£240.00</span>
+            <span className={styles.priceAmount}>£60.00</span>
             <span className={styles.pricePeriod}>per organisation per month</span>
           </div>
 
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Overview</h2>
             <p className={styles.description}>
-              The Edge package delivers advanced managed detection and response with enhanced capabilities including
-              identity protection and security orchestration. Our most popular choice for growing businesses that need
-              comprehensive security coverage.
+              The Core package provides essential managed detection and response capabilities for organisations seeking
+              foundational cybersecurity protection. Perfect for small to medium businesses looking to establish a
+              robust security baseline.
             </p>
           </div>
 
@@ -231,27 +230,21 @@ export default function EdgePage() {
             <h2 className={styles.sectionTitle}>What&apos;s Included</h2>
             <ul className={styles.featuresList}>
               <li>
-                <strong>Managed EDR with Identity and SOAR:</strong> Advanced endpoint protection with identity security
-                and automated response orchestration
+                <strong>Managed EDR:</strong> Enterprise-grade endpoint detection and response managed by our security
+                experts
               </li>
               <li>
-                <strong>24/7 Monitoring:</strong> Continuous surveillance with enhanced threat intelligence
+                <strong>24/7 Monitoring:</strong> Round-the-clock surveillance of your security infrastructure
               </li>
               <li>
-                <strong>Free Security Assessment:</strong> In-depth evaluation of your security infrastructure
+                <strong>Free Security Assessment:</strong> Comprehensive evaluation of your current security posture
               </li>
               <li>
-                <strong>External Vulnerability Scanner:</strong> Comprehensive scanning of all external-facing assets
+                <strong>External Vulnerability Scanner:</strong> Regular scanning of external-facing assets for
+                vulnerabilities
               </li>
               <li>
-                <strong>Web Application Vulnerability Scanner:</strong> Specialized scanning for web application
-                security
-              </li>
-              <li>
-                <strong>Internal Vulnerability Scanner:</strong> Internal network and system vulnerability assessment
-              </li>
-              <li>
-                <strong>Immediate Actions:</strong> Automated and manual response to security incidents
+                <strong>Immediate Actions:</strong> Rapid response to detected threats and security incidents
               </li>
             </ul>
           </div>
@@ -259,47 +252,50 @@ export default function EdgePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Key Benefits</h2>
             <ul className={styles.benefitsList}>
-              <li>Comprehensive protection across endpoints, identities, and applications</li>
-              <li>Automated threat response reduces incident response time</li>
-              <li>Enhanced visibility into internal and external security posture</li>
-              <li>Proactive vulnerability management</li>
-              <li>Compliance support for advanced regulatory requirements</li>
-              <li>Scalable solution that grows with your business</li>
+              <li>Affordable entry point to enterprise-grade security</li>
+              <li>Proactive threat detection and response</li>
+              <li>Reduced risk of data breaches and cyber attacks</li>
+              <li>Peace of mind with 24/7 expert monitoring</li>
+              <li>Compliance support for basic regulatory requirements</li>
             </ul>
           </div>
 
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Growing businesses, mid-sized organisations, and companies with web applications or complex IT
-              environments who need advanced security capabilities with automated response and comprehensive coverage.
+              Small to medium businesses, startups, and organisations with limited IT security resources who need
+              professional-grade protection without the complexity of managing it themselves.
             </p>
           </div>
 
           <section className={styles.waitlistSection}>
-            <div className={styles.waitlistForm}>
-              <h2 className={styles.waitlistTitle}>Join the Waitlist</h2>
+            <div className={styles.container}>
+              <div className={styles.content}>
+                <div className={styles.waitlistForm}>
+                  <h2 className={styles.title}>Join the Waitlist</h2>
 
-              <p className={styles.waitlistSubtitle}>
-                Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
-                of cyber security.
-              </p>
+                  <p className={styles.subtitle}>
+                    Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the
+                    future of cyber security.
+                  </p>
 
-              <form onSubmit={handleSubmit} className={styles.form}>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={styles.emailInput}
-                />
+                  <form onSubmit={handleSubmit} className={styles.form}>
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={styles.emailInput}
+                    />
 
-                {error && <p className={styles.error}>{error}</p>}
+                    {error && <p className={styles.error}>{error}</p>}
 
-                <button type="submit" className={styles.joinButton}>
-                  JOIN WAITLIST
-                </button>
-              </form>
+                    <button type="submit" className={styles.joinButton}>
+                      JOIN WAITLIST
+                    </button>
+                  </form>
+                </div>
+              </div>
             </div>
           </section>
         </div>
