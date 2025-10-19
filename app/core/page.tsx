@@ -300,6 +300,10 @@ export default function CorePage() {
           </div>
         </div>
       </section>
+
+      <footer className={styles.footer}>
+        <p>© 2025 Cybercentry. All rights reserved.</p>
+      </footer>
     </div>
   )
 }
