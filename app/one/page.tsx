@@ -220,9 +220,9 @@ export default function OnePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Overview</h2>
             <p className={styles.description}>
-              The One package represents our premium tier of managed detection and response, featuring extended
+              The Cybercentry One package represents our premium tier of managed detection and response, featuring extended
               detection and response (XDR) capabilities, dedicated account management, and enhanced dashboard views.
-              Perfect for enterprises requiring the highest level of security and personalized support.
+              Perfect for organisations requiring the highest level of security and personalised support.
             </p>
           </div>
 
@@ -230,7 +230,7 @@ export default function OnePage() {
             <h2 className={styles.sectionTitle}>What&apos;s Included</h2>
             <ul className={styles.featuresList}>
               <li>
-                <strong>Allocated Account Manager:</strong> Dedicated security expert for personalized support and
+                <strong>Allocated Account Manager:</strong> Dedicated security expert for personalised support and
                 strategic guidance
               </li>
               <li>
@@ -268,7 +268,7 @@ export default function OnePage() {
               <li>Dedicated account manager for strategic security planning</li>
               <li>Advanced XDR capabilities for comprehensive threat detection</li>
               <li>Priority support and incident response</li>
-              <li>Customizable dashboards for executive-level reporting</li>
+              <li>Customisable dashboards for executive-level reporting</li>
               <li>Proactive security posture management</li>
               <li>Compliance support for the most stringent regulatory requirements</li>
               <li>Strategic security roadmap development</li>
