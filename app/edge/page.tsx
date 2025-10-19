@@ -212,7 +212,7 @@ export default function EdgePage() {
 
         <div className={styles.content}>
           <div className={styles.popularBadge}>POPULAR</div>
-          <h1 className={styles.title}>Edge Package</h1>
+          <h1 className={styles.title}>Edge</h1>
           <div className={styles.price}>
             <span className={styles.priceAmount}>$349.99</span>
             <span className={styles.pricePeriod}>per organisation per month</span>
