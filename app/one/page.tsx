@@ -1,23 +1,23 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import styles from "./page.module.css"
 
 export default function OnePage() {
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
-  const prevMousePos = { x: 0.5, y: 0.5 }
+  const prevMousePos = useRef({ x: 0.5, y: 0.5 })
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const x = e.clientX / window.innerWidth
       const y = e.clientY / window.innerHeight
 
-      const velocityX = x - prevMousePos.x
-      const velocityY = y - prevMousePos.y
+      const velocityX = x - prevMousePos.current.x
+      const velocityY = y - prevMousePos.current.y
       setMouseVelocity({ x: velocityX * 10, y: velocityY * 10 })
-      prevMousePos.x = x
-      prevMousePos.y = y
+      prevMousePos.current.x = x
+      prevMousePos.current.y = y
 
       setMousePos({ x, y })
     }
@@ -163,7 +163,7 @@ export default function OnePage() {
           </div>
 
           <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>What's Included</h2>
+            <h2 className={styles.sectionTitle}>What&apos;s Included</h2>
             <ul className={styles.featuresList}>
               <li>
                 <strong>Allocated Account Manager:</strong> Dedicated security expert for personalized support and
@@ -225,3 +225,4 @@ export default function OnePage() {
     </div>
   )
 }
+
