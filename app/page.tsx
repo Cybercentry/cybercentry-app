@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react"
 import type React from "react"
 import Link from "next/link"
+
 import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit"
 import { useRouter } from "next/navigation"
 import styles from "./page.module.css"
@@ -16,10 +17,12 @@ interface AuthResponse {
   message?: string
 }
 
-export default function EdgePage() {
+export default function Home() {
   const { isFrameReady, setFrameReady, context } = useMiniKit()
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
+  const heroRef = useRef<HTMLElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
   const prevMousePos = useRef({ x: 0.5, y: 0.5 })
@@ -39,14 +42,52 @@ export default function EdgePage() {
       const velocityX = x - prevMousePos.current.x
       const velocityY = y - prevMousePos.current.y
       setMouseVelocity({ x: velocityX * 10, y: velocityY * 10 })
-      prevMousePos.current.x = x
-      prevMousePos.current.y = y
+      prevMousePos.current = { x, y }
 
       setMousePos({ x, y })
+
+      if (heroRef.current) {
+        const rect = heroRef.current.getBoundingClientRect()
+        const heroX = e.clientX - rect.left
+        const heroY = e.clientY - rect.top
+        heroRef.current.style.setProperty("--mouse-x", `${heroX}px`)
+        heroRef.current.style.setProperty("--mouse-y", `${heroY}px`)
+      }
     }
 
     window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleCardMouseMove = (index: number) => (e: MouseEvent) => {
+      const card = cardRefs.current[index]
+      if (card) {
+        const rect = card.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+        card.style.setProperty("--card-mouse-x", `${x}px`)
+        card.style.setProperty("--card-mouse-y", `${y}px`)
+      }
+    }
+
+    const listeners: Array<{ element: HTMLDivElement; handler: (e: MouseEvent) => void }> = []
+
+    cardRefs.current.forEach((card, index) => {
+      if (card) {
+        const handler = handleCardMouseMove(index)
+        card.addEventListener("mousemove", handler)
+        listeners.push({ element: card, handler })
+      }
+    })
+
+    return () => {
+      listeners.forEach(({ element, handler }) => {
+        element.removeEventListener("mousemove", handler)
+      })
+    }
   }, [])
 
   const {
@@ -205,78 +246,138 @@ export default function EdgePage() {
         />
       </svg>
 
-      <div className={styles.container}>
-        <Link href="/" className={styles.backButton}>
-          ← Back to Home
-        </Link>
+      <section ref={heroRef} className={styles.hero}>
+        <div className={styles.heroContent}>
+          <img src="/white-icon.png" alt="Cybercentry One Logo" className={styles.heroIcon} />
+          <h1 className={styles.heroTitle}>Cybercentry One</h1>
+          <p className={styles.heroSubtitle}>
+            Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.
+            Our platform connects you to a curated suite of AI-powered security services, structured around the core
+            pillars of Compliance, Intelligence, and Protection.
+          </p>
+        </div>
+      </section>
 
-        <div className={styles.content}>
-          <div className={styles.popularBadge}>POPULAR</div>
-          <h1 className={styles.title}>Edge Package</h1>
-          <div className={styles.price}>
-            <span className={styles.priceAmount}>$349.99</span>
-            <span className={styles.pricePeriod}>per organisation per month</span>
-          </div>
+      <section className={styles.pillars}>
+        <h2 className={styles.sectionTitle}>Built on Three Core Pillars</h2>
+        <p className={styles.sectionSubtitle}>
+          Cybercentry One provides centralised access to specialised solutions designed to deliver actionable insights,
+          strengthen defences, and ensure regulatory adherence.
+        </p>
 
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Overview</h2>
-            <p className={styles.description}>
-              The Edge package delivers advanced managed detection and response with enhanced capabilities including
-              identity protection and security orchestration. Our most popular choice for growing businesses that need
-              comprehensive security coverage.
+        <div className={styles.pillarsGrid}>
+          <div className={styles.pillar}>
+            <h3 className={styles.pillarTitle}>Compliance</h3>
+            <p className={styles.pillarDescription}>
+              Ensure regulatory adherence with Cyber Essentials certification and comprehensive compliance frameworks
+              that keep you audit-ready.
             </p>
           </div>
 
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>What&apos;s Included</h2>
-            <ul className={styles.featuresList}>
-              <li>
-                <strong>Managed EDR with Identity and SOAR:</strong> Advanced endpoint protection with identity security
-                and automated response orchestration
-              </li>
-              <li>
-                <strong>24/7 Monitoring:</strong> Continuous surveillance with enhanced threat intelligence
-              </li>
-              <li>
-                <strong>Free Security Assessment:</strong> In-depth evaluation of your security infrastructure
-              </li>
-              <li>
-                <strong>External Vulnerability Scanner:</strong> Comprehensive scanning of all external-facing assets
-              </li>
-              <li>
-                <strong>Web Application Vulnerability Scanner:</strong> Specialized scanning for web application
-                security
-              </li>
-              <li>
-                <strong>Internal Vulnerability Scanner:</strong> Internal network and system vulnerability assessment
-              </li>
-              <li>
-                <strong>Immediate Actions:</strong> Automated and manual response to security incidents
-              </li>
-            </ul>
+          <div className={styles.pillar}>
+            <h3 className={styles.pillarTitle}>Intelligence</h3>
+            <p className={styles.pillarDescription}>
+              Gain actionable insights through penetration testing, vulnerability scanning, and daily threat
+              intelligence reports.
+            </p>
           </div>
 
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Key Benefits</h2>
-            <ul className={styles.benefitsList}>
-              <li>Comprehensive protection across endpoints, identities, and applications</li>
-              <li>Automated threat response reduces incident response time</li>
-              <li>Enhanced visibility into internal and external security posture</li>
-              <li>Proactive vulnerability management</li>
-              <li>Compliance support for advanced regulatory requirements</li>
-              <li>Scalable solution that grows with your business</li>
-            </ul>
-          </div>
-
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Ideal For</h2>
-            <p className={styles.description}>
-              Growing businesses, mid-sized organisations, and companies with web applications or complex IT
-              environments who need advanced security capabilities with automated response and comprehensive coverage.
+          <div className={styles.pillar}>
+            <h3 className={styles.pillarTitle}>Protection</h3>
+            <p className={styles.pillarDescription}>
+              Strengthen your defences with 24/7 managed detection and response, real-time monitoring, and automated
+              threat prevention.
             </p>
           </div>
         </div>
-      </div>
+      </section>
+
+      <section className={styles.services}>
+        <h2 className={styles.sectionTitle}>Comprehensive Security Services</h2>
+        <p className={styles.sectionSubtitle}>
+          Choose from our curated suite of AI-powered security services designed to protect your digital environment.
+        </p>
+
+        <h3 className={styles.serviceCategory}>Managed Detection & Response</h3>
+
+        <div className={styles.pricingGrid}>
+          <div
+            ref={(el) => {
+              cardRefs.current[0] = el
+            }}
+            className={styles.pricingCard}
+          >
+            <h4 className={styles.pricingTier}>Core</h4>
+            <div className={styles.price}>
+              <span className={styles.priceAmount}>$69.99 USDC</span>
+              <span className={styles.pricePeriod}>per organisation per month</span>
+            </div>
+            <ul className={styles.features}>
+              <li>Managed EDR</li>
+              <li>24/7 Monitoring</li>
+              <li>Free Security Assessment</li>
+              <li>External Vulnerability Scanner</li>
+              <li>Immediate Actions</li>
+            </ul>
+            <Link href="/core" className={styles.learnMoreButton}>
+              Learn More
+            </Link>
+          </div>
+
+          <div
+            ref={(el) => {
+              cardRefs.current[1] = el
+            }}
+            className={`${styles.pricingCard} ${styles.popular}`}
+          >
+            <div className={styles.popularBadge}>POPULAR</div>
+            <h4 className={styles.pricingTier}>Edge</h4>
+            <div className={styles.price}>
+              <span className={styles.priceAmount}>$349.99</span>
+              <span className={styles.pricePeriod}>per organisation per month</span>
+            </div>
+            <ul className={styles.features}>
+              <li>Managed EDR with Identity and SOAR</li>
+              <li>24/7 Monitoring</li>
+              <li>Free Security Assessment</li>
+              <li>External Vulnerability Scanner</li>
+              <li>Web Application Vulnerability Scanner</li>
+              <li>Internal Vulnerability Scanner</li>
+              <li>Immediate Actions</li>
+            </ul>
+            <Link href="/edge" className={styles.learnMoreButton}>
+              Learn More
+            </Link>
+          </div>
+
+          <div
+            ref={(el) => {
+              cardRefs.current[2] = el
+            }}
+            className={styles.pricingCard}
+          >
+            <h4 className={styles.pricingTier}>One</h4>
+            <div className={styles.price}>
+              <span className={styles.priceAmount}>$1099.99 USDC</span>
+              <span className={styles.pricePeriod}>per organisation per month</span>
+            </div>
+            <ul className={styles.features}>
+              <li>Allocated Account Manager</li>
+              <li>Managed XDR with Identity and SOAR</li>
+              <li>Free Security Assessment</li>
+              <li>24/7 Monitoring</li>
+              <li>External Vulnerability Scanner</li>
+              <li>Web Application Vulnerability Scanner</li>
+              <li>Internal Vulnerability Scanner</li>
+              <li>Enhanced main dashboard view</li>
+              <li>Immediate Actions</li>
+            </ul>
+            <Link href="/one" className={styles.learnMoreButton}>
+              Learn More
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <section className={styles.waitlistSection}>
         <div className={styles.container}>
