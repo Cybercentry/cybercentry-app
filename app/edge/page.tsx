@@ -221,7 +221,7 @@ export default function EdgePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Overview</h2>
             <p className={styles.description}>
-              The Edge package delivers advanced managed detection and response with enhanced capabilities including
+              The Cybercentry Edge package delivers advanced managed detection and response with enhanced capabilities, including
               identity protection and security orchestration. Our most popular choice for growing businesses that need
               comprehensive security coverage.
             </p>
@@ -244,7 +244,7 @@ export default function EdgePage() {
                 <strong>External Vulnerability Scanner:</strong> Comprehensive scanning of all external-facing assets
               </li>
               <li>
-                <strong>Web Application Vulnerability Scanner:</strong> Specialized scanning for web application
+                <strong>Web Application Vulnerability Scanner:</strong> Specialised scanning for web application
                 security
               </li>
               <li>
@@ -272,7 +272,7 @@ export default function EdgePage() {
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
               Growing businesses, mid-sized organisations, and companies with web applications or complex IT
-              environments who need advanced security capabilities with automated response and comprehensive coverage.
+              environments that need advanced security capabilities with automated response and comprehensive coverage.
             </p>
           </div>
         </div>
