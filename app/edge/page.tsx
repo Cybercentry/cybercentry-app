@@ -271,8 +271,9 @@ export default function EdgePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Growing businesses, mid-sized organisations, and companies with web applications or complex IT
-              environments who need advanced security capabilities with automated response and comprehensive coverage.
+              Growing DeFi protocols, established DAOs with significant treasury holdings, NFT platforms with complex
+              smart contract systems, and Web3 projects with active communities who need advanced security capabilities
+              with automated response and comprehensive coverage.
             </p>
           </div>
         </div>
@@ -286,7 +287,7 @@ export default function EdgePage() {
 
               <p className={styles.subtitle}>
                 Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
-                of cyber security.
+                of Web3 security.
               </p>
 
               <form onSubmit={handleSubmit} className={styles.form}>
