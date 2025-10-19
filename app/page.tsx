@@ -309,7 +309,7 @@ export default function Home() {
             <h4 className={styles.pricingTier}>Core</h4>
             <div className={styles.price}>
               <span className={styles.priceAmount}>$69.99 USDC</span>
-              <span className={styles.priceAmount}>(paid in $CENTRY)</span>
+              <span className={styles.pricePeriod}>(paid in $CENTRY)</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -333,8 +333,8 @@ export default function Home() {
             <div className={styles.popularBadge}>POPULAR</div>
             <h4 className={styles.pricingTier}>Edge</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>$349.99 USDC (paid in $CENTRY)</span>
-              <span className={styles.priceAmount}>(paid in $CENTRY)</span>
+              <span className={styles.priceAmount}>$349.99 USDC</span>
+              <span className={styles.pricePeriod}>(paid in $CENTRY)</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -359,8 +359,8 @@ export default function Home() {
           >
             <h4 className={styles.pricingTier}>One</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>$1099.99 USDC (paid in $CENTRY)</span>
-              <span className={styles.priceAmount}>(paid in $CENTRY)</span>
+              <span className={styles.priceAmount}>$1099.99 USDC</span>
+              <span className={styles.pricePeriod}>(paid in $CENTRY)</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
