@@ -1,12 +1,35 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
+import type React from "react"
 import Link from "next/link"
+import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit"
+import { useRouter } from "next/navigation"
 import styles from "./page.module.css"
 
+interface AuthResponse {
+  success: boolean
+  user?: {
+    fid: number
+    issuedAt?: number
+    expiresAt?: number
+  }
+  message?: string
+}
+
 export default function EdgePage() {
+  const { isFrameReady, setFrameReady, context } = useMiniKit()
+  const [email, setEmail] = useState("")
+  const [error, setError] = useState("")
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
   const prevMousePos = useRef({ x: 0.5, y: 0.5 })
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isFrameReady) {
+      setFrameReady()
+    }
+  }, [setFrameReady, isFrameReady])
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -25,6 +48,47 @@ export default function EdgePage() {
     window.addEventListener("mousemove", handleMouseMove)
     return () => window.removeEventListener("mousemove", handleMouseMove)
   }, [])
+
+  const {
+    data: authData,
+    isLoading: isAuthLoading,
+    error: authError,
+  } = useQuickAuth<AuthResponse>("/api/auth", { method: "GET" })
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+
+    if (isAuthLoading) {
+      setError("Please wait while we verify your identity...")
+      return
+    }
+
+    if (authError || !authData?.success) {
+      setError("Please authenticate to join the waitlist")
+      return
+    }
+
+    if (!email) {
+      setError("Please enter your email address")
+      return
+    }
+
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address")
+      return
+    }
+
+    console.log("Valid email submitted:", email)
+    console.log("User authenticated:", authData.user)
+
+    router.push("/success")
+  }
 
   return (
     <div className={styles.page}>
@@ -212,7 +276,32 @@ export default function EdgePage() {
             </p>
           </div>
 
-          <button className={styles.buyButton}>Buy Now</button>
+          <section className={styles.waitlistSection}>
+            <div className={styles.waitlistForm}>
+              <h2 className={styles.waitlistTitle}>Join the Waitlist</h2>
+
+              <p className={styles.waitlistSubtitle}>
+                Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
+                of cyber security.
+              </p>
+
+              <form onSubmit={handleSubmit} className={styles.form}>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={styles.emailInput}
+                />
+
+                {error && <p className={styles.error}>{error}</p>}
+
+                <button type="submit" className={styles.joinButton}>
+                  JOIN WAITLIST
+                </button>
+              </form>
+            </div>
+          </section>
         </div>
       </div>
     </div>
