@@ -16,7 +16,7 @@ interface AuthResponse {
   message?: string
 }
 
-export default function CorePage() {
+export default function EdgePage() {
   const { isFrameReady, setFrameReady, context } = useMiniKit()
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
@@ -211,18 +211,19 @@ export default function CorePage() {
         </Link>
 
         <div className={styles.content}>
-          <h1 className={styles.title}>Core Package</h1>
+          <div className={styles.popularBadge}>POPULAR</div>
+          <h1 className={styles.title}>Edge Package</h1>
           <div className={styles.price}>
-            <span className={styles.priceAmount}>£60.00</span>
+            <span className={styles.priceAmount}>£240.00</span>
             <span className={styles.pricePeriod}>per organisation per month</span>
           </div>
 
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Overview</h2>
             <p className={styles.description}>
-              The Core package provides essential managed detection and response capabilities for organisations seeking
-              foundational cybersecurity protection. Perfect for small to medium businesses looking to establish a
-              robust security baseline.
+              The Edge package delivers advanced managed detection and response with enhanced capabilities including
+              identity protection and security orchestration. Our most popular choice for growing businesses that need
+              comprehensive security coverage.
             </p>
           </div>
 
@@ -230,21 +231,27 @@ export default function CorePage() {
             <h2 className={styles.sectionTitle}>What&apos;s Included</h2>
             <ul className={styles.featuresList}>
               <li>
-                <strong>Managed EDR:</strong> Enterprise-grade endpoint detection and response managed by our security
-                experts
+                <strong>Managed EDR with Identity and SOAR:</strong> Advanced endpoint protection with identity security
+                and automated response orchestration
               </li>
               <li>
-                <strong>24/7 Monitoring:</strong> Round-the-clock surveillance of your security infrastructure
+                <strong>24/7 Monitoring:</strong> Continuous surveillance with enhanced threat intelligence
               </li>
               <li>
-                <strong>Free Security Assessment:</strong> Comprehensive evaluation of your current security posture
+                <strong>Free Security Assessment:</strong> In-depth evaluation of your security infrastructure
               </li>
               <li>
-                <strong>External Vulnerability Scanner:</strong> Regular scanning of external-facing assets for
-                vulnerabilities
+                <strong>External Vulnerability Scanner:</strong> Comprehensive scanning of all external-facing assets
               </li>
               <li>
-                <strong>Immediate Actions:</strong> Rapid response to detected threats and security incidents
+                <strong>Web Application Vulnerability Scanner:</strong> Specialized scanning for web application
+                security
+              </li>
+              <li>
+                <strong>Internal Vulnerability Scanner:</strong> Internal network and system vulnerability assessment
+              </li>
+              <li>
+                <strong>Immediate Actions:</strong> Automated and manual response to security incidents
               </li>
             </ul>
           </div>
@@ -252,19 +259,20 @@ export default function CorePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Key Benefits</h2>
             <ul className={styles.benefitsList}>
-              <li>Affordable entry point to enterprise-grade security</li>
-              <li>Proactive threat detection and response</li>
-              <li>Reduced risk of data breaches and cyber attacks</li>
-              <li>Peace of mind with 24/7 expert monitoring</li>
-              <li>Compliance support for basic regulatory requirements</li>
+              <li>Comprehensive protection across endpoints, identities, and applications</li>
+              <li>Automated threat response reduces incident response time</li>
+              <li>Enhanced visibility into internal and external security posture</li>
+              <li>Proactive vulnerability management</li>
+              <li>Compliance support for advanced regulatory requirements</li>
+              <li>Scalable solution that grows with your business</li>
             </ul>
           </div>
 
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Small to medium businesses, startups, and organisations with limited IT security resources who need
-              professional-grade protection without the complexity of managing it themselves.
+              Growing businesses, mid-sized organisations, and companies with web applications or complex IT
+              environments who need advanced security capabilities with automated response and comprehensive coverage.
             </p>
           </div>
 
