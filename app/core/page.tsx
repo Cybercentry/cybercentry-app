@@ -211,7 +211,7 @@ export default function CorePage() {
         </Link>
 
         <div className={styles.content}>
-          <h1 className={styles.title}>Core Package</h1>
+          <h1 className={styles.title}>Core</h1>
           <div className={styles.price}>
             <span className={styles.priceAmount}>$69.99 USDC</span>
             <span className={styles.pricePeriod}>per organisation per month</span>
