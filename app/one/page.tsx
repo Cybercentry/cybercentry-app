@@ -220,9 +220,9 @@ export default function OnePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Overview</h2>
             <p className={styles.description}>
-              The Cybercentry One package represents our premium tier of managed detection and response, featuring extended
-              detection and response (XDR) capabilities, dedicated account management, and enhanced dashboard views.
-              Perfect for organisations requiring the highest level of security and personalised support.
+              The Cybercentry One package represents our premium tier of managed detection and response, featuring
+              extended detection and response (XDR) capabilities, dedicated account management, and enhanced dashboard
+              views. Perfect for organisations requiring the highest level of security and personalised support.
             </p>
           </div>
 
@@ -278,8 +278,10 @@ export default function OnePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Large enterprises, organisations with complex security requirements, regulated industries, and businesses
-              that require dedicated security expertise and the most comprehensive protection available.
+              Major DeFi protocols with significant TVL, Layer 1 and Layer 2 blockchain projects, large DAOs with
+              complex governance structures, cross-chain bridge operators, and Web3 organisations with substantial
+              treasury holdings that require dedicated security expertise and the most comprehensive protection
+              available.
             </p>
           </div>
         </div>
@@ -293,7 +295,7 @@ export default function OnePage() {
 
               <p className={styles.subtitle}>
                 Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
-                of cyber security.
+                of Web3 security.
               </p>
 
               <form onSubmit={handleSubmit} className={styles.form}>
