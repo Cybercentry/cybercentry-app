@@ -230,3 +230,21 @@
   box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
 }
 
+/* Override content styling inside waitlist section to remove box effect */
+.waitlistSection .content {
+  background: none;
+  border: none;
+  backdrop-filter: none;
+  padding: 0;
+}
+
+/* Adding footer styles */
+.footer {
+  text-align: center;
+  padding: 2rem;
+  margin-top: 4rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  position: relative;
+  z-index: 1;
+}
