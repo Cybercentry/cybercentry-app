@@ -220,9 +220,9 @@ export default function CorePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Overview</h2>
             <p className={styles.description}>
-              The Cybercentry Core package provides essential managed detection and response capabilities for organisations seeking
-              foundational cyber security protection. Perfect for small to medium businesses looking to establish a
-              robust security baseline.
+              The Cybercentry Core package provides essential managed detection and response capabilities for
+              organisations seeking foundational cyber security protection. Perfect for small to medium businesses
+              looking to establish a robust security baseline.
             </p>
           </div>
 
@@ -263,8 +263,9 @@ export default function CorePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Small to medium businesses, startups, and organisations with limited IT security resources who need
-              professional-grade protection without the complexity of managing it themselves.
+              Emerging DAOs, NFT projects, GameFi platforms, and DeFi protocols with limited security resources who need
+              professional-grade protection without the complexity of managing it themselves. Perfect for Web3 projects
+              in their early growth phase.
             </p>
           </div>
         </div>
@@ -278,7 +279,7 @@ export default function CorePage() {
 
               <p className={styles.subtitle}>
                 Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
-                of cyber security.
+                of Web3 security.
               </p>
 
               <form onSubmit={handleSubmit} className={styles.form}>
