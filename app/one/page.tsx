@@ -221,7 +221,7 @@ export default function OnePage() {
             <h2 className={styles.sectionTitle}>Overview</h2>
             <p className={styles.description}>
               The Cybercentry One package represents our premium tier of managed detection and response, featuring
-              extended detection and response (XDR) capabilities, dedicated account management, and enhanced dashboard
+              Extended Detection and Response (XDR) capabilities, dedicated account management, and enhanced dashboard
               views. Perfect for organisations requiring the highest level of security and personalised support.
             </p>
           </div>
@@ -278,8 +278,8 @@ export default function OnePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Major DeFi (Decentralized Finance) protocols with significant TVL (Total Value Locked), Layer 1 and Layer
-              2 blockchain projects, large DAOs (Decentralized Autonomous Organizations) with complex governance
+              Major Decentralised Finance (Defi) protocols with significant Total Value Locked (TVL), Layer 1, Layer
+              2 and Layer 3 blockchain projects, large Decentralised Autonomous Organisations (DAO) with complex governance
               structures, cross-chain bridge operators, and Web3 organisations with substantial treasury holdings that
               require dedicated security expertise and the most comprehensive protection available.
             </p>
