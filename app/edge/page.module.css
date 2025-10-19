@@ -49,21 +49,6 @@
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
   padding: 3rem;
-  position: relative;
-}
-
-.popularBadge {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  background: #ffffff;
-  color: #0d2b6b;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .title {
@@ -83,7 +68,7 @@
 }
 
 .priceAmount {
-  font-size: 2rem; /* Reduced price amount font size to match main page */
+  font-size: 2rem; /* Updated font size */
   font-weight: 700;
   display: block;
   margin-bottom: 0.5rem;
@@ -106,7 +91,7 @@
 }
 
 .description {
-  font-size: 1rem; /* Reduced description font size to match main page body text */
+  font-size: 1rem; /* Updated font size */
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.85);
 }
@@ -121,7 +106,7 @@
 .featuresList li,
 .benefitsList li {
   padding: 0.75rem 0;
-  font-size: 0.9375rem; /* Reduced features and benefits list font size to match main page */
+  font-size: 0.9375rem; /* Updated font size */
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.85);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
