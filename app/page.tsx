@@ -251,9 +251,9 @@ export default function Home() {
           <img src="/white-icon.png" alt="Cybercentry One Logo" className={styles.heroIcon} />
           <h1 className={styles.heroTitle}>Cybercentry One</h1>
           <p className={styles.heroSubtitle}>
-            Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.
-            Our platform connects you to a curated suite of AI-powered security services, structured around the core
-            pillars of Compliance, Intelligence, and Protection.
+            Empowers Web3 projects and decentralised organisations to anticipate, prevent, and respond to cyber threats
+            with confidence. Our platform connects you to a curated suite of AI-powered security services, structured
+            around the core pillars of Compliance, Intelligence, and Protection.
           </p>
         </div>
       </section>
@@ -295,7 +295,8 @@ export default function Home() {
       <section className={styles.services}>
         <h2 className={styles.sectionTitle}>Comprehensive Security Services</h2>
         <p className={styles.sectionSubtitle}>
-          Choose from our curated suite of AI-powered security services designed to protect your digital environment.
+          Choose from our curated suite of AI-powered security services designed to protect your Web3 project and
+          digital infrastructure.
         </p>
 
         <h3 className={styles.serviceCategory}>Managed Detection & Response</h3>
@@ -387,7 +388,7 @@ export default function Home() {
 
               <p className={styles.subtitle}>
                 Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
-                of cyber security.
+                of Web3 security.
               </p>
 
               <form onSubmit={handleSubmit} className={styles.form}>
