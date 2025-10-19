@@ -299,8 +299,6 @@ export default function Home() {
           digital infrastructure.
         </p>
 
-        <h3 className={styles.serviceCategory}>Managed Detection & Response</h3>
-
         <div className={styles.pricingGrid}>
           <div
             ref={(el) => {
