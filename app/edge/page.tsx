@@ -271,9 +271,10 @@ export default function EdgePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Growing DeFi protocols, established DAOs with significant treasury holdings, NFT platforms with complex
-              smart contract systems, and Web3 projects with active communities who need advanced security capabilities
-              with automated response and comprehensive coverage.
+              Growing DeFi (Decentralized Finance) protocols, established DAOs (Decentralized Autonomous Organizations)
+              with significant treasury holdings, NFT (Non-Fungible Token) platforms with complex smart contract
+              systems, and Web3 projects with active communities who need advanced security capabilities with automated
+              response and comprehensive coverage.
             </p>
           </div>
         </div>
