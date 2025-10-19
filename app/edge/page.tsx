@@ -221,7 +221,7 @@ export default function EdgePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Overview</h2>
             <p className={styles.description}>
-              The Edge package delivers advanced managed detection and response with enhanced capabilities including
+              The Edge package delivers advanced managed detection and response with enhanced capabilities, including
               identity protection and security orchestration. Our most popular choice for growing businesses that need
               comprehensive security coverage.
             </p>
@@ -271,9 +271,9 @@ export default function EdgePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Growing DeFi (Decentralized Finance) protocols, established DAOs (Decentralized Autonomous Organizations)
-              with significant treasury holdings, NFT (Non-Fungible Token) platforms with complex smart contract
-              systems, and Web3 projects with active communities who need advanced security capabilities with automated
+              Growing Decentralised Finance (DeFi) protocols, established Decentralised Autonomous Organisations (DAO)
+              with significant treasury holdings, Non-Fungible Token (NFT) platforms with complex smart contract
+              systems, and Web3 projects with active communities that need advanced security capabilities with automated
               response and comprehensive coverage.
             </p>
           </div>
