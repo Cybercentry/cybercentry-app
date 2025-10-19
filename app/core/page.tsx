@@ -220,8 +220,8 @@ export default function CorePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Overview</h2>
             <p className={styles.description}>
-              The Core package provides essential managed detection and response capabilities for organisations seeking
-              foundational cybersecurity protection. Perfect for small to medium businesses looking to establish a
+              The Cybercentry Core package provides essential managed detection and response capabilities for organisations seeking
+              foundational cyber security protection. Perfect for small to medium businesses looking to establish a
               robust security baseline.
             </p>
           </div>
