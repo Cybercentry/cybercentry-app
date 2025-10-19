@@ -149,3 +149,107 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 30px rgba(255, 255, 255, 0.5);
 }
+
+/* Adding waitlist section styles from main page */
+.waitlistForm {
+  text-align: center;
+}
+
+.waitlistSection {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 4rem;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 3rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 300;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.emailInput {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.emailInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.emailInput:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.joinButton {
+  background: #ffffff;
+  color: #0d2b6b;
+  border: #0d2b6b;
+  padding: 1rem 3rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 1rem;
+  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+}
+
+.joinButton:hover {
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+}
+
+/* Override content styling inside waitlist section to remove box effect */
+.waitlistSection .content {
+  background: none;
+  border: none;
+  backdrop-filter: none;
+  padding: 0;
+}
+
+/* Updating footer styles to ensure visibility */
+.footer {
+  text-align: center;
+  padding: 2rem;
+  margin-top: 4rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+}
+
+.footer p {
+  margin: 0;
+}
