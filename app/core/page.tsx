@@ -267,39 +267,39 @@ export default function CorePage() {
               professional-grade protection without the complexity of managing it themselves.
             </p>
           </div>
-
-          <section className={styles.waitlistSection}>
-            <div className={styles.container}>
-              <div className={styles.content}>
-                <div className={styles.waitlistForm}>
-                  <h2 className={styles.title}>Join the Waitlist</h2>
-
-                  <p className={styles.subtitle}>
-                    Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the
-                    future of cyber security.
-                  </p>
-
-                  <form onSubmit={handleSubmit} className={styles.form}>
-                    <input
-                      type="email"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={styles.emailInput}
-                    />
-
-                    {error && <p className={styles.error}>{error}</p>}
-
-                    <button type="submit" className={styles.joinButton}>
-                      JOIN WAITLIST
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </section>
         </div>
       </div>
+
+      <section className={styles.waitlistSection}>
+        <div className={styles.container}>
+          <div className={styles.content}>
+            <div className={styles.waitlistForm}>
+              <h2 className={styles.title}>Join the Waitlist</h2>
+
+              <p className={styles.subtitle}>
+                Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
+                of cyber security.
+              </p>
+
+              <form onSubmit={handleSubmit} className={styles.form}>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={styles.emailInput}
+                />
+
+                {error && <p className={styles.error}>{error}</p>}
+
+                <button type="submit" className={styles.joinButton}>
+                  JOIN WAITLIST
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
