@@ -213,7 +213,7 @@ export default function OnePage() {
         <div className={styles.content}>
           <h1 className={styles.title}>One Package</h1>
           <div className={styles.price}>
-            <span className={styles.priceAmount}>£960.00</span>
+            <span className={styles.priceAmount}>$1099.99 USDC</span>
             <span className={styles.pricePeriod}>per organisation per month</span>
           </div>
 
@@ -282,39 +282,43 @@ export default function OnePage() {
               that require dedicated security expertise and the most comprehensive protection available.
             </p>
           </div>
-
-          <section className={styles.waitlistSection}>
-            <div className={styles.container}>
-              <div className={styles.content}>
-                <div className={styles.waitlistForm}>
-                  <h2 className={styles.title}>Join the Waitlist</h2>
-
-                  <p className={styles.subtitle}>
-                    Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the
-                    future of cyber security.
-                  </p>
-
-                  <form onSubmit={handleSubmit} className={styles.form}>
-                    <input
-                      type="email"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={styles.emailInput}
-                    />
-
-                    {error && <p className={styles.error}>{error}</p>}
-
-                    <button type="submit" className={styles.joinButton}>
-                      JOIN WAITLIST
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </section>
         </div>
       </div>
+
+      <section className={styles.waitlistSection}>
+        <div className={styles.container}>
+          <div className={styles.content}>
+            <div className={styles.waitlistForm}>
+              <h2 className={styles.title}>Join the Waitlist</h2>
+
+              <p className={styles.subtitle}>
+                Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
+                of cyber security.
+              </p>
+
+              <form onSubmit={handleSubmit} className={styles.form}>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={styles.emailInput}
+                />
+
+                {error && <p className={styles.error}>{error}</p>}
+
+                <button type="submit" className={styles.joinButton}>
+                  JOIN WAITLIST
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer className={styles.footer}>
+        <p>© 2025 Cybercentry. All rights reserved.</p>
+      </footer>
     </div>
   )
 }
