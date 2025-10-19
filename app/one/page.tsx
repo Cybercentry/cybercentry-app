@@ -211,7 +211,7 @@ export default function OnePage() {
         </Link>
 
         <div className={styles.content}>
-          <h1 className={styles.title}>One Package</h1>
+          <h1 className={styles.title}>One</h1>
           <div className={styles.price}>
             <span className={styles.priceAmount}>$1099.99 USDC</span>
             <span className={styles.pricePeriod}>per organisation per month</span>
