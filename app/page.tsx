@@ -298,8 +298,6 @@ export default function Home() {
           Choose from our curated suite of AI-powered security services designed to protect your digital environment.
         </p>
 
-        <h3 className={styles.serviceCategory}>Managed Detection & Response</h3>
-
         <div className={styles.pricingGrid}>
           <div
             ref={(el) => {
@@ -309,7 +307,7 @@ export default function Home() {
           >
             <h4 className={styles.pricingTier}>Core</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£60.00</span>
+              <span className={styles.priceAmount}>$69.99 USDC</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -333,7 +331,7 @@ export default function Home() {
             <div className={styles.popularBadge}>POPULAR</div>
             <h4 className={styles.pricingTier}>Edge</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£240.00</span>
+              <span className={styles.priceAmount}>$349.99</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -358,7 +356,7 @@ export default function Home() {
           >
             <h4 className={styles.pricingTier}>One</h4>
             <div className={styles.price}>
-              <span className={styles.priceAmount}>£960.00</span>
+              <span className={styles.priceAmount}>$1099.99 USDC</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
             <ul className={styles.features}>
@@ -411,7 +409,7 @@ export default function Home() {
       </section>
 
       <footer className={styles.footer}>
-        <p>© 2025 Cybercentry One. All rights reserved.</p>
+        <p>© 2025 Cybercentry. All rights reserved.</p>
       </footer>
     </div>
   )
