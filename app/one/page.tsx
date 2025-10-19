@@ -278,10 +278,10 @@ export default function OnePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Major DeFi protocols with significant TVL, Layer 1 and Layer 2 blockchain projects, large DAOs with
-              complex governance structures, cross-chain bridge operators, and Web3 organisations with substantial
-              treasury holdings that require dedicated security expertise and the most comprehensive protection
-              available.
+              Major DeFi (Decentralized Finance) protocols with significant TVL (Total Value Locked), Layer 1 and Layer
+              2 blockchain projects, large DAOs (Decentralized Autonomous Organizations) with complex governance
+              structures, cross-chain bridge operators, and Web3 organisations with substantial treasury holdings that
+              require dedicated security expertise and the most comprehensive protection available.
             </p>
           </div>
         </div>
@@ -324,3 +324,4 @@ export default function OnePage() {
     </div>
   )
 }
+
