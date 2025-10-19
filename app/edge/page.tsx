@@ -1,317 +1,271 @@
-"use client"
-import { useState, useEffect, useRef } from "react"
-import type React from "react"
-import Link from "next/link"
-import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit"
-import { useRouter } from "next/navigation"
-import styles from "./page.module.css"
-
-interface AuthResponse {
-  success: boolean
-  user?: {
-    fid: number
-    issuedAt?: number
-    expiresAt?: number
-  }
-  message?: string
+.page {
+  min-height: 100vh;
+  background: #0d2b6b;
+  color: white;
+  padding: 2rem;
+  position: relative;
 }
 
-export default function EdgePage() {
-  const { isFrameReady, setFrameReady, context } = useMiniKit()
-  const [email, setEmail] = useState("")
-  const [error, setError] = useState("")
-  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
-  const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
-  const prevMousePos = useRef({ x: 0.5, y: 0.5 })
-  const router = useRouter()
+.heroBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  opacity: 0.6;
+  pointer-events: none;
+}
 
-  useEffect(() => {
-    if (!isFrameReady) {
-      setFrameReady()
-    }
-  }, [setFrameReady, isFrameReady])
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = e.clientX / window.innerWidth
-      const y = e.clientY / window.innerHeight
+.backButton {
+  display: inline-block;
+  margin-bottom: 2rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
 
-      const velocityX = x - prevMousePos.current.x
-      const velocityY = y - prevMousePos.current.y
-      setMouseVelocity({ x: velocityX * 10, y: velocityY * 10 })
-      prevMousePos.current.x = x
-      prevMousePos.current.y = y
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(-5px);
+}
 
-      setMousePos({ x, y })
-    }
+.content {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 3rem;
+  position: relative;
+}
 
-    window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [])
+.popularBadge {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  background: #ffffff;
+  color: #0d2b6b;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
-  const {
-    data: authData,
-    isLoading: isAuthLoading,
-    error: authError,
-  } = useQuickAuth<AuthResponse>("/api/auth", { method: "GET" })
+.title {
+  /* Matching main page hero title max font size */
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffffff 0%, #e0f0ff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
+.price {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+.priceAmount {
+  font-size: 2rem; /* Reduced price amount font size to match main page */
+  font-weight: 700;
+  display: block;
+  margin-bottom: 0.5rem;
+}
 
-    if (isAuthLoading) {
-      setError("Please wait while we verify your identity...")
-      return
-    }
+.pricePeriod {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
 
-    if (authError || !authData?.success) {
-      setError("Please authenticate to join the waitlist")
-      return
-    }
+.section {
+  margin-bottom: 2.5rem;
+}
 
-    if (!email) {
-      setError("Please enter your email address")
-      return
-    }
+.sectionTitle {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.95);
+}
 
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address")
-      return
-    }
+.description {
+  font-size: 1rem; /* Reduced description font size to match main page body text */
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85);
+}
 
-    console.log("Valid email submitted:", email)
-    console.log("User authenticated:", authData.user)
+.featuresList,
+.benefitsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
-    router.push("/success")
-  }
+.featuresList li,
+.benefitsList li {
+  padding: 0.75rem 0;
+  font-size: 0.9375rem; /* Reduced features and benefits list font size to match main page */
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-  return (
-    <div className={styles.page}>
-      <svg className={styles.heroBackground} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(59, 130, 246, 0.4)" />
-            <stop offset="50%" stopColor="rgba(96, 165, 250, 0.3)" />
-            <stop offset="100%" stopColor="rgba(59, 130, 246, 0.2)" />
-          </linearGradient>
-          <linearGradient id="lineGradient2" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="rgba(139, 92, 246, 0.3)" />
-            <stop offset="50%" stopColor="rgba(96, 165, 250, 0.2)" />
-            <stop offset="100%" stopColor="rgba(59, 130, 246, 0.2)" />
-          </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <radialGradient id="particleGradient">
-            <stop offset="0%" stopColor="rgba(96, 165, 250, 0.8)" />
-            <stop offset="100%" stopColor="rgba(13, 43, 107, 0)" />
-          </radialGradient>
-          <radialGradient id="cursorGlow">
-            <stop offset="0%" stopColor="rgba(13, 43, 107, 0.4)" />
-            <stop offset="70%" stopColor="rgba(13, 43, 107, 0.1)" />
-            <stop offset="100%" stopColor="transparent" />
-          </radialGradient>
-        </defs>
+.featuresList li:last-child,
+.benefitsList li:last-child {
+  border-bottom: none;
+}
 
-        {[...Array(12)].map((_, i) => {
-          const baseY = 50 + i * 70
-          const offsetX = (mousePos.x - 0.5) * 250 * (i % 2 === 0 ? 1 : -1) + mouseVelocity.x * 20
-          const offsetY = (mousePos.y - 0.5) * 120 + mouseVelocity.y * 15
+.featuresList li strong {
+  color: rgba(255, 255, 255, 0.95);
+}
 
-          return (
-            <path
-              key={i}
-              d={`M 0 ${baseY + offsetY} Q ${300 + offsetX} ${baseY - 80 + offsetY}, ${600 + offsetX * 0.5} ${baseY + offsetY} T 1200 ${baseY + offsetY}`}
-              stroke={i % 3 === 0 ? "url(#lineGradient2)" : "url(#lineGradient)"}
-              strokeWidth={i % 2 === 0 ? "2.5" : "1.5"}
-              fill="none"
-              opacity={0.4 - i * 0.025}
-              filter="url(#glow)"
-            />
-          )
-        })}
+.benefitsList li:before {
+  content: "✓ ";
+  margin-right: 0.75rem;
+  color: rgba(96, 165, 250, 0.8);
+  font-weight: 700;
+}
 
-        {[...Array(50)].map((_, i) => {
-          const baseX = (i * 137.5) % 1200
-          const baseY = (i * 73) % 800
-          const distX = Math.abs(mousePos.x * 1200 - baseX)
-          const distY = Math.abs(mousePos.y * 800 - baseY)
-          const dist = Math.sqrt(distX * distX + distY * distY)
-          const scale = Math.max(0.3, Math.min(2, 1.5 - dist / 400))
+.buyButton {
+  width: 100%;
+  padding: 1.25rem 2rem;
+  background: #ffffff;
+  color: #0d2b6b;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 2rem;
+  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+}
 
-          const angle = Math.atan2(baseY - mousePos.y * 800, baseX - mousePos.x * 1200)
-          const repulsion = Math.max(0, 150 - dist) / 150
-          const moveX = Math.cos(angle) * repulsion * 80
-          const moveY = Math.sin(angle) * repulsion * 80
+.buyButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(255, 255, 255, 0.5);
+}
 
-          return (
-            <circle
-              key={`particle-${i}`}
-              cx={baseX + moveX + mouseVelocity.x * 5}
-              cy={baseY + moveY + mouseVelocity.y * 5}
-              r={2.5 * scale}
-              fill="url(#particleGradient)"
-              filter="url(#glow)"
-              opacity={0.6 + scale * 0.4}
-            />
-          )
-        })}
+/* Adding waitlist section styles from main page */
+.waitlistForm {
+  text-align: center;
+}
 
-        {[...Array(50)].map((_, i) => {
-          const x1 = (i * 137.5) % 1200
-          const y1 = (i * 73) % 800
-          const x2 = ((i + 7) * 137.5) % 1200
-          const y2 = ((i + 7) * 73) % 800
-          const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+.waitlistSection {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 4rem;
+}
 
-          if (dist < 200) {
-            const midX = (x1 + x2) / 2
-            const midY = (y1 + y2) / 2
-            const distToMouse = Math.sqrt((midX - mousePos.x * 1200) ** 2 + (midY - mousePos.y * 800) ** 2)
-            const opacity = Math.max(0, 0.3 - distToMouse / 800)
+.subtitle {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 3rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 300;
+}
 
-            return (
-              <line
-                key={`connection-${i}`}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="rgba(96, 165, 250, 0.3)"
-                strokeWidth="1"
-                opacity={opacity}
-              />
-            )
-          }
-          return null
-        })}
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
 
-        <circle
-          cx={mousePos.x * 1200}
-          cy={mousePos.y * 800}
-          r="150"
-          fill="url(#cursorGlow)"
-          filter="url(#glow)"
-          opacity="0.8"
-        />
-      </svg>
+.emailInput {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
 
-      <div className={styles.container}>
-        <Link href="/" className={styles.backButton}>
-          ← Back to Home
-        </Link>
+.emailInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
 
-        <div className={styles.content}>
-          <div className={styles.popularBadge}>POPULAR</div>
-          <h1 className={styles.title}>Edge Package</h1>
-          <div className={styles.price}>
-            <span className={styles.priceAmount}>$349.99</span>
-            <span className={styles.pricePeriod}>per organisation per month</span>
-          </div>
+.emailInput:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
 
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Overview</h2>
-            <p className={styles.description}>
-              The Cybercentry Edge package delivers advanced managed detection and response with enhanced capabilities, including
-              identity protection and security orchestration. Our most popular choice for growing businesses that need
-              comprehensive security coverage.
-            </p>
-          </div>
+.error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin: 0;
+}
 
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>What&apos;s Included</h2>
-            <ul className={styles.featuresList}>
-              <li>
-                <strong>Managed EDR with Identity and SOAR:</strong> Advanced endpoint protection with identity security
-                and automated response orchestration
-              </li>
-              <li>
-                <strong>24/7 Monitoring:</strong> Continuous surveillance with enhanced threat intelligence
-              </li>
-              <li>
-                <strong>Free Security Assessment:</strong> In-depth evaluation of your security infrastructure
-              </li>
-              <li>
-                <strong>External Vulnerability Scanner:</strong> Comprehensive scanning of all external-facing assets
-              </li>
-              <li>
-                <strong>Web Application Vulnerability Scanner:</strong> Specialised scanning for web application
-                security
-              </li>
-              <li>
-                <strong>Internal Vulnerability Scanner:</strong> Internal network and system vulnerability assessment
-              </li>
-              <li>
-                <strong>Immediate Actions:</strong> Automated and manual response to security incidents
-              </li>
-            </ul>
-          </div>
+.joinButton {
+  background: #ffffff;
+  color: #0d2b6b;
+  border: #0d2b6b;
+  padding: 1rem 3rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 1rem;
+  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+}
 
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Key Benefits</h2>
-            <ul className={styles.benefitsList}>
-              <li>Comprehensive protection across endpoints, identities, and applications</li>
-              <li>Automated threat response reduces incident response time</li>
-              <li>Enhanced visibility into internal and external security posture</li>
-              <li>Proactive vulnerability management</li>
-              <li>Compliance support for advanced regulatory requirements</li>
-              <li>Scalable solution that grows with your business</li>
-            </ul>
-          </div>
+.joinButton:hover {
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+}
 
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Ideal For</h2>
-            <p className={styles.description}>
-              Growing businesses, mid-sized organisations, and companies with web applications or complex IT
-              environments that need advanced security capabilities with automated response and comprehensive coverage.
-            </p>
-          </div>
-        </div>
-      </div>
+/* Override content styling inside waitlist section to remove box effect */
+.waitlistSection .content {
+  background: none;
+  border: none;
+  backdrop-filter: none;
+  padding: 0;
+}
 
-      <section className={styles.waitlistSection}>
-        <div className={styles.container}>
-          <div className={styles.content}>
-            <div className={styles.waitlistForm}>
-              <h2 className={styles.title}>Join the Waitlist</h2>
+/* Updating footer styles to ensure visibility */
+.footer {
+  text-align: center;
+  padding: 2rem;
+  margin-top: 4rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+}
 
-              <p className={styles.subtitle}>
-                Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
-                of cyber security.
-              </p>
-
-              <form onSubmit={handleSubmit} className={styles.form}>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={styles.emailInput}
-                />
-
-                {error && <p className={styles.error}>{error}</p>}
-
-                <button type="submit" className={styles.joinButton}>
-                  JOIN WAITLIST
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <footer className={styles.footer}>
-        <p>© 2025 Cybercentry. All rights reserved.</p>
-      </footer>
-    </div>
-  )
+.footer p {
+  margin: 0;
 }
