@@ -1,0 +1,546 @@
+.page {
+  min-height: 100vh;
+  /* Using solid blue background as requested */
+  background: #0d2b6b;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: none;
+  position: relative;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 2rem;
+}
+
+/* Replaced spotlight with border glow effect */
+/* Updated hero to remove border and adjust styling */
+.hero {
+  position: relative;
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+  margin: 2rem auto 4rem;
+  padding: 3rem 2rem;
+  /* Removed border */
+  /* Removed border */
+  overflow: visible;
+}
+
+/* Added SVG background styling */
+/* Updated SVG background to be full-page fixed */
+.heroBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Removed border glow effect pseudo-element entirely */
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+}
+
+.heroIcon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1.5rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  filter: drop-shadow(0 0 20px rgba(100, 200, 255, 0.3));
+  transition: all 0.3s ease;
+}
+
+.hero:hover .heroIcon {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 30px rgba(100, 200, 255, 0.5));
+}
+
+.heroTitle {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffffff 0%, #e0f0ff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.heroSubtitle {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 300;
+}
+
+.pillars {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto 4rem;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.sectionSubtitle {
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pillarsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.pillar {
+  padding: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.pillar:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.pillarTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.pillarDescription {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.services {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto 4rem;
+}
+
+.serviceCategory {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 3rem 0 2rem;
+  text-align: center;
+}
+
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+/* Added border glow effect to pricing cards */
+.pricingCard {
+  padding: 2rem;
+  border-radius: 12px;
+  /* Updated background to match pillar boxes */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  transition: all 0.3s ease;
+  text-align: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Border glow effect for cards */
+.pricingCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  padding: 2px;
+  /* Made gradient more subtle with lower opacity and wider spread */
+  background: radial-gradient(
+    600px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
+    rgba(59, 130, 246, 0.35),
+    rgba(59, 130, 246, 0.12) 40%,
+    transparent 70%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.pricingCard:hover::before {
+  opacity: 1;
+}
+
+.pricingCard:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.pricingCard.popular {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.popularBadge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #ffffff;
+  color: #0d2b6b;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pricingTier {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.price {
+  margin-bottom: 1.5rem;
+}
+
+.priceAmount {
+  font-size: 2rem;
+  font-weight: 700;
+  display: block;
+}
+
+.pricePeriod {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  display: inline-block;
+}
+
+.features li {
+  padding: 0.5rem 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9375rem;
+}
+
+.features li:before {
+  content: "✓ ";
+  margin-right: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Added divider styling for visual separation in pricing cards */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.3) 20%,
+    rgba(255, 255, 255, 0.3) 80%,
+    transparent
+  );
+  margin: 1.5rem 0;
+}
+
+/* Added Learn More button styling */
+.learnMoreButton {
+  display: inline-block;
+  margin-top: 1.5rem;
+  padding: 0.75rem 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: all 0.3s ease;
+}
+
+.learnMoreButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.additionalServices {
+  margin-top: 3rem;
+}
+
+.serviceBlock {
+  padding: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.serviceTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.serviceSubtitle {
+  font-size: 0.9375rem;
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.serviceCard {
+  padding: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.serviceCard:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.serviceCardTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.servicePrice {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.serviceDescription {
+  font-size: 0.9375rem;
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+.professionalServices {
+  padding: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.professionalServices .serviceCategory {
+  margin: 0 0 1rem 0;
+}
+
+.professionalPrice {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1rem;
+}
+
+.footer {
+  text-align: center;
+  padding: 2rem;
+  margin-top: 4rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+}
+
+.waitlistForm {
+  text-align: center;
+}
+
+.waitlistSection {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 4rem;
+}
+
+.title {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 3rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 300;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.emailInput {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.emailInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.emailInput:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.joinButton {
+  background: #ffffff;
+  color: #0d2b6b;
+  border: #0d2b6b;
+  padding: 1rem 3rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 1rem;
+  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+}
+
+.joinButton:hover {
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+}
+
+/* Added social media links styling */
+.socialLinks {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.socialLinks a {
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.socialLinks a:hover {
+  color: rgba(255, 255, 255, 1);
+  transform: translateY(-3px);
+}
+
+.socialIcon {
+  width: 20px;
+  height: 20px;
+}
