@@ -293,7 +293,7 @@
   padding: 0.5rem 0;
   color: rgba(255, 255, 255, 0.9);
   font-size: 0.9375rem;
-  /* Adding divider line after each feature item */
+  /* Adding divider line after each feature item including the last one */
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
