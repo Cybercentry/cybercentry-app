@@ -293,13 +293,8 @@
   padding: 0.5rem 0;
   color: rgba(255, 255, 255, 0.9);
   font-size: 0.9375rem;
-  /* Adding divider line after each feature item including the last one */
+  /* Adding divider line after ALL feature items including the last one */
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Remove border from last feature item */
-.features li:last-child {
-  border-bottom: none;
 }
 
 /* Added Learn More button styling */
