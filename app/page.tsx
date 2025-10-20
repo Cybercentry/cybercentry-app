@@ -1,533 +1,426 @@
-.page {
-  min-height: 100vh;
-  /* Using solid blue background as requested */
-  background: #0d2b6b;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  background: none;
-  position: relative;
-}
-
-.closeButton {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: none;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  transition: all 0.3s ease;
-}
-
-.closeButton:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  padding: 2rem;
-}
-
-/* Replaced spotlight with border glow effect */
-/* Updated hero to remove border and adjust styling */
-.hero {
-  position: relative;
-  text-align: center;
-  max-width: 800px;
-  width: 100%;
-  margin: 2rem auto 4rem;
-  padding: 3rem 2rem;
-  /* Removed border */
-  /* Removed border */
-  overflow: visible;
-}
-
-/* Added SVG background styling */
-/* Updated SVG background to be full-page fixed */
-.heroBackground {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-/* Removed border glow effect pseudo-element entirely */
-
-.heroContent {
-  position: relative;
-  z-index: 1;
-}
-
-.heroIcon {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 1.5rem;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  filter: drop-shadow(0 0 20px rgba(100, 200, 255, 0.3));
-  transition: all 0.3s ease;
-}
-
-.hero:hover .heroIcon {
-  transform: scale(1.05);
-  filter: drop-shadow(0 0 30px rgba(100, 200, 255, 0.5));
-}
-
-.heroTitle {
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #ffffff 0%, #e0f0ff 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.heroSubtitle {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 300;
-}
-
-.pillars {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto 4rem;
-}
-
-.sectionTitle {
-  font-size: 2rem;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.sectionSubtitle {
-  font-size: 1rem;
-  text-align: center;
-  margin-bottom: 3rem;
-  color: rgba(255, 255, 255, 0.8);
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.pillarsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-}
-
-.pillar {
-  padding: 2rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  text-align: center;
-}
-
-.pillar:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.pillarTitle {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.pillarDescription {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.services {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto 4rem;
-}
-
-.serviceCategory {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 3rem 0 2rem;
-  text-align: center;
-}
-
-.pricingGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  margin: 2rem 0;
-}
-
-/* Added border glow effect to pricing cards */
-.pricingCard {
-  padding: 2rem;
-  border-radius: 12px;
-  /* Updated background to match pillar boxes */
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  position: relative;
-  transition: all 0.3s ease;
-  text-align: center;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Border glow effect for cards */
-.pricingCard::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 12px;
-  padding: 2px;
-  /* Made gradient more subtle with lower opacity and wider spread */
-  background: radial-gradient(
-    600px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
-    rgba(59, 130, 246, 0.35),
-    rgba(59, 130, 246, 0.12) 40%,
-    transparent 70%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-}
-
-.pricingCard:hover::before {
-  opacity: 1;
-}
-
-.pricingCard:hover {
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateY(-2px);
-}
-
-.pricingCard.popular {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.popularBadge {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: #ffffff;
-  color: #0d2b6b;
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.pricingTier {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.price {
-  margin-bottom: 1.5rem;
-}
-
-.priceAmount {
-  font-size: 2rem;
-  font-weight: 700;
-  display: block;
-}
-
-.pricePeriod {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.features {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  text-align: left;
-  display: inline-block;
-}
-
-.features li {
-  padding: 0.5rem 0;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.9375rem;
-  /* Adding divider line after each feature item */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Remove border from last feature item */
-.features li:last-child {
-  border-bottom: none;
-}
-
-/* Added Learn More button styling */
-.learnMoreButton {
-  display: inline-block;
-  margin-top: 1.5rem;
-  padding: 0.75rem 2rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  color: white;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  transition: all 0.3s ease;
-}
-
-.learnMoreButton:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-2px);
-}
-
-.additionalServices {
-  margin-top: 3rem;
-}
-
-.serviceBlock {
-  padding: 2rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.serviceTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.serviceSubtitle {
-  font-size: 0.9375rem;
-  margin-bottom: 1rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.servicesGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.serviceCard {
-  padding: 2rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  text-align: center;
-}
-
-.serviceCard:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.serviceCardTitle {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.servicePrice {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.serviceDescription {
-  font-size: 0.9375rem;
-  margin-bottom: 1rem;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.5;
-}
-
-.professionalServices {
-  padding: 2rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  margin-top: 2rem;
-  text-align: center;
-}
-
-.professionalServices .serviceCategory {
-  margin: 0 0 1rem 0;
-}
-
-.professionalPrice {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-top: 1rem;
-}
-
-.footer {
-  text-align: center;
-  padding: 2rem;
-  margin-top: 4rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-}
-
-.waitlistForm {
-  text-align: center;
-}
-
-.waitlistSection {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-top: 4rem;
-}
-
-.title {
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 2rem;
-  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
-}
-
-.subtitle {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  margin-bottom: 3rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 300;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-}
-
-.emailInput {
-  width: 100%;
-  max-width: 400px;
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  color: white;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-}
-
-.emailInput::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.emailInput:focus {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-}
-
-.error {
-  color: #ff6b6b;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-.joinButton {
-  background: #ffffff;
-  color: #0d2b6b;
-  border: #0d2b6b;
-  padding: 1rem 3rem;
-  font-size: 1rem;
-  font-weight: 700;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 1rem;
-  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
-}
-
-.joinButton:hover {
-  background: #ffffff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
-}
-
-/* Added social media links styling */
-.socialLinks {
-  display: flex;
-  gap: 1.5rem;
-  margin-top: 1rem;
-  justify-content: center;
-}
-
-.socialLinks a {
-  color: rgba(255, 255, 255, 0.6);
-  transition: color 0.3s ease, transform 0.3s ease;
-}
-
-.socialLinks a:hover {
-  color: rgba(255, 255, 255, 1);
-  transform: translateY(-3px);
-}
-
-.socialIcon {
-  width: 20px;
-  height: 20px;
+"use client"
+import { useState, useEffect, useRef } from "react"
+import type React from "react"
+import Link from "next/link"
+
+import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit"
+import { useRouter } from "next/navigation"
+import styles from "./page.module.css"
+
+interface AuthResponse {
+  success: boolean
+  user?: {
+    fid: number
+    issuedAt?: number
+    expiresAt?: number
+  }
+  message?: string
+}
+
+export default function Home() {
+  const { isFrameReady, setFrameReady, context } = useMiniKit()
+  const [email, setEmail] = useState("")
+  const [error, setError] = useState("")
+  const heroRef = useRef<HTMLElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
+  const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
+  const prevMousePos = useRef({ x: 0.5, y: 0.5 })
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isFrameReady) {
+      setFrameReady()
+    }
+  }, [setFrameReady, isFrameReady])
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = e.clientX / window.innerWidth
+      const y = e.clientY / window.innerHeight
+
+      const velocityX = x - prevMousePos.current.x
+      const velocityY = y - prevMousePos.current.y
+      setMouseVelocity({ x: velocityX * 10, y: velocityY * 10 })
+      prevMousePos.current = { x, y }
+
+      setMousePos({ x, y })
+
+      if (heroRef.current) {
+        const rect = heroRef.current.getBoundingClientRect()
+        const heroX = e.clientX - rect.left
+        const heroY = e.clientY - rect.top
+        heroRef.current.style.setProperty("--mouse-x", `${heroX}px`)
+        heroRef.current.style.setProperty("--mouse-y", `${heroY}px`)
+      }
+    }
+
+    window.addEventListener("mousemove", handleMouseMove)
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleCardMouseMove = (index: number) => (e: MouseEvent) => {
+      const card = cardRefs.current[index]
+      if (card) {
+        const rect = card.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+        card.style.setProperty("--card-mouse-x", `${x}px`)
+        card.style.setProperty("--card-mouse-y", `${y}px`)
+      }
+    }
+
+    const listeners: Array<{ element: HTMLDivElement; handler: (e: MouseEvent) => void }> = []
+
+    cardRefs.current.forEach((card, index) => {
+      if (card) {
+        const handler = handleCardMouseMove(index)
+        card.addEventListener("mousemove", handler)
+        listeners.push({ element: card, handler })
+      }
+    })
+
+    return () => {
+      listeners.forEach(({ element, handler }) => {
+        element.removeEventListener("mousemove", handler)
+      })
+    }
+  }, [])
+
+  const {
+    data: authData,
+    isLoading: isAuthLoading,
+    error: authError,
+  } = useQuickAuth<AuthResponse>("/api/auth", { method: "GET" })
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+
+    if (isAuthLoading) {
+      setError("Please wait while we verify your identity...")
+      return
+    }
+
+    if (authError || !authData?.success) {
+      setError("Please authenticate to join the waitlist")
+      return
+    }
+
+    if (!email) {
+      setError("Please enter your email address")
+      return
+    }
+
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address")
+      return
+    }
+
+    console.log("Valid email submitted:", email)
+    console.log("User authenticated:", authData.user)
+
+    router.push("/success")
+  }
+
+  return (
+    <div className={styles.page}>
+      <svg className={styles.heroBackground} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgba(59, 130, 246, 0.4)" />
+            <stop offset="50%" stopColor="rgba(96, 165, 250, 0.3)" />
+            <stop offset="100%" stopColor="rgba(59, 130, 246, 0.2)" />
+          </linearGradient>
+          <linearGradient id="lineGradient2" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="rgba(139, 92, 246, 0.3)" />
+            <stop offset="50%" stopColor="rgba(96, 165, 250, 0.2)" />
+            <stop offset="100%" stopColor="rgba(59, 130, 246, 0.2)" />
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <radialGradient id="particleGradient">
+            <stop offset="0%" stopColor="rgba(96, 165, 250, 0.8)" />
+            <stop offset="100%" stopColor="rgba(13, 43, 107, 0)" />
+          </radialGradient>
+          <radialGradient id="cursorGlow">
+            <stop offset="0%" stopColor="rgba(13, 43, 107, 0.4)" />
+            <stop offset="70%" stopColor="rgba(13, 43, 107, 0.1)" />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
+        </defs>
+
+        {[...Array(12)].map((_, i) => {
+          const baseY = 50 + i * 70
+          const offsetX = (mousePos.x - 0.5) * 250 * (i % 2 === 0 ? 1 : -1) + mouseVelocity.x * 20
+          const offsetY = (mousePos.y - 0.5) * 120 + mouseVelocity.y * 15
+
+          return (
+            <path
+              key={i}
+              d={`M 0 ${baseY + offsetY} Q ${300 + offsetX} ${baseY - 80 + offsetY}, ${600 + offsetX * 0.5} ${baseY + offsetY} T 1200 ${baseY + offsetY}`}
+              stroke={i % 3 === 0 ? "url(#lineGradient2)" : "url(#lineGradient)"}
+              strokeWidth={i % 2 === 0 ? "2.5" : "1.5"}
+              fill="none"
+              opacity={0.4 - i * 0.025}
+              filter="url(#glow)"
+            />
+          )
+        })}
+
+        {[...Array(50)].map((_, i) => {
+          const baseX = (i * 137.5) % 1200
+          const baseY = (i * 73) % 800
+          const distX = Math.abs(mousePos.x * 1200 - baseX)
+          const distY = Math.abs(mousePos.y * 800 - baseY)
+          const dist = Math.sqrt(distX * distX + distY * distY)
+          const scale = Math.max(0.3, Math.min(2, 1.5 - dist / 400))
+
+          const angle = Math.atan2(baseY - mousePos.y * 800, baseX - mousePos.x * 1200)
+          const repulsion = Math.max(0, 150 - dist) / 150
+          const moveX = Math.cos(angle) * repulsion * 80
+          const moveY = Math.sin(angle) * repulsion * 80
+
+          return (
+            <circle
+              key={`particle-${i}`}
+              cx={baseX + moveX + mouseVelocity.x * 5}
+              cy={baseY + moveY + mouseVelocity.y * 5}
+              r={2.5 * scale}
+              fill="url(#particleGradient)"
+              filter="url(#glow)"
+              opacity={0.6 + scale * 0.4}
+            />
+          )
+        })}
+
+        {[...Array(50)].map((_, i) => {
+          const x1 = (i * 137.5) % 1200
+          const y1 = (i * 73) % 800
+          const x2 = ((i + 7) * 137.5) % 1200
+          const y2 = ((i + 7) * 73) % 800
+          const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+          if (dist < 200) {
+            const midX = (x1 + x2) / 2
+            const midY = (y1 + y2) / 2
+            const distToMouse = Math.sqrt((midX - mousePos.x * 1200) ** 2 + (midY - mousePos.y * 800) ** 2)
+            const opacity = Math.max(0, 0.3 - distToMouse / 800)
+
+            return (
+              <line
+                key={`connection-${i}`}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke="rgba(96, 165, 250, 0.3)"
+                strokeWidth="1"
+                opacity={opacity}
+              />
+            )
+          }
+          return null
+        })}
+
+        <circle
+          cx={mousePos.x * 1200}
+          cy={mousePos.y * 800}
+          r="150"
+          fill="url(#cursorGlow)"
+          filter="url(#glow)"
+          opacity="0.8"
+        />
+      </svg>
+
+      <section ref={heroRef} className={styles.hero}>
+        <div className={styles.heroContent}>
+          <img src="/white-icon.png" alt="Cybercentry One Logo" className={styles.heroIcon} />
+          <h1 className={styles.heroTitle}>Cybercentry One</h1>
+          <p className={styles.heroSubtitle}>
+            Empowers Web3 projects and decentralised organisations to anticipate, prevent, and respond to cyber threats
+            with confidence. Our platform connects you to a curated suite of AI-powered security services, structured
+            around the core pillars of Compliance, Intelligence, and Protection.
+          </p>
+        </div>
+      </section>
+
+      <section className={styles.pillars}>
+        <h2 className={styles.sectionTitle}>Built on Three Core Pillars</h2>
+        <p className={styles.sectionSubtitle}>
+          Cybercentry One provides centralised access to specialised solutions designed to deliver actionable insights,
+          strengthen defences, and ensure regulatory adherence.
+        </p>
+
+        <div className={styles.pillarsGrid}>
+          <div className={styles.pillar}>
+            <h3 className={styles.pillarTitle}>Compliance</h3>
+            <p className={styles.pillarDescription}>
+              Ensure regulatory adherence with Cyber Essentials certification and comprehensive compliance frameworks
+              that keep you audit-ready.
+            </p>
+            <Link href="/compliance" className={styles.learnMoreButton}>
+              Learn More
+            </Link>
+          </div>
+
+          <div className={styles.pillar}>
+            <h3 className={styles.pillarTitle}>Intelligence</h3>
+            <p className={styles.pillarDescription}>
+              Gain actionable insights through penetration testing, vulnerability scanning, and daily threat
+              intelligence reports.
+            </p>
+            <Link href="/intelligence" className={styles.learnMoreButton}>
+              Learn More
+            </Link>
+          </div>
+
+          <div className={styles.pillar}>
+            <h3 className={styles.pillarTitle}>Protection</h3>
+            <p className={styles.pillarDescription}>
+              Strengthen your defences with 24/7 managed detection and response, real-time monitoring, and automated
+              threat prevention.
+            </p>
+            <Link href="/protection" className={styles.learnMoreButton}>
+              Learn More
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.services}>
+        <h2 className={styles.sectionTitle}>Comprehensive Security Services</h2>
+        <p className={styles.sectionSubtitle}>
+          Choose from our curated suite of AI-powered security services designed to protect your Web3 project and
+          digital infrastructure.
+        </p>
+
+        <div className={styles.pricingGrid}>
+          <div
+            ref={(el) => {
+              cardRefs.current[0] = el
+            }}
+            className={styles.pricingCard}
+          >
+            <h4 className={styles.pricingTier}>Core</h4>
+            <div className={styles.price}>
+              <span className={styles.priceAmount}>$69.99 USDC</span>
+              <span className={styles.pricePeriod}>per organisation per month</span>
+            </div>
+            <ul className={styles.features}>
+              <li>Managed EDR</li>
+              <li>24/7 Monitoring</li>
+              <li>Free Security Assessment</li>
+              <li>External Vulnerability Scanner</li>
+              <li>Immediate Actions</li>
+            </ul>
+            <Link href="/core" className={styles.learnMoreButton}>
+              Learn More
+            </Link>
+          </div>
+
+          <div
+            ref={(el) => {
+              cardRefs.current[1] = el
+            }}
+            className={`${styles.pricingCard} ${styles.popular}`}
+          >
+            <div className={styles.popularBadge}>POPULAR</div>
+            <h4 className={styles.pricingTier}>Edge</h4>
+            <div className={styles.price}>
+              <span className={styles.priceAmount}>$349.99 USDC</span>
+              <span className={styles.pricePeriod}>per organisation per month</span>
+            </div>
+            <ul className={styles.features}>
+              <li>Managed EDR with Identity and SOAR</li>
+              <li>24/7 Monitoring</li>
+              <li>Free Security Assessment</li>
+              <li>External Vulnerability Scanner</li>
+              <li>Web Application Vulnerability Scanner</li>
+              <li>Internal Vulnerability Scanner</li>
+              <li>Immediate Actions</li>
+            </ul>
+            <Link href="/edge" className={styles.learnMoreButton}>
+              Learn More
+            </Link>
+          </div>
+
+          <div
+            ref={(el) => {
+              cardRefs.current[2] = el
+            }}
+            className={styles.pricingCard}
+          >
+            <h4 className={styles.pricingTier}>One</h4>
+            <div className={styles.price}>
+              <span className={styles.priceAmount}>$1099.99 USDC</span>
+              <span className={styles.pricePeriod}>per organisation per month</span>
+            </div>
+            <ul className={styles.features}>
+              <li>Allocated Account Manager</li>
+              <li>Managed XDR with Identity and SOAR</li>
+              <li>Free Security Assessment</li>
+              <li>24/7 Monitoring</li>
+              <li>External Vulnerability Scanner</li>
+              <li>Web Application Vulnerability Scanner</li>
+              <li>Internal Vulnerability Scanner</li>
+              <li>Enhanced main dashboard view</li>
+              <li>Immediate Actions</li>
+            </ul>
+            <Link href="/one" className={styles.learnMoreButton}>
+              Learn More
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.waitlistSection}>
+        <div className={styles.container}>
+          <div className={styles.content}>
+            <div className={styles.waitlistForm}>
+              <h2 className={styles.title}>Join the Waitlist</h2>
+
+              <p className={styles.subtitle}>
+                Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
+                of Web3 security.
+              </p>
+
+              <form onSubmit={handleSubmit} className={styles.form}>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={styles.emailInput}
+                />
+
+                {error && <p className={styles.error}>{error}</p>}
+
+                <button type="submit" className={styles.joinButton}>
+                  JOIN WAITLIST
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer className={styles.footer}>
+        <p>© 2025 Cybercentry. All rights reserved.</p>
+      </footer>
+    </div>
+  )
 }
