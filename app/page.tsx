@@ -320,7 +320,6 @@ export default function Home() {
               <span className={styles.priceAmount}>$69.99 USDC</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
-            <div className={styles.divider}></div>
             <ul className={styles.features}>
               <li>Managed EDR</li>
               <li>24/7 Monitoring</li>
@@ -328,7 +327,6 @@ export default function Home() {
               <li>External Vulnerability Scanner</li>
               <li>Immediate Actions</li>
             </ul>
-            <div className={styles.divider}></div>
             <Link href="/core" className={styles.learnMoreButton}>
               Learn More
             </Link>
@@ -346,7 +344,6 @@ export default function Home() {
               <span className={styles.priceAmount}>$349.99 USDC</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
-            <div className={styles.divider}></div>
             <ul className={styles.features}>
               <li>Managed EDR with Identity and SOAR</li>
               <li>24/7 Monitoring</li>
@@ -356,7 +353,6 @@ export default function Home() {
               <li>Internal Vulnerability Scanner</li>
               <li>Immediate Actions</li>
             </ul>
-            <div className={styles.divider}></div>
             <Link href="/edge" className={styles.learnMoreButton}>
               Learn More
             </Link>
@@ -373,7 +369,6 @@ export default function Home() {
               <span className={styles.priceAmount}>$1099.99 USDC</span>
               <span className={styles.pricePeriod}>per organisation per month</span>
             </div>
-            <div className={styles.divider}></div>
             <ul className={styles.features}>
               <li>Allocated Account Manager</li>
               <li>Managed XDR with Identity and SOAR</li>
@@ -385,7 +380,6 @@ export default function Home() {
               <li>Enhanced main dashboard view</li>
               <li>Immediate Actions</li>
             </ul>
-            <div className={styles.divider}></div>
             <Link href="/one" className={styles.learnMoreButton}>
               Learn More
             </Link>
