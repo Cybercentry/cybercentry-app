@@ -15,32 +15,32 @@ Before getting started, make sure you have:
 
 ### 1. Clone this repository 
 
-```bash
+\`\`\`bash
 git clone https://github.com/base/demos.git
-```
+\`\`\`
 
 ### 2. Install dependencies:
 
-```bash
+\`\`\`bash
 cd demos/minikit/waitlist-mini-app-qs
 npm install
-```
+\`\`\`
 
 ### 3. Configure environment variables
 
 Create a `.env.local` file and add your environment variables:
 
-```bash
+\`\`\`bash
 NEXT_PUBLIC_PROJECT_NAME="Your App Name"
 NEXT_PUBLIC_ONCHAINKIT_API_KEY=<Replace-WITH-YOUR-CDP-API-KEY>
 NEXT_PUBLIC_URL=
-```
+\`\`\`
 
 ### 4. Run locally:
 
-```bash
+\`\`\`bash
 npm run dev
-```
+\`\`\`
 
 ## Customization
 
@@ -56,9 +56,9 @@ To personalize your app, change the `name`, `subtitle`, and `description` fields
 
 ### 1. Deploy to Vercel
 
-```bash
+\`\`\`bash
 vercel --prod
-```
+\`\`\`
 
 You should have a URL deployed to a domain similar to: `https://your-vercel-project-name.vercel.app/`
 
@@ -66,21 +66,21 @@ You should have a URL deployed to a domain similar to: `https://your-vercel-proj
 
 Add your production URL to your local `.env` file:
 
-```bash
+\`\`\`bash
 NEXT_PUBLIC_PROJECT_NAME="Your App Name"
 NEXT_PUBLIC_ONCHAINKIT_API_KEY=<Replace-WITH-YOUR-CDP-API-KEY>
 NEXT_PUBLIC_URL=https://your-vercel-project-name.vercel.app/
-```
+\`\`\`
 
 ### 3. Upload environment variables to Vercel
 
 Add environment variables to your production environment:
 
-```bash
+\`\`\`bash
 vercel env add NEXT_PUBLIC_PROJECT_NAME production
 vercel env add NEXT_PUBLIC_ONCHAINKIT_API_KEY production
 vercel env add NEXT_PUBLIC_URL production
-```
+\`\`\`
 
 ## Account Association
 
@@ -95,7 +95,7 @@ vercel env add NEXT_PUBLIC_URL production
 
 Update your `minikit.config.ts` file to include the `accountAssociation` object:
 
-```ts
+\`\`\`ts
 export const minikitConfig = {
     accountAssociation: {
         "header": "your-header-here",
@@ -106,13 +106,13 @@ export const minikitConfig = {
         // ... rest of your frame configuration
     },
 }
-```
+\`\`\`
 
 ### 3. Deploy Updates
 
-```bash
+\`\`\`bash
 vercel --prod
-```
+\`\`\`
 
 ## Testing and Publishing
 
