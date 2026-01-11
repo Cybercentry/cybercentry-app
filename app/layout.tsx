@@ -5,34 +5,25 @@ import { RootProvider } from "./rootProvider"
 import { LiveChat } from "./livechat-widget"
 import "./globals.css"
 
-const minikitConfig = {
-  miniapp: {
-    version: "1",
-    name: "Cybercentry One",
-    description:
-      "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
-    heroImageUrl: "https://cybercentry-one-mini-app.up.railway.app/blue-hero.png",
-  },
-}
+const ROOT_URL = "https://cybercentry-one-mini-app.up.railway.app"
 
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: minikitConfig.miniapp.name,
-    description: minikitConfig.miniapp.description,
-    other: {
-      "fc:frame": JSON.stringify({
-        version: minikitConfig.miniapp.version,
-        imageUrl: minikitConfig.miniapp.heroImageUrl,
-        button: {
-          title: "Experience the Future of Web3 Security",
-          action: {
-            name: `Launch ${minikitConfig.miniapp.name}`,
-            type: "launch_frame",
-          },
-        },
-      }),
-    },
-  }
+export const metadata: Metadata = {
+  title: "Cybercentry One",
+  description:
+    "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
+  openGraph: {
+    title: "Cybercentry One",
+    description: "Future of Web3 Security",
+    images: [`${ROOT_URL}/blue-hero.png`],
+  },
+  other: {
+    "fc:frame": "vNext",
+    "fc:frame:image": `${ROOT_URL}/blue-hero.png`,
+    "fc:frame:button:1": "Future of Web3 Security",
+    "fc:frame:button:1:action": "launch_frame",
+    "fc:frame:button:1:target": ROOT_URL,
+  },
+    generator: 'v0.app'
 }
 
 const inter = Inter({
