@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { sql } from "@/lib/db"
+import { getDb } from "@/lib/db"
 
 export async function POST(request: Request) {
   try {
@@ -9,9 +9,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 })
     }
 
+    const sql = getDb()
+
     await sql`
-      INSERT INTO waitlist (email, fid, display_name)
-      VALUES (${email}, ${fid || null}, ${display_name || null})
+      INSERT INTO waitlist (id, email, fid, display_name, created_at)
+      VALUES (gen_random_uuid(), ${email}, ${fid || null}, ${display_name || null}, NOW())
     `
 
     return NextResponse.json({ success: true })
@@ -21,6 +23,11 @@ export async function POST(request: Request) {
     // Handle duplicate email (PostgreSQL unique violation)
     if (err.code === "23505") {
       return NextResponse.json({ error: "Email already registered" }, { status: 409 })
+    }
+
+    // Handle missing DATABASE_URL
+    if (err.message?.includes("DATABASE_URL")) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 })
     }
 
     return NextResponse.json({ error: "Server error" }, { status: 500 })

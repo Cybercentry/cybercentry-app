@@ -11,7 +11,7 @@ const minikitConfig = {
     name: "Cybercentry One",
     description:
       "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
-    heroImageUrl: "https://cybercentry-one-mini-app.vercel.app/blue-hero.png",
+    heroImageUrl: "https://cybercentry-one-mini-app.up.railway.app/blue-hero.png",
   },
 }
 
@@ -51,13 +51,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <RootProvider>
-      <html lang="en">
-        <body className={`${inter.variable} ${sourceCodePro.variable}`}>
-          {children}
-          <LiveChat />
-        </body>
-      </html>
-    </RootProvider>
+    <html lang="en">
+      <body className={`${inter.variable} ${sourceCodePro.variable}`}>
+        <RootProvider>{children}</RootProvider>
+        <LiveChat />
+      </body>
+    </html>
   )
 }
