@@ -380,11 +380,9 @@ function HomeStandalone() {
         <div className={styles.container}>
           <div className={styles.content}>
             <div className={styles.waitlistForm}>
-              <h2 className={styles.title}>Join the Waitlist</h2>
+              <h2 className={styles.title}>Sign Up Now...</h2>
 
-              <p className={styles.subtitle}>
-                Get early access and be the first to experience the future of Web3 security.
-              </p>
+              <p className={styles.subtitle}>Get access and experience the future of Web3 security....</p>
 
               <form onSubmit={handleSubmit} className={styles.form}>
                 <input
@@ -398,7 +396,7 @@ function HomeStandalone() {
                 {error && <p className={styles.error}>{error}</p>}
 
                 <button type="submit" className={styles.joinButton}>
-                  JOIN WAITLIST
+                  SIGN UP
                 </button>
               </form>
             </div>

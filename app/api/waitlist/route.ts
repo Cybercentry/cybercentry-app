@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { sql } from "@/lib/db"
 
 export async function POST(request: Request) {
   try {
@@ -9,22 +9,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 })
     }
 
-    const supabase = await createClient()
-
-    const { error } = await supabase.from("waitlist").insert({ email, fid, display_name })
-
-    if (error) {
-      // Handle duplicate email
-      if (error.code === "23505") {
-        return NextResponse.json({ error: "Email already registered" }, { status: 409 })
-      }
-      console.error("Supabase error:", error)
-      return NextResponse.json({ error: "Failed to save email" }, { status: 500 })
-    }
+    await sql`
+      INSERT INTO waitlist (email, fid, display_name)
+      VALUES (${email}, ${fid || null}, ${display_name || null})
+    `
 
     return NextResponse.json({ success: true })
-  } catch (err) {
+  } catch (err: any) {
     console.error("API error:", err)
+
+    // Handle duplicate email (PostgreSQL unique violation)
+    if (err.code === "23505") {
+      return NextResponse.json({ error: "Email already registered" }, { status: 409 })
+    }
+
     return NextResponse.json({ error: "Server error" }, { status: 500 })
   }
 }
