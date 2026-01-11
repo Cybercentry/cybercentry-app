@@ -104,7 +104,7 @@ function HomeStandalone() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || "Failed to join waitlist")
+        setError(data.error || "Failed to sign up. Please try again.")
         return
       }
 
