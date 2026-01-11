@@ -278,10 +278,10 @@ export default function OnePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Major Decentralised Finance (Defi) protocols with significant Total Value Locked (TVL), Layer 1, Layer
-              2 and Layer 3 blockchain projects, large Decentralised Autonomous Organisations (DAO) with complex governance
-              structures, cross-chain bridge operators, and Web3 organisations with substantial treasury holdings that
-              require dedicated security expertise and the most comprehensive protection available.
+              Major Decentralised Finance (Defi) protocols with significant Total Value Locked (TVL), Layer 1, Layer 2
+              and Layer 3 blockchain projects, large Decentralised Autonomous Organisations (DAO) with complex
+              governance structures, cross-chain bridge operators, and Web3 organisations with substantial treasury
+              holdings that require dedicated security expertise and the most comprehensive protection available.
             </p>
           </div>
         </div>
@@ -319,7 +319,7 @@ export default function OnePage() {
       </section>
 
       <footer className={styles.footer}>
-        <p>© 2025 Cybercentry. All rights reserved.</p>
+        <p>© 2026 Cybercentry. All rights reserved.</p>
       </footer>
     </div>
   )

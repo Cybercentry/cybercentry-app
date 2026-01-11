@@ -263,8 +263,8 @@ export default function CorePage() {
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Ideal For</h2>
             <p className={styles.description}>
-              Emerging Decentralised Autonomous Organisations (DAOs), Non-Fungible Token (NFT) projects, Game Finance (GameFi)
-              platforms, and Decentralised Finance (DeFi) protocols with limited security resources that need
+              Emerging Decentralised Autonomous Organisations (DAOs), Non-Fungible Token (NFT) projects, Game Finance
+              (GameFi) platforms, and Decentralised Finance (DeFi) protocols with limited security resources that need
               professional-grade protection without the complexity of managing it themselves. Perfect for Web3 projects
               in their early growth phase.
             </p>
@@ -304,7 +304,7 @@ export default function CorePage() {
       </section>
 
       <footer className={styles.footer}>
-        <p>© 2025 Cybercentry. All rights reserved.</p>
+        <p>© 2026 Cybercentry. All rights reserved.</p>
       </footer>
     </div>
   )

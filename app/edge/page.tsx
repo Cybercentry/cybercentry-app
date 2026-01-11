@@ -312,7 +312,7 @@ export default function EdgePage() {
       </section>
 
       <footer className={styles.footer}>
-        <p>© 2025 Cybercentry. All rights reserved.</p>
+        <p>© 2026 Cybercentry. All rights reserved.</p>
       </footer>
     </div>
   )

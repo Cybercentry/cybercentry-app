@@ -4,12 +4,6 @@ import type React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import styles from "./page.module.css"
-import dynamic from "next/dynamic"
-
-const HomeContent = dynamic(() => import("@/components/home-content"), {
-  ssr: false,
-  loading: () => <HomeStandalone />,
-})
 
 function HomeStandalone() {
   const [email, setEmail] = useState("")
@@ -380,9 +374,9 @@ function HomeStandalone() {
         <div className={styles.container}>
           <div className={styles.content}>
             <div className={styles.waitlistForm}>
-              <h2 className={styles.title}>Sign Up Now...</h2>
+              <h2 className={styles.title}>Get Early Access</h2>
 
-              <p className={styles.subtitle}>Get access and experience the future of Web3 security....</p>
+              <p className={styles.subtitle}>Be first to experience the future of Web3 security.</p>
 
               <form onSubmit={handleSubmit} className={styles.form}>
                 <input
@@ -396,7 +390,7 @@ function HomeStandalone() {
                 {error && <p className={styles.error}>{error}</p>}
 
                 <button type="submit" className={styles.joinButton}>
-                  SIGN UP
+                  JOIN NOW
                 </button>
               </form>
             </div>
@@ -405,7 +399,7 @@ function HomeStandalone() {
       </section>
 
       <footer className={styles.footer}>
-        <p>© 2025 Cybercentry. All rights reserved.</p>
+        <p>© 2026 Cybercentry. All rights reserved.</p>
       </footer>
     </div>
   )
