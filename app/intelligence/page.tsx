@@ -1,35 +1,20 @@
 "use client"
+
+export const dynamic = "force-dynamic"
+
 import { useState, useEffect, useRef } from "react"
 import type React from "react"
 import Link from "next/link"
-import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit"
 import { useRouter } from "next/navigation"
 import styles from "./page.module.css"
 
-interface AuthResponse {
-  success: boolean
-  user?: {
-    fid: number
-    issuedAt?: number
-    expiresAt?: number
-  }
-  message?: string
-}
-
 export default function IntelligencePage() {
-  const { isFrameReady, setFrameReady, context } = useMiniKit()
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
   const prevMousePos = useRef({ x: 0.5, y: 0.5 })
   const router = useRouter()
-
-  useEffect(() => {
-    if (!isFrameReady) {
-      setFrameReady()
-    }
-  }, [setFrameReady, isFrameReady])
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -49,30 +34,14 @@ export default function IntelligencePage() {
     return () => window.removeEventListener("mousemove", handleMouseMove)
   }, [])
 
-  const {
-    data: authData,
-    isLoading: isAuthLoading,
-    error: authError,
-  } = useQuickAuth<AuthResponse>("/api/auth", { method: "GET" })
-
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(email)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-
-    if (isAuthLoading) {
-      setError("Please wait while we verify your identity...")
-      return
-    }
-
-    if (authError || !authData?.success) {
-      setError("Please authenticate to join the waitlist")
-      return
-    }
 
     if (!email) {
       setError("Please enter your email address")
@@ -84,10 +53,28 @@ export default function IntelligencePage() {
       return
     }
 
-    console.log("Valid email submitted:", email)
-    console.log("User authenticated:", authData.user)
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          fid: null,
+          display_name: null,
+        }),
+      })
 
-    router.push("/success")
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || "Failed to join waitlist")
+        return
+      }
+
+      router.push("/success")
+    } catch (err) {
+      setError("Something went wrong. Please try again.")
+    }
   }
 
   return (
@@ -274,12 +261,9 @@ export default function IntelligencePage() {
         <div className={styles.container}>
           <div className={styles.content}>
             <div className={styles.waitlistForm}>
-              <h2 className={styles.title}>Join the Waitlist</h2>
+              <h2 className={styles.title}>Get Early Access</h2>
 
-              <p className={styles.subtitle}>
-                Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
-                of Web3 security.
-              </p>
+              <p className={styles.subtitle}>Be first to experience the future of Web3 security.</p>
 
               <form onSubmit={handleSubmit} className={styles.form}>
                 <input
@@ -293,7 +277,7 @@ export default function IntelligencePage() {
                 {error && <p className={styles.error}>{error}</p>}
 
                 <button type="submit" className={styles.joinButton}>
-                  JOIN WAITLIST
+                  JOIN NOW
                 </button>
               </form>
             </div>
