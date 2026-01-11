@@ -67,7 +67,7 @@ export default function CorePage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || "Failed to sign up. Please try again.")
+        setError(data.error || "Couldn't get you in. Please try again.")
         return
       }
 

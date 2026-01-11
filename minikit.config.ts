@@ -2,9 +2,10 @@ const ROOT_URL = process.env.NEXT_PUBLIC_URL || "https://cybercentry-one-mini-ap
 
 export const minikitConfig = {
   accountAssociation: {
-    header: "",
-    payload: "",
-    signature: "",
+    header:
+      "eyJmaWQiOjEzMDIzOTIsInR5cGUiOiJhdXRoIiwia2V5IjoiMHhiOEVmNkNFOEQ3N2U3NzcxNTQzRUMyNDJEMkNkM0E5RjFmMjBFNkZBIn0",
+    payload: "eyJkb21haW4iOiJjeWJlcmNlbnRyeS1vbmUtbWluaS1hcHAudXAucmFpbHdheS5hcHAifQ",
+    signature: "l8FgDdJ16mhquxCkixGASWGawyv6yG0ayFcA+iAGqb5kT+a06Rjzhzjz6sz8Q60tYWW4ncQokUQ/7oJt26wU0Rw=",
   },
   miniapp: {
     version: "1",
