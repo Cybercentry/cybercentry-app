@@ -9,7 +9,7 @@ export const minikitConfig = {
   miniapp: {
     version: "1",
     name: "Cybercentry One",
-    subtitle: "Cyber Threat Response",
+    subtitle: "Managed Detection and Response",
     description:
       "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
