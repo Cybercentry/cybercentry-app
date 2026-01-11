@@ -2,23 +2,16 @@
 import { useState, useEffect, useRef } from "react"
 import type React from "react"
 import Link from "next/link"
-
-import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit"
 import { useRouter } from "next/navigation"
 import styles from "./page.module.css"
+import dynamic from "next/dynamic"
 
-interface AuthResponse {
-  success: boolean
-  user?: {
-    fid: number
-    issuedAt?: number
-    expiresAt?: number
-  }
-  message?: string
-}
+const HomeContent = dynamic(() => import("@/components/home-content"), {
+  ssr: false,
+  loading: () => <HomeStandalone />,
+})
 
-export default function Home() {
-  const { isFrameReady, setFrameReady, context } = useMiniKit()
+function HomeStandalone() {
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const heroRef = useRef<HTMLElement>(null)
@@ -27,12 +20,6 @@ export default function Home() {
   const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
   const prevMousePos = useRef({ x: 0.5, y: 0.5 })
   const router = useRouter()
-
-  useEffect(() => {
-    if (!isFrameReady) {
-      setFrameReady()
-    }
-  }, [setFrameReady, isFrameReady])
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -90,30 +77,14 @@ export default function Home() {
     }
   }, [])
 
-  const {
-    data: authData,
-    isLoading: isAuthLoading,
-    error: authError,
-  } = useQuickAuth<AuthResponse>("/api/auth", { method: "GET" })
-
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(email)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-
-    if (isAuthLoading) {
-      setError("Please wait while we verify your identity...")
-      return
-    }
-
-    if (authError || !authData?.success) {
-      setError("Please authenticate to join the waitlist")
-      return
-    }
 
     if (!email) {
       setError("Please enter your email address")
@@ -125,10 +96,28 @@ export default function Home() {
       return
     }
 
-    console.log("Valid email submitted:", email)
-    console.log("User authenticated:", authData.user)
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          fid: null,
+          display_name: null,
+        }),
+      })
 
-    router.push("/success")
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || "Failed to join waitlist")
+        return
+      }
+
+      router.push("/success")
+    } catch (err) {
+      setError("Something went wrong. Please try again.")
+    }
   }
 
   return (
@@ -394,8 +383,7 @@ export default function Home() {
               <h2 className={styles.title}>Join the Waitlist</h2>
 
               <p className={styles.subtitle}>
-                Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future
-                of Web3 security.
+                Get early access and be the first to experience the future of Web3 security.
               </p>
 
               <form onSubmit={handleSubmit} className={styles.form}>
@@ -423,4 +411,8 @@ export default function Home() {
       </footer>
     </div>
   )
+}
+
+export default function Home() {
+  return <HomeStandalone />
 }

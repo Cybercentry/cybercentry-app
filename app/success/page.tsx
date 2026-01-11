@@ -2,8 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { useComposeCast } from "@coinbase/onchainkit/minikit"
-import { minikitConfig } from "../../minikit.config"
 import styles from "./page.module.css"
+
+const minikitConfig = {
+  miniapp: {
+    name: "Cybercentry One",
+  },
+}
 
 export default function Success() {
   const { composeCastAsync } = useComposeCast()

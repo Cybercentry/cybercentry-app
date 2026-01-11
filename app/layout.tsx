@@ -1,11 +1,19 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter, Source_Code_Pro } from "next/font/google"
-import { SafeArea } from "@coinbase/onchainkit/minikit"
-import { minikitConfig } from "../minikit.config"
 import { RootProvider } from "./rootProvider"
 import { LiveChat } from "./livechat-widget"
 import "./globals.css"
+
+const minikitConfig = {
+  miniapp: {
+    version: "1",
+    name: "Cybercentry One",
+    description:
+      "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
+    heroImageUrl: "https://cybercentry-one-mini-app.vercel.app/blue-hero.png",
+  },
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -46,7 +54,7 @@ export default function RootLayout({
     <RootProvider>
       <html lang="en">
         <body className={`${inter.variable} ${sourceCodePro.variable}`}>
-          <SafeArea>{children}</SafeArea>
+          {children}
           <LiveChat />
         </body>
       </html>
