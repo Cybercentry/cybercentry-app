@@ -278,7 +278,7 @@ export default function ProtectionPage() {
                 {error && <p className={styles.error}>{error}</p>}
 
                 <button type="submit" className={styles.joinButton}>
-                  JOIN NOW
+                  SIGN UP NOW
                 </button>
               </form>
             </div>

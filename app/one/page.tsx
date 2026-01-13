@@ -200,7 +200,7 @@ export default function OnePage() {
         <div className={styles.content}>
           <h1 className={styles.title}>One</h1>
           <div className={styles.price}>
-            <span className={styles.priceAmount}>$1099.99 USDC (paid in $CENTRY)</span>
+            <span className={styles.priceAmount}>$1099.99 USDC</span>
             <span className={styles.pricePeriod}>per organisation per month</span>
           </div>
 
@@ -294,7 +294,7 @@ export default function OnePage() {
                 {error && <p className={styles.error}>{error}</p>}
 
                 <button type="submit" className={styles.joinButton}>
-                  JOIN NOW
+                  SIGN UP NOW
                 </button>
               </form>
             </div>

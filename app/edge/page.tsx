@@ -201,7 +201,7 @@ export default function EdgePage() {
           <div className={styles.popularBadge}>POPULAR</div>
           <h1 className={styles.title}>Edge</h1>
           <div className={styles.price}>
-            <span className={styles.priceAmount}>$349.99 USDC (paid in $CENTRY)</span>
+            <span className={styles.priceAmount}>$349.99 USDC</span>
             <span className={styles.pricePeriod}>per organisation per month</span>
           </div>
 
@@ -287,7 +287,7 @@ export default function EdgePage() {
                 {error && <p className={styles.error}>{error}</p>}
 
                 <button type="submit" className={styles.joinButton}>
-                  JOIN NOW
+                  SIGN UP NOW
                 </button>
               </form>
             </div>
