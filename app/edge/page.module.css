@@ -1,99 +1,180 @@
+/* Premium Edge Page Design */
+
 .page {
   min-height: 100vh;
+  /* Solid brand background color */
   background: #0d2b6b;
   color: white;
   padding: 2rem;
   position: relative;
-}
-
-.heroBackground {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  opacity: 0.6;
-  pointer-events: none;
+  overflow-x: hidden;
 }
 
 .container {
   max-width: 900px;
   margin: 0 auto;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .backButton {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 2rem;
-  padding: 0.75rem 1.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
+  padding: 0.875rem 1.75rem;
+  background: rgba(13, 43, 107, 0.3);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 100px;
   color: white;
   text-decoration: none;
   font-weight: 600;
-  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
 }
 
 .backButton:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.5);
+  color: #00d4ff;
   transform: translateX(-5px);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
 }
 
 .content {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(13, 43, 107, 0.25) 0%, rgba(0, 212, 255, 0.05) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 24px;
   padding: 3rem;
+  transition: all 0.5s ease;
+  position: relative;
+}
+
+.content:hover {
+  border-color: rgba(0, 212, 255, 0.4);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4), 0 0 60px rgba(0, 212, 255, 0.15);
+}
+
+.popularBadge {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: linear-gradient(135deg, #0d2b6b, #00d4ff);
+  color: #ffffff;
+  padding: 0.5rem 1.25rem;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  overflow: hidden;
+}
+
+.badgeGlow {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: badgeShimmer 3s ease-in-out infinite;
+}
+
+@keyframes badgeShimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .title {
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
-  font-weight: 700;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #ffffff 0%, #e0f0ff 100%);
+  font-size: clamp(3rem, 10vw, 5rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 1.5rem;
+}
+
+.titleText {
+  background: linear-gradient(135deg, #ffffff 0%, #00d4ff 25%, #ffffff 50%, #4a90e2 75%, #0d2b6b 100%);
+  background-size: 400% 400%;
+  animation: holoShift 8s ease infinite;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
+@keyframes holoShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 .price {
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.priceCurrency {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00d4ff;
+  margin-right: 0.25rem;
 }
 
 .priceAmount {
-  font-size: 2rem; /* Updated font size */
-  font-weight: 700;
-  display: block;
-  margin-bottom: 0.5rem;
+  font-size: 3.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 0%, #00d4ff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
 }
 
 .pricePeriod {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-left: 0.5rem;
+  width: 100%;
+  margin-top: 0.5rem;
 }
 
 .section {
   margin-bottom: 2.5rem;
 }
 
-.sectionTitle {
-  font-size: 1.75rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: rgba(255, 255, 255, 0.95);
+.sectionTag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  padding: 0.5rem 1.25rem;
+  border-radius: 100px;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
 }
 
 .description {
-  font-size: 1rem; /* Updated font size */
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .featuresList,
@@ -105,11 +186,15 @@
 
 .featuresList li,
 .benefitsList li {
-  padding: 0.75rem 0;
-  font-size: 0.9375rem; /* Updated font size */
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.85);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.875rem 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  transition: color 0.3s ease;
 }
 
 .featuresList li:last-child,
@@ -121,140 +206,144 @@
   color: rgba(255, 255, 255, 0.95);
 }
 
-.benefitsList li:before {
-  content: "✓ ";
-  margin-right: 0.75rem;
-  color: rgba(96, 165, 250, 0.8);
+.benefitsList li::before {
+  content: "✓";
+  color: #00d4ff;
+  font-size: 0.85rem;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
-.buyButton {
-  width: 100%;
-  padding: 1.25rem 2rem;
-  background: #ffffff;
-  color: #0d2b6b;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 2rem;
-  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
-}
-
-.buyButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(255, 255, 255, 0.5);
-}
-
-/* Adding waitlist section styles from main page */
-.waitlistForm {
-  text-align: center;
-}
-
+/* Waitlist Section */
 .waitlistSection {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-top: 4rem;
+  padding: 6rem 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.waitlistGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.15) 0%, transparent 50%);
+  pointer-events: none;
+  animation: waitlistPulse 6s ease-in-out infinite;
+}
+
+@keyframes waitlistPulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 500px;
+}
+
+.waitlistForm {
+  text-align: center;
+  width: 100%;
+}
+
+.formTitle {
+  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffffff 0%, #00d4ff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .subtitle {
-  font-size: 1.2rem;
-  line-height: 1.6;
+  font-size: 1.15rem;
+  line-height: 1.7;
   margin-bottom: 3rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 300;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .form {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
 }
 
-.emailInput {
+.inputWrapper {
   width: 100%;
-  max-width: 400px;
-  padding: 1rem 1.5rem;
+  position: relative;
+}
+
+.inputWrapper::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 18px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), transparent, rgba(13, 43, 107, 0.5));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.inputWrapper:focus-within::before {
+  opacity: 1;
+}
+
+.emailInput,
+.tierSelect {
+  width: 100%;
+  padding: 1.35rem 1.75rem;
   font-size: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  background: rgba(13, 43, 107, 0.25);
+  border: 1px solid rgba(13, 43, 107, 0.5);
+  border-radius: 18px;
   color: white;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
 }
 
 .emailInput::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.3);
 }
 
-.emailInput:focus {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-}
-
-.error {
-  color: #ff6b6b;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-.joinButton {
-  background: #ffffff;
-  color: #0d2b6b;
-  border: #0d2b6b;
-  padding: 1rem 3rem;
-  font-size: 1rem;
-  font-weight: 700;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 1rem;
-  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
-}
-
-.joinButton:hover {
-  background: #ffffff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
-}
-
-/* Adding tier select dropdown styles */
-.tierSelect {
-  width: 100%;
-  max-width: 400px;
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  color: white;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1rem;
-}
-
+.emailInput:focus,
 .tierSelect:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.4);
-  background-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.6);
+  background: rgba(13, 43, 107, 0.4);
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.2), 0 0 80px rgba(13, 43, 107, 0.4);
+}
+
+.tierSelect {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(0,212,255,0.8)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.5rem center;
+  background-size: 1.1rem;
 }
 
 .tierSelect option {
@@ -262,121 +351,159 @@
   color: white;
 }
 
+.emailInput:disabled,
 .tierSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin: 0;
+  text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+}
+
+.joinButton {
+  width: 100%;
+  background: linear-gradient(135deg, #0d2b6b 0%, #1a4494 50%, #00d4ff 100%);
+  color: #ffffff;
+  border: none;
+  padding: 1.5rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-top: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.buttonShimmer {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.buttonText {
+  position: relative;
+  z-index: 1;
+}
+
+.joinButton:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(13, 43, 107, 0.6), 0 0 80px rgba(0, 212, 255, 0.3);
+}
+
+.joinButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* Override content styling inside waitlist section to remove box effect */
-.waitlistSection .content {
-  background: none;
-  border: none;
-  backdrop-filter: none;
-  padding: 0;
+.addButton {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  padding: 1.15rem 2.25rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2rem;
 }
 
-/* Updating footer styles to ensure visibility */
+.addButton:hover {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.6);
+  color: #00d4ff;
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
+}
+
+.addDescription {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 1rem;
+}
+
+/* Footer */
 .footer {
   text-align: center;
-  padding: 2rem;
-  margin-top: 4rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.875rem;
-  position: relative;
-  z-index: 10;
+  padding: 4rem 2rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
   width: 100%;
+  position: relative;
+  z-index: 2;
 }
 
-.footer p {
-  margin: 0;
+.footerGlow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.5), transparent);
 }
 
-/* Adding mobile responsive styles */
+/* Mobile Responsive */
 @media (max-width: 768px) {
   .page {
     padding: 1rem;
   }
 
-  .container {
-    max-width: 100%;
-  }
-
-  .backButton {
-    margin-bottom: 1.5rem;
-    padding: 0.6rem 1.25rem;
-    font-size: 0.9rem;
-  }
-
   .content {
-    padding: 1.5rem;
-    border-radius: 12px;
+    padding: 2rem;
+    border-radius: 20px;
   }
 
-  .price {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
+  .popularBadge {
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.6rem;
+    padding: 0.4rem 1rem;
   }
 
   .priceAmount {
-    font-size: 1.75rem;
-  }
-
-  .pricePeriod {
-    font-size: 0.9rem;
-  }
-
-  .section {
-    margin-bottom: 2rem;
-  }
-
-  .sectionTitle {
-    font-size: 1.5rem;
-  }
-
-  .description {
-    font-size: 0.9rem;
-  }
-
-  .featuresList li,
-  .benefitsList li {
-    padding: 0.6rem 0;
-    font-size: 0.875rem;
-  }
-
-  .buyButton {
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
+    font-size: 2.5rem;
   }
 
   .waitlistSection {
-    margin-top: 2rem;
+    padding: 4rem 1rem;
   }
 
-  .subtitle {
-    font-size: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  /* Fix mobile cursor positioning for inputs */
   .emailInput,
   .tierSelect {
-    max-width: 100%;
-    padding: 0.875rem 1rem;
+    padding: 1.15rem 1.5rem;
     font-size: 16px;
-    -webkit-appearance: none;
-    appearance: none;
-    min-height: 52px;
+    min-height: 58px;
     touch-action: manipulation;
+    -webkit-appearance: none;
   }
 
   .joinButton {
-    width: 100%;
-    padding: 1rem 2rem;
-  }
-
-  .footer {
-    margin-top: 2rem;
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 2rem;
+    min-height: 58px;
   }
 }
 
@@ -386,11 +513,10 @@
   }
 
   .content {
-    padding: 1.25rem;
+    padding: 1.5rem;
   }
 
-  .backButton {
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
+  .priceAmount {
+    font-size: 2rem;
   }
 }

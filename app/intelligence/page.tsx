@@ -2,11 +2,12 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
 import type React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { AddToAppsButton } from "@/components/add-to-apps-button"
+import { ParticleBackground } from "@/components/particle-background"
 import styles from "./page.module.css"
 
 export default function IntelligencePage() {
@@ -14,28 +15,7 @@ export default function IntelligencePage() {
   const [plan, setPlan] = useState("")
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
-  const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
-  const prevMousePos = useRef({ x: 0.5, y: 0.5 })
   const router = useRouter()
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = e.clientX / window.innerWidth
-      const y = e.clientY / window.innerHeight
-
-      const velocityX = x - prevMousePos.current.x
-      const velocityY = y - prevMousePos.current.y
-      setMouseVelocity({ x: velocityX * 10, y: velocityY * 10 })
-      prevMousePos.current.x = x
-      prevMousePos.current.y = y
-
-      setMousePos({ x, y })
-    }
-
-    window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -94,118 +74,7 @@ export default function IntelligencePage() {
 
   return (
     <div className={styles.page}>
-      <svg className={styles.heroBackground} viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(59, 130, 246, 0.4)" />
-            <stop offset="50%" stopColor="rgba(96, 165, 250, 0.3)" />
-            <stop offset="100%" stopColor="rgba(59, 130, 246, 0.2)" />
-          </linearGradient>
-          <linearGradient id="lineGradient2" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="rgba(139, 92, 246, 0.3)" />
-            <stop offset="50%" stopColor="rgba(96, 165, 250, 0.2)" />
-            <stop offset="100%" stopColor="rgba(59, 130, 246, 0.2)" />
-          </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <radialGradient id="particleGradient">
-            <stop offset="0%" stopColor="rgba(96, 165, 250, 0.8)" />
-            <stop offset="100%" stopColor="rgba(13, 43, 107, 0)" />
-          </radialGradient>
-          <radialGradient id="cursorGlow">
-            <stop offset="0%" stopColor="rgba(13, 43, 107, 0.4)" />
-            <stop offset="70%" stopColor="rgba(13, 43, 107, 0.1)" />
-            <stop offset="100%" stopColor="transparent" />
-          </radialGradient>
-        </defs>
-
-        {[...Array(12)].map((_, i) => {
-          const baseY = 50 + i * 70
-          const offsetX = (mousePos.x - 0.5) * 250 * (i % 2 === 0 ? 1 : -1) + mouseVelocity.x * 20
-          const offsetY = (mousePos.y - 0.5) * 120 + mouseVelocity.y * 15
-
-          return (
-            <path
-              key={i}
-              d={`M 0 ${baseY + offsetY} Q ${300 + offsetX} ${baseY - 80 + offsetY}, ${600 + offsetX * 0.5} ${baseY + offsetY} T 1200 ${baseY + offsetY}`}
-              stroke={i % 3 === 0 ? "url(#lineGradient2)" : "url(#lineGradient)"}
-              strokeWidth={i % 2 === 0 ? "2.5" : "1.5"}
-              fill="none"
-              opacity={0.4 - i * 0.025}
-              filter="url(#glow)"
-            />
-          )
-        })}
-
-        {[...Array(50)].map((_, i) => {
-          const baseX = (i * 137.5) % 1200
-          const baseY = (i * 73) % 800
-          const distX = Math.abs(mousePos.x * 1200 - baseX)
-          const distY = Math.abs(mousePos.y * 800 - baseY)
-          const dist = Math.sqrt(distX * distX + distY * distY)
-          const scale = Math.max(0.3, Math.min(2, 1.5 - dist / 400))
-
-          const angle = Math.atan2(baseY - mousePos.y * 800, baseX - mousePos.x * 1200)
-          const repulsion = Math.max(0, 150 - dist) / 150
-          const moveX = Math.cos(angle) * repulsion * 80
-          const moveY = Math.sin(angle) * repulsion * 80
-
-          return (
-            <circle
-              key={`particle-${i}`}
-              cx={baseX + moveX + mouseVelocity.x * 5}
-              cy={baseY + moveY + mouseVelocity.y * 5}
-              r={2.5 * scale}
-              fill="url(#particleGradient)"
-              filter="url(#glow)"
-              opacity={0.6 + scale * 0.4}
-            />
-          )
-        })}
-
-        {[...Array(50)].map((_, i) => {
-          const x1 = (i * 137.5) % 1200
-          const y1 = (i * 73) % 800
-          const x2 = ((i + 7) * 137.5) % 1200
-          const y2 = ((i + 7) * 73) % 800
-          const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-
-          if (dist < 200) {
-            const midX = (x1 + x2) / 2
-            const midY = (y1 + y2) / 2
-            const distToMouse = Math.sqrt((midX - mousePos.x * 1200) ** 2 + (midY - mousePos.y * 800) ** 2)
-            const opacity = Math.max(0, 0.3 - distToMouse / 800)
-
-            return (
-              <line
-                key={`connection-${i}`}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="rgba(96, 165, 250, 0.3)"
-                strokeWidth="1"
-                opacity={opacity}
-              />
-            )
-          }
-          return null
-        })}
-
-        <circle
-          cx={mousePos.x * 1200}
-          cy={mousePos.y * 800}
-          r="150"
-          fill="url(#cursorGlow)"
-          filter="url(#glow)"
-          opacity="0.8"
-        />
-      </svg>
+      <ParticleBackground />
 
       <div className={styles.container}>
         <Link href="/" className={styles.backButton}>
@@ -213,10 +82,13 @@ export default function IntelligencePage() {
         </Link>
 
         <div className={styles.content}>
-          <h1 className={styles.title}>Intelligence</h1>
+          <div className={styles.pillarBadge}>◈ PILLAR</div>
+          <h1 className={styles.title}>
+            <span className={styles.titleText}>Intelligence</span>
+          </h1>
 
           <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Overview</h2>
+            <span className={styles.sectionTag}>OVERVIEW</span>
             <p className={styles.description}>
               Gain actionable insights through penetration testing, vulnerability scanning, and daily threat
               intelligence reports. Our intelligence pillar empowers you with the knowledge needed to stay ahead of
@@ -225,7 +97,7 @@ export default function IntelligencePage() {
           </div>
 
           <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>What&apos;s Included</h2>
+            <span className={styles.sectionTag}>INCLUDED</span>
             <ul className={styles.featuresList}>
               <li>
                 <strong>Penetration Testing:</strong> Comprehensive security testing by certified ethical hackers to
@@ -250,7 +122,7 @@ export default function IntelligencePage() {
           </div>
 
           <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Key Benefits</h2>
+            <span className={styles.sectionTag}>BENEFITS</span>
             <ul className={styles.benefitsList}>
               <li>Proactive identification of security weaknesses before exploitation</li>
               <li>Stay informed about the latest threats targeting Web3 projects</li>
@@ -262,7 +134,7 @@ export default function IntelligencePage() {
           </div>
 
           <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Ideal For</h2>
+            <span className={styles.sectionTag}>IDEAL FOR</span>
             <p className={styles.description}>
               Security-conscious Web3 projects, DeFi protocols managing significant assets, NFT platforms with valuable
               collections, blockchain projects preparing for major launches, and any organisation that needs to
@@ -273,49 +145,54 @@ export default function IntelligencePage() {
       </div>
 
       <section className={styles.waitlistSection}>
-        <div className={styles.container}>
-          <div className={styles.content}>
-            <div className={styles.waitlistForm}>
-              <h2 className={styles.title}>Get Started</h2>
+        <div className={styles.waitlistGlow} />
+        <div className={styles.formContainer}>
+          <div className={styles.waitlistForm}>
+            <span className={styles.sectionTag}>GET STARTED</span>
+            <h2 className={styles.formTitle}>Join the Future</h2>
+            <p className={styles.subtitle}>Select your plan and sign up to secure your Web3 project.</p>
 
-              <p className={styles.subtitle}>Select your plan and sign up to secure your Web3 project.</p>
-
-              <form onSubmit={handleSubmit} className={styles.form}>
+            <form onSubmit={handleSubmit} className={styles.form}>
+              <div className={styles.inputWrapper}>
                 <select
                   value={plan}
                   onChange={(e) => setPlan(e.target.value)}
                   className={styles.planSelect}
                   disabled={isSubmitting}
                 >
-                  <option value="">Select a plan</option>
+                  <option value="">Select a plan...</option>
                   <option value="Core">Core</option>
                   <option value="Edge">Edge</option>
                   <option value="One">One</option>
                 </select>
+              </div>
 
+              <div className={styles.inputWrapper}>
                 <input
                   type="email"
-                  placeholder="Email"
+                  placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={styles.emailInput}
                   disabled={isSubmitting}
                 />
+              </div>
 
-                {error && <p className={styles.error}>{error}</p>}
+              {error && <p className={styles.error}>{error}</p>}
 
-                <button type="submit" className={styles.joinButton} disabled={isSubmitting}>
-                  {isSubmitting ? "SIGNING UP..." : "SIGN UP NOW"}
-                </button>
-              </form>
+              <button type="submit" className={styles.joinButton} disabled={isSubmitting}>
+                <span className={styles.buttonShimmer} />
+                <span className={styles.buttonText}>{isSubmitting ? "Signing up..." : "Sign Up Now"}</span>
+              </button>
+            </form>
 
-              <AddToAppsButton buttonClassName={styles.addButton} descriptionClassName={styles.addDescription} />
-            </div>
+            <AddToAppsButton buttonClassName={styles.addButton} descriptionClassName={styles.addDescription} />
           </div>
         </div>
       </section>
 
       <footer className={styles.footer}>
+        <div className={styles.footerGlow} />
         <p>© 2026 Cybercentry. All rights reserved.</p>
       </footer>
     </div>
