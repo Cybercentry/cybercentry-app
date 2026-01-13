@@ -228,7 +228,7 @@ function HomeStandalone() {
             <div className={styles.waitlistForm}>
               <span className={styles.sectionTag}>GET STARTED</span>
               <h2 className={styles.title}>Join the Future</h2>
-              <p className={styles.subtitle}>Select your plan and sign up to secure your Web3 project.</p>
+              <p className={styles.subtitle}>Select your plan and sign up to secure yourself or your Web3 project.</p>
 
               <form onSubmit={handleSubmit} className={styles.form}>
                 <div className={styles.inputWrapper}>
