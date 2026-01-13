@@ -13,6 +13,9 @@ export const minikitConfig = {
     subtitle: "Managed Detection and Response",
     description:
       "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
+    tagline: "Future of Web3 Security",
+    buttonTitle: "Get Started",
+    imageUrl: `${ROOT_URL}/blue-hero.png`,
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
     iconUrl: `${ROOT_URL}/blue-icon.png`,
     splashImageUrl: `${ROOT_URL}/blue-icon.png`,
@@ -22,7 +25,11 @@ export const minikitConfig = {
     primaryCategory: "utility",
     tags: ["cybersecurity", "subscription", "msp", "mdr", "compliance"],
     heroImageUrl: `${ROOT_URL}/blue-hero.png`,
+    ogTitle: "Cybercentry One - Future of Web3 Security",
+    ogDescription:
+      "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
     ogImageUrl: `${ROOT_URL}/blue-hero.png`,
+    castShareUrl: ROOT_URL,
   },
   baseBuilder: {
     allowedAddresses: ["0xfee13309251b632317ea2d475d6aba7e7e0219e6"],
