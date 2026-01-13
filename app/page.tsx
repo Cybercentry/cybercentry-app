@@ -8,6 +8,7 @@ import styles from "./page.module.css"
 function HomeStandalone() {
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const heroRef = useRef<HTMLElement>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
@@ -80,6 +81,8 @@ function HomeStandalone() {
     e.preventDefault()
     setError("")
 
+    if (isSubmitting) return
+
     if (!email) {
       setError("Please enter your email address")
       return
@@ -89,6 +92,8 @@ function HomeStandalone() {
       setError("Please enter a valid email address")
       return
     }
+
+    setIsSubmitting(true)
 
     try {
       const res = await fetch("/api/waitlist", {
@@ -105,12 +110,14 @@ function HomeStandalone() {
 
       if (!res.ok) {
         setError(data.error || "Couldn't get you in. Please try again.")
+        setIsSubmitting(false)
         return
       }
 
       router.push("/success")
     } catch (err) {
       setError("Something went wrong. Please try again.")
+      setIsSubmitting(false)
     }
   }
 
@@ -385,12 +392,13 @@ function HomeStandalone() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={styles.emailInput}
+                  disabled={isSubmitting}
                 />
 
                 {error && <p className={styles.error}>{error}</p>}
 
-                <button type="submit" className={styles.joinButton}>
-                  SIGN UP NOW
+                <button type="submit" className={styles.joinButton} disabled={isSubmitting}>
+                  {isSubmitting ? "SIGNING UP..." : "SIGN UP NOW"}
                 </button>
               </form>
             </div>

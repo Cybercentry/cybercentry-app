@@ -11,6 +11,7 @@ import styles from "./page.module.css"
 export default function IntelligencePage() {
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
   const prevMousePos = useRef({ x: 0.5, y: 0.5 })
@@ -43,6 +44,8 @@ export default function IntelligencePage() {
     e.preventDefault()
     setError("")
 
+    if (isSubmitting) return
+
     if (!email) {
       setError("Please enter your email address")
       return
@@ -52,6 +55,8 @@ export default function IntelligencePage() {
       setError("Please enter a valid email address")
       return
     }
+
+    setIsSubmitting(true)
 
     try {
       const res = await fetch("/api/waitlist", {
@@ -68,12 +73,14 @@ export default function IntelligencePage() {
 
       if (!res.ok) {
         setError(data.error || "Couldn't get you in. Please try again.")
+        setIsSubmitting(false)
         return
       }
 
       router.push("/success")
     } catch (err) {
       setError("Something went wrong. Please try again.")
+      setIsSubmitting(false)
     }
   }
 
@@ -272,12 +279,13 @@ export default function IntelligencePage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={styles.emailInput}
+                  disabled={isSubmitting}
                 />
 
                 {error && <p className={styles.error}>{error}</p>}
 
-                <button type="submit" className={styles.joinButton}>
-                  SIGN UP NOW
+                <button type="submit" className={styles.joinButton} disabled={isSubmitting}>
+                  {isSubmitting ? "SIGNING UP..." : "SIGN UP NOW"}
                 </button>
               </form>
             </div>
