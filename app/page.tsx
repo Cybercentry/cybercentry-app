@@ -92,8 +92,8 @@ function HomeStandalone() {
           </h1>
 
           <p className={styles.heroSubtitle}>
-            Empowering Web3 projects to anticipate, prevent, and respond to cyber threats with confidence. AI-powered
-            security built on Compliance, Intelligence, and Protection.
+            Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.
+            AI-powered security built on Compliance, Intelligence, and Protection.
           </p>
 
           <div className={styles.scrollIndicator}>

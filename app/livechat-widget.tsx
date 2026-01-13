@@ -1,7 +1,7 @@
 "use client"
 
 import { LiveChatWidget, useWidgetState } from "@livechat/widget-react"
-import { useState } from "react"
+import { useState, useCallback } from "react"
 
 function CustomChatButton() {
   const widgetState = useWidgetState()
@@ -15,7 +15,6 @@ function CustomChatButton() {
     }
   }
 
-  // Don't show button if chat is already open
   if (widgetState?.visibility === "maximized") {
     return null
   }
@@ -44,7 +43,6 @@ function CustomChatButton() {
       }}
       aria-label="Open live chat"
     >
-      {/* Chat icon */}
       <svg
         width="28"
         height="28"
@@ -63,9 +61,21 @@ function CustomChatButton() {
 }
 
 export function LiveChat() {
+  const handleVisibilityChanged = useCallback((data: { visibility: "maximized" | "minimized" | "hidden" }) => {
+    if (data.visibility === "minimized") {
+      // When user closes the chat, it goes to "minimized" state which shows default button
+      // Force it back to "hidden" so only our custom button shows
+      // @ts-ignore
+      if (window.LiveChatWidget) {
+        // @ts-ignore
+        window.LiveChatWidget.call("hide")
+      }
+    }
+  }, [])
+
   return (
     <>
-      <LiveChatWidget license="17134260" visibility="hidden" />
+      <LiveChatWidget license="17134260" visibility="hidden" onVisibilityChanged={handleVisibilityChanged} />
       <CustomChatButton />
     </>
   )
