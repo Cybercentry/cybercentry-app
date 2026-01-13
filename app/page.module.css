@@ -463,6 +463,10 @@
   color: white;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
+  /* fix mobile cursor position */
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
 }
 
 .emailInput::placeholder {
@@ -677,16 +681,23 @@
     margin-bottom: 2rem;
   }
 
+  /* improved mobile input styling */
   .emailInput,
   .tierSelect {
     max-width: 100%;
-    padding: 0.875rem 1rem;
+    padding: 1rem 1.25rem;
     font-size: 16px; /* Prevents iOS zoom on focus */
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 52px;
+    touch-action: manipulation;
   }
 
   .joinButton {
     width: 100%;
     padding: 1rem 2rem;
+    min-height: 52px;
+    touch-action: manipulation;
   }
 
   .footer {

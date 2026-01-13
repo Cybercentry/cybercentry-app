@@ -25,9 +25,8 @@ export const minikitConfig = {
     primaryCategory: "utility",
     tags: ["cybersecurity", "subscription", "msp", "mdr", "compliance"],
     heroImageUrl: `${ROOT_URL}/blue-hero.png`,
-    ogTitle: "Cybercentry One - Future of Web3 Security",
-    ogDescription:
-      "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
+    ogTitle: "Cybercentry One",
+    ogDescription: "Anticipate, prevent, and respond to cyber threats with confidence. Future of Web3 security.",
     ogImageUrl: `${ROOT_URL}/blue-hero.png`,
     castShareUrl: ROOT_URL,
   },
