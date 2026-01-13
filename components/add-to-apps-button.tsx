@@ -71,22 +71,16 @@ export function AddToAppsButton({ buttonClassName, descriptionClassName }: AddTo
 
   if (status === "success") {
     return (
-      <>
-        <button className={buttonClassName} disabled style={{ opacity: 0.7 }}>
-          ADDED!
-        </button>
-        <p className={descriptionClassName}>You&apos;ll receive updates!</p>
-      </>
+      <button className={buttonClassName} disabled style={{ opacity: 0.7 }}>
+        ADDED!
+      </button>
     )
   }
 
   return (
-    <>
-      <button onClick={handleAddToApps} className={buttonClassName} disabled={status === "loading"}>
-        {status === "loading" ? "ADDING..." : "ADD TO MY APPS"}
-      </button>
-      <p className={descriptionClassName}>Add to My Apps for updates!</p>
-    </>
+    <button onClick={handleAddToApps} className={buttonClassName} disabled={status === "loading"}>
+      {status === "loading" ? "ADDING..." : "ADD TO MY APPS"}
+    </button>
   )
 }
 

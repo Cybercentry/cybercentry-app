@@ -82,7 +82,7 @@ export default function ProtectionPage() {
         </Link>
 
         <div className={styles.content}>
-          <div className={styles.pillarBadge}>◈ PILLAR</div>
+          <div className={styles.pillarBadge}>PILLAR</div>
           <h1 className={styles.title}>
             <span className={styles.titleText}>Protection</span>
           </h1>

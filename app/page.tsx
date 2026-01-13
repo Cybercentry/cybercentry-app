@@ -77,7 +77,13 @@ function HomeStandalone() {
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <div className={styles.logoContainer}>
-            <img src="/white-icon.png" alt="Cybercentry One Logo" className={styles.heroIcon} />
+            <img
+              src="/white-icon.png"
+              alt="Cybercentry One Logo"
+              className={styles.heroIcon}
+              style={{ imageRendering: "crisp-edges" }}
+            />
+            <div className={styles.logoGlow} />
           </div>
 
           <h1 className={styles.heroTitle}>
@@ -114,23 +120,19 @@ function HomeStandalone() {
               title: "Compliance",
               desc: "Ensure regulatory adherence with Cyber Essentials certification and comprehensive compliance frameworks that keep you audit-ready.",
               link: "/compliance",
-              icon: "◈",
             },
             {
               title: "Intelligence",
               desc: "Gain actionable insights through penetration testing, vulnerability scanning, and daily threat intelligence reports.",
               link: "/intelligence",
-              icon: "◇",
             },
             {
               title: "Protection",
               desc: "Strengthen your defences with 24/7 managed detection and response, real-time monitoring, and automated threat prevention.",
               link: "/protection",
-              icon: "△",
             },
           ].map((pillar, i) => (
             <div key={i} className={styles.pillar}>
-              <span className={styles.pillarIcon}>{pillar.icon}</span>
               <h3 className={styles.pillarTitle}>{pillar.title}</h3>
               <p className={styles.pillarDescription}>{pillar.desc}</p>
               <Link href={pillar.link} className={styles.learnMoreButton}>

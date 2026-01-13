@@ -37,22 +37,54 @@
   max-width: 900px;
 }
 
-/* Simplified logo container - removed glow rings */
+/* Enhanced logo container - larger, crisper, better proportioned */
 .logoContainer {
   position: relative;
-  width: 140px;
-  height: 140px;
-  margin: 0 auto 2.5rem;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .heroIcon {
-  width: 100px;
-  height: 100px;
-  filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.8)) drop-shadow(0 0 60px rgba(13, 43, 107, 1));
-  animation: iconFloat 6s ease-in-out infinite, iconGlow 3s ease-in-out infinite;
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  /* Remove blur-causing filters, use subtle clean glow */
+  filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.4));
+  animation: iconFloat 6s ease-in-out infinite;
+  /* Ensure crisp rendering */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Separate glow element behind logo */
+.logoGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.3) 0%, rgba(0, 212, 255, 0.1) 30%, transparent 70%);
+  border-radius: 50%;
+  animation: logoGlowPulse 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes logoGlowPulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 1;
+  }
 }
 
 @keyframes iconFloat {
@@ -61,26 +93,16 @@
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-15px);
+    transform: translateY(-12px);
   }
 }
 
-@keyframes iconGlow {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.8)) drop-shadow(0 0 60px rgba(13, 43, 107, 1));
-  }
-  50% {
-    filter: drop-shadow(0 0 50px rgba(0, 212, 255, 1)) drop-shadow(0 0 80px rgba(13, 43, 107, 1));
-  }
-}
-
-/* Holographic title effect */
+/* Adjusted title to better match logo size */
 .heroTitle {
   position: relative;
-  font-size: clamp(3rem, 12vw, 6rem);
+  font-size: clamp(2.5rem, 10vw, 5rem);
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
   line-height: 1;
   margin-bottom: 2rem;
 }
@@ -775,15 +797,21 @@
     padding: 5rem 1.5rem;
   }
 
+  /* Adjusted mobile logo size */
   .logoContainer {
-    width: 100px;
-    height: 100px;
-    margin-bottom: 2rem;
+    width: 140px;
+    height: 140px;
+    margin-bottom: 2.5rem;
   }
 
   .heroIcon {
-    width: 70px;
-    height: 70px;
+    width: 90px;
+    height: 90px;
+  }
+
+  .logoGlow {
+    width: 160px;
+    height: 160px;
   }
 
   .heroSubtitle {
@@ -828,14 +856,20 @@
     padding: 4rem 1rem;
   }
 
+  /* Adjusted small mobile logo size */
   .logoContainer {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
   }
 
   .heroIcon {
-    width: 55px;
-    height: 55px;
+    width: 75px;
+    height: 75px;
+  }
+
+  .logoGlow {
+    width: 140px;
+    height: 140px;
   }
 
   .pillars,

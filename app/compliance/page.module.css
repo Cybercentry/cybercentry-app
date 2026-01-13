@@ -50,6 +50,8 @@
   padding: 3rem;
   transition: all 0.5s ease;
   position: relative;
+  /* Ensure text is left aligned */
+  text-align: left;
 }
 
 .content:hover {
@@ -120,6 +122,8 @@
   font-size: 1rem;
   line-height: 1.8;
   color: rgba(255, 255, 255, 0.6);
+  /* Left align description text */
+  text-align: left;
 }
 
 .featuresList,

@@ -82,7 +82,7 @@ export default function IntelligencePage() {
         </Link>
 
         <div className={styles.content}>
-          <div className={styles.pillarBadge}>◈ PILLAR</div>
+          <div className={styles.pillarBadge}>PILLAR</div>
           <h1 className={styles.title}>
             <span className={styles.titleText}>Intelligence</span>
           </h1>

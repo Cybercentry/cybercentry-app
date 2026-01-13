@@ -82,12 +82,12 @@ export default function CompliancePage() {
         </Link>
 
         <div className={styles.content}>
-          <div className={styles.pillarBadge}>◈ PILLAR</div>
+          <div className={styles.pillarBadge}>PILLAR</div>
           <h1 className={styles.title}>
             <span className={styles.titleText}>Compliance</span>
           </h1>
 
-          <div className={styles.section}>
+          <div className={styles.sectionLeft}>
             <span className={styles.sectionTag}>OVERVIEW</span>
             <p className={styles.description}>
               Ensure regulatory adherence with Cyber Essentials certification and comprehensive compliance frameworks
