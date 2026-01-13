@@ -3,7 +3,7 @@ import { getDb } from "@/lib/db"
 
 export async function POST(request: Request) {
   try {
-    const { email, fid, display_name } = await request.json()
+    const { email, fid, display_name, tier } = await request.json()
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 })
@@ -12,20 +12,18 @@ export async function POST(request: Request) {
     const sql = getDb()
 
     await sql`
-      INSERT INTO waitlist (id, email, fid, display_name, created_at)
-      VALUES (gen_random_uuid(), ${email}, ${fid || null}, ${display_name || null}, NOW())
+      INSERT INTO waitlist (id, email, fid, display_name, tier, created_at)
+      VALUES (gen_random_uuid(), ${email}, ${fid || null}, ${display_name || null}, ${tier || null}, NOW())
     `
 
     return NextResponse.json({ success: true })
   } catch (err: any) {
     console.error("API error:", err)
 
-    // Handle duplicate email (PostgreSQL unique violation)
     if (err.code === "23505") {
       return NextResponse.json({ error: "Email already registered" }, { status: 409 })
     }
 
-    // Handle missing DATABASE_URL
     if (err.message?.includes("DATABASE_URL")) {
       return NextResponse.json({ error: "Database not configured" }, { status: 503 })
     }

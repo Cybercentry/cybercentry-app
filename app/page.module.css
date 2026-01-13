@@ -482,6 +482,44 @@
   cursor: not-allowed;
 }
 
+/* Added tier select dropdown styling */
+.tierSelect {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+}
+
+.tierSelect option {
+  background: #0d2b6b;
+  color: white;
+  padding: 0.5rem;
+}
+
+.tierSelect:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.tierSelect:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .error {
   color: #ff6b6b;
   font-size: 0.9rem;
@@ -538,4 +576,151 @@
 .socialIcon {
   width: 20px;
   height: 20px;
+}
+
+/* Adding mobile responsive styles */
+@media (max-width: 768px) {
+  .page {
+    padding: 1rem;
+  }
+
+  .hero {
+    margin: 1rem auto 2rem;
+    padding: 2rem 1rem;
+  }
+
+  .heroIcon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .heroSubtitle {
+    font-size: 1rem;
+  }
+
+  .pillars {
+    margin-bottom: 2rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+
+  .sectionSubtitle {
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .pillarsGrid,
+  .pricingGrid,
+  .servicesGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .pillar,
+  .pricingCard,
+  .serviceCard {
+    padding: 1.5rem;
+  }
+
+  .pillarTitle,
+  .pricingTier {
+    font-size: 1.25rem;
+  }
+
+  .pillarDescription {
+    font-size: 0.9rem;
+  }
+
+  .priceAmount {
+    font-size: 1.75rem;
+  }
+
+  .features li {
+    font-size: 0.875rem;
+  }
+
+  .learnMoreButton {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.875rem;
+  }
+
+  .serviceCategory {
+    font-size: 1.25rem;
+    margin: 2rem 0 1.5rem;
+  }
+
+  .serviceBlock,
+  .professionalServices {
+    padding: 1.5rem;
+  }
+
+  .serviceTitle {
+    font-size: 1.1rem;
+  }
+
+  .services {
+    margin-bottom: 2rem;
+  }
+
+  .waitlistSection {
+    margin-top: 2rem;
+  }
+
+  .waitlistForm {
+    padding: 0 0.5rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .emailInput,
+  .tierSelect {
+    max-width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+
+  .joinButton {
+    width: 100%;
+    padding: 1rem 2rem;
+  }
+
+  .footer {
+    margin-top: 2rem;
+    padding: 1.5rem 1rem;
+  }
+
+  .socialLinks {
+    gap: 1rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .page {
+    padding: 0.75rem;
+  }
+
+  .hero {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .heroIcon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .pillar,
+  .pricingCard,
+  .serviceCard {
+    padding: 1.25rem;
+  }
+
+  .content {
+    padding: 1rem;
+  }
 }

@@ -231,6 +231,43 @@
   box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
 }
 
+/* Adding tier select dropdown styles */
+.tierSelect {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+}
+
+.tierSelect:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.tierSelect option {
+  background: #0d2b6b;
+  color: white;
+}
+
+.tierSelect:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Override content styling inside waitlist section to remove box effect */
 .waitlistSection .content {
   background: none;
@@ -253,4 +290,103 @@
 
 .footer p {
   margin: 0;
+}
+
+/* Adding mobile responsive styles */
+@media (max-width: 768px) {
+  .page {
+    padding: 1rem;
+  }
+
+  .container {
+    max-width: 100%;
+  }
+
+  .backButton {
+    margin-bottom: 1.5rem;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .content {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .price {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .priceAmount {
+    font-size: 1.75rem;
+  }
+
+  .pricePeriod {
+    font-size: 0.9rem;
+  }
+
+  .section {
+    margin-bottom: 2rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+
+  .description {
+    font-size: 0.9rem;
+  }
+
+  .featuresList li,
+  .benefitsList li {
+    padding: 0.6rem 0;
+    font-size: 0.875rem;
+  }
+
+  .buyButton {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .waitlistSection {
+    margin-top: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .emailInput,
+  .tierSelect {
+    max-width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: 16px;
+  }
+
+  .joinButton {
+    width: 100%;
+    padding: 1rem 2rem;
+  }
+
+  .footer {
+    margin-top: 2rem;
+    padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 0.75rem;
+  }
+
+  .content {
+    padding: 1.25rem;
+  }
+
+  .backButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
 }

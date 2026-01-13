@@ -10,6 +10,7 @@ import styles from "./page.module.css"
 
 export default function EdgePage() {
   const [email, setEmail] = useState("")
+  const [tier, setTier] = useState("Edge")
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
@@ -56,6 +57,11 @@ export default function EdgePage() {
       return
     }
 
+    if (!tier) {
+      setError("Please select a subscription tier")
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -66,6 +72,7 @@ export default function EdgePage() {
           email,
           fid: null,
           display_name: null,
+          tier,
         }),
       })
 
@@ -278,11 +285,23 @@ export default function EdgePage() {
         <div className={styles.container}>
           <div className={styles.content}>
             <div className={styles.waitlistForm}>
-              <h2 className={styles.title}>Get Early Access</h2>
+              <h2 className={styles.title}>Get Started</h2>
 
-              <p className={styles.subtitle}>Be first to experience the future of Web3 security.</p>
+              <p className={styles.subtitle}>Select your plan and sign up to secure your Web3 project.</p>
 
               <form onSubmit={handleSubmit} className={styles.form}>
+                <select
+                  value={tier}
+                  onChange={(e) => setTier(e.target.value)}
+                  className={styles.tierSelect}
+                  disabled={isSubmitting}
+                >
+                  <option value="">Select a plan...</option>
+                  <option value="Core">Core</option>
+                  <option value="Edge">Edge</option>
+                  <option value="One">One</option>
+                </select>
+
                 <input
                   type="email"
                   placeholder="Email"

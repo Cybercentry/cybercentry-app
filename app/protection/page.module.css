@@ -210,3 +210,83 @@
 .footer p {
   margin: 0;
 }
+
+/* Adding mobile responsive styles */
+@media (max-width: 768px) {
+  .page {
+    padding: 1rem;
+  }
+
+  .container {
+    max-width: 100%;
+  }
+
+  .backButton {
+    margin-bottom: 1.5rem;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .content {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .section {
+    margin-bottom: 2rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+
+  .description {
+    font-size: 0.9rem;
+  }
+
+  .featuresList li,
+  .benefitsList li {
+    padding: 0.6rem 0;
+    font-size: 0.875rem;
+  }
+
+  .waitlistSection {
+    margin-top: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .emailInput {
+    max-width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: 16px;
+  }
+
+  .joinButton {
+    width: 100%;
+    padding: 1rem 2rem;
+  }
+
+  .footer {
+    margin-top: 2rem;
+    padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 0.75rem;
+  }
+
+  .content {
+    padding: 1.25rem;
+  }
+
+  .backButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+}
