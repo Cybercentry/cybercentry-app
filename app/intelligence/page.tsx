@@ -10,6 +10,7 @@ import styles from "./page.module.css"
 
 export default function IntelligencePage() {
   const [email, setEmail] = useState("")
+  const [plan, setPlan] = useState("")
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
@@ -46,6 +47,11 @@ export default function IntelligencePage() {
 
     if (isSubmitting) return
 
+    if (!plan) {
+      setError("Please select a plan")
+      return
+    }
+
     if (!email) {
       setError("Please enter your email address")
       return
@@ -64,6 +70,7 @@ export default function IntelligencePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
+          plan,
           fid: null,
           display_name: null,
         }),
@@ -268,11 +275,23 @@ export default function IntelligencePage() {
         <div className={styles.container}>
           <div className={styles.content}>
             <div className={styles.waitlistForm}>
-              <h2 className={styles.title}>Get Early Access</h2>
+              <h2 className={styles.title}>Get Started</h2>
 
-              <p className={styles.subtitle}>Be first to experience the future of Web3 security.</p>
+              <p className={styles.subtitle}>Select your plan and sign up to secure your Web3 project.</p>
 
               <form onSubmit={handleSubmit} className={styles.form}>
+                <select
+                  value={plan}
+                  onChange={(e) => setPlan(e.target.value)}
+                  className={styles.planSelect}
+                  disabled={isSubmitting}
+                >
+                  <option value="">Select a plan</option>
+                  <option value="Core">Core</option>
+                  <option value="Edge">Edge</option>
+                  <option value="One">One</option>
+                </select>
+
                 <input
                   type="email"
                   placeholder="Email"
