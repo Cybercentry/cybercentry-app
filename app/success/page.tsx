@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useAccount } from "wagmi"
+import { Identity, Avatar, Name, Badge, Address } from "@coinbase/onchainkit/identity"
 import { AddToAppsButton, ShareButton } from "@/components/add-to-apps-button"
 import styles from "./page.module.css"
 
@@ -11,6 +13,7 @@ const minikitConfig = {
 }
 
 export default function Success() {
+  const { address, isConnected } = useAccount()
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
   const prevMousePos = { x: 0.5, y: 0.5 }
@@ -163,7 +166,19 @@ export default function Success() {
             </svg>
           </div>
 
-          <h1 className={styles.title}>Welcome to the {minikitConfig.miniapp.name.toUpperCase()}!</h1>
+          <h1 className={styles.title}>Welcome to {minikitConfig.miniapp.name.toUpperCase()}!</h1>
+
+          {isConnected && address && (
+            <div className={styles.identityCard}>
+              <Identity address={address} className={styles.identity}>
+                <Avatar className={styles.avatar} />
+                <Name className={styles.name}>
+                  <Badge className={styles.badge} />
+                </Name>
+                <Address className={styles.address} />
+              </Identity>
+            </div>
+          )}
 
           <p className={styles.subtitle}>
             We'll be in touch.

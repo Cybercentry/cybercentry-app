@@ -8,9 +8,10 @@ interface AddToAppsButtonProps {
 
 export function AddToAppsButton({ buttonClassName, descriptionClassName }: AddToAppsButtonProps) {
   const [isAvailable, setIsAvailable] = useState(false)
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
+  const [errorMessage, setErrorMessage] = useState("")
 
   useEffect(() => {
-    // Check if we're in a MiniKit/Farcaster context by looking for sdk
     const checkMiniKit = async () => {
       try {
         const { sdk } = await import("@farcaster/frame-sdk")
@@ -27,20 +28,35 @@ export function AddToAppsButton({ buttonClassName, descriptionClassName }: AddTo
   if (!isAvailable) return null
 
   const handleAddToApps = async () => {
+    setStatus("loading")
+    setErrorMessage("")
     try {
       const { sdk } = await import("@farcaster/frame-sdk")
       await sdk.actions.addFrame()
+      setStatus("success")
     } catch (error) {
       console.error("Error adding app:", error)
+      setStatus("error")
+      setErrorMessage("This feature is coming soon for Base app. Try in Warpcast!")
     }
   }
 
   return (
     <>
-      <button onClick={handleAddToApps} className={buttonClassName}>
-        ADD TO MY APPS
+      <button
+        onClick={handleAddToApps}
+        className={buttonClassName}
+        disabled={status === "loading" || status === "success"}
+      >
+        {status === "loading" ? "ADDING..." : status === "success" ? "ADDED!" : "ADD TO MY APPS"}
       </button>
-      <p className={descriptionClassName}>Add to My Apps for updates!</p>
+      <p className={descriptionClassName}>
+        {status === "error"
+          ? errorMessage
+          : status === "success"
+            ? "You'll receive updates!"
+            : "Add to My Apps for updates!"}
+      </p>
     </>
   )
 }

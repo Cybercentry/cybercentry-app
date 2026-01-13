@@ -105,13 +105,58 @@
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 30px rgba(76, 175, 80, 0.3);
 }
+
+/* Added Identity card styles */
+.identityCard {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(10px);
+  display: inline-block;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge {
+  width: 16px;
+  height: 16px;
+}
+
+.address {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: monospace;
+}
+/* </CHANGE> */
 
 .subtitle {
   font-size: 1.2rem;
@@ -219,6 +264,26 @@
   .addDescription {
     font-size: 0.85rem;
   }
+
+  /* Added mobile styles for identity card */
+  .identityCard {
+    padding: 1rem;
+    width: 100%;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .name {
+    font-size: 1rem;
+  }
+
+  .address {
+    font-size: 0.75rem;
+  }
+  /* </CHANGE> */
 }
 
 @media (max-width: 480px) {
