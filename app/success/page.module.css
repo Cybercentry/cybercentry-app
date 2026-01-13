@@ -115,7 +115,7 @@
 
 /* Added Identity card styles */
 .identityCard {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
@@ -131,30 +131,40 @@
 }
 
 .avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  border: 2px solid rgba(13, 43, 107, 0.2) !important;
 }
 
+/* Force name text to be visible with dark color */
 .name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: #0d2b6b !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.name span {
+  color: #0d2b6b !important;
 }
 
 .badge {
-  width: 16px;
-  height: 16px;
+  width: 16px !important;
+  height: 16px !important;
 }
 
+/* Force address text to be visible */
 .address {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: monospace;
+  font-size: 0.85rem !important;
+  color: rgba(13, 43, 107, 0.7) !important;
+  font-family: monospace !important;
+}
+
+.address span {
+  color: rgba(13, 43, 107, 0.7) !important;
 }
 /* </CHANGE> */
 
@@ -272,16 +282,16 @@
   }
 
   .avatar {
-    width: 40px;
-    height: 40px;
+    width: 40px !important;
+    height: 40px !important;
   }
 
   .name {
-    font-size: 1rem;
+    font-size: 1rem !important;
   }
 
   .address {
-    font-size: 0.75rem;
+    font-size: 0.75rem !important;
   }
   /* </CHANGE> */
 }
