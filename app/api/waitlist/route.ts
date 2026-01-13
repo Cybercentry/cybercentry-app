@@ -3,7 +3,7 @@ import { getDb } from "@/lib/db"
 
 export async function POST(request: Request) {
   try {
-    const { email, fid, display_name, tier } = await request.json()
+    const { email, fid, display_name, plan } = await request.json()
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 })
@@ -12,8 +12,8 @@ export async function POST(request: Request) {
     const sql = getDb()
 
     await sql`
-      INSERT INTO waitlist (id, email, fid, display_name, tier, created_at)
-      VALUES (gen_random_uuid(), ${email}, ${fid || null}, ${display_name || null}, ${tier || null}, NOW())
+      INSERT INTO signup (id, email, fid, display_name, plan, created_at)
+      VALUES (gen_random_uuid(), ${email}, ${fid || null}, ${display_name || null}, ${plan || null}, NOW())
     `
 
     return NextResponse.json({ success: true })

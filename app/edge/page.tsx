@@ -10,7 +10,7 @@ import styles from "./page.module.css"
 
 export default function EdgePage() {
   const [email, setEmail] = useState("")
-  const [tier, setTier] = useState("Edge")
+  const [plan, setPlan] = useState("Edge")
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
@@ -57,8 +57,8 @@ export default function EdgePage() {
       return
     }
 
-    if (!tier) {
-      setError("Please select a subscription tier")
+    if (!plan) {
+      setError("Please select a subscription plan")
       return
     }
 
@@ -72,7 +72,7 @@ export default function EdgePage() {
           email,
           fid: null,
           display_name: null,
-          tier,
+          plan,
         }),
       })
 
@@ -291,8 +291,8 @@ export default function EdgePage() {
 
               <form onSubmit={handleSubmit} className={styles.form}>
                 <select
-                  value={tier}
-                  onChange={(e) => setTier(e.target.value)}
+                  value={plan}
+                  onChange={(e) => setPlan(e.target.value)}
                   className={styles.tierSelect}
                   disabled={isSubmitting}
                 >

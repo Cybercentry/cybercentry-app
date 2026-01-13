@@ -7,7 +7,7 @@ import styles from "./page.module.css"
 
 function HomeStandalone() {
   const [email, setEmail] = useState("")
-  const [tier, setTier] = useState("")
+  const [plan, setPlan] = useState("")
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const heroRef = useRef<HTMLElement>(null)
@@ -94,8 +94,8 @@ function HomeStandalone() {
       return
     }
 
-    if (!tier) {
-      setError("Please select a subscription tier")
+    if (!plan) {
+      setError("Please select a subscription plan")
       return
     }
 
@@ -109,7 +109,7 @@ function HomeStandalone() {
           email,
           fid: null,
           display_name: null,
-          tier,
+          plan,
         }),
       })
 
@@ -394,8 +394,8 @@ function HomeStandalone() {
 
               <form onSubmit={handleSubmit} className={styles.form}>
                 <select
-                  value={tier}
-                  onChange={(e) => setTier(e.target.value)}
+                  value={plan}
+                  onChange={(e) => setPlan(e.target.value)}
                   className={styles.tierSelect}
                   disabled={isSubmitting}
                 >

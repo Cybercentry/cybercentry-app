@@ -359,11 +359,16 @@
     margin-bottom: 2rem;
   }
 
+  /* Fix mobile cursor positioning for inputs */
   .emailInput,
   .tierSelect {
     max-width: 100%;
     padding: 0.875rem 1rem;
     font-size: 16px; /* Prevents iOS zoom on focus */
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 52px;
+    touch-action: manipulation;
   }
 
   .joinButton {
