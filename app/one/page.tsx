@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import type React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { AddToAppsButton } from "@/components/add-to-apps-button"
 import styles from "./page.module.css"
 
 export default function OnePage() {
@@ -324,6 +325,8 @@ export default function OnePage() {
                   {isSubmitting ? "SIGNING UP..." : "SIGN UP NOW"}
                 </button>
               </form>
+
+              <AddToAppsButton buttonClassName={styles.addButton} descriptionClassName={styles.addDescription} />
             </div>
           </div>
         </div>

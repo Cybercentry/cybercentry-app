@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import type React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { AddToAppsButton } from "@/components/add-to-apps-button"
 import styles from "./page.module.css"
 
 export default function CorePage() {
@@ -17,6 +18,11 @@ export default function CorePage() {
   const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
   const prevMousePos = useRef({ x: 0.5, y: 0.5 })
   const router = useRouter()
+  const [openSections, setOpenSections] = useState<string[]>([])
+
+  const toggleSection = (section: string) => {
+    setOpenSections((prev) => (prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]))
+  }
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -214,61 +220,96 @@ export default function CorePage() {
         <div className={styles.content}>
           <h1 className={styles.title}>Core</h1>
           <div className={styles.price}>
-            <span className={styles.priceAmount}>$69.99 USDC</span>
+            <span className={styles.priceAmount}>$99.99 USDC</span>
             <span className={styles.pricePeriod}>per organisation per month</span>
           </div>
 
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Overview</h2>
             <p className={styles.description}>
-              The Cybercentry Core package provides essential managed detection and response capabilities for
-              organisations seeking foundational cyber security protection. Perfect for small to medium businesses
-              looking to establish a robust security baseline.
+              The Core package provides essential managed detection and response capabilities for Web3 organisations
+              looking to establish a solid security foundation. Designed for teams ready to take their first step into
+              professional security monitoring.
             </p>
           </div>
 
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>What&apos;s Included</h2>
-            <ul className={styles.featuresList}>
-              <li>
-                <strong>Managed EDR:</strong> Enterprise-grade endpoint detection and response managed by our security
-                experts
-              </li>
-              <li>
-                <strong>24/7 Monitoring:</strong> Round-the-clock surveillance of your security infrastructure
-              </li>
-              <li>
-                <strong>Free Security Assessment:</strong> Comprehensive evaluation of your current security posture
-              </li>
-              <li>
-                <strong>External Vulnerability Scanner:</strong> Regular scanning of external-facing assets for
-                vulnerabilities
-              </li>
-              <li>
-                <strong>Immediate Actions:</strong> Rapid response to detected threats and security incidents
-              </li>
-            </ul>
-          </div>
+          <div className={styles.accordionContainer}>
+            {/* What's Included Accordion */}
+            <div className={styles.accordionItem}>
+              <button
+                className={`${styles.accordionHeader} ${openSections.includes("included") ? styles.accordionHeaderOpen : ""}`}
+                onClick={() => toggleSection("included")}
+                aria-expanded={openSections.includes("included")}
+              >
+                <h2 className={styles.accordionTitle}>What&apos;s Included</h2>
+                <span className={styles.accordionIcon}>{openSections.includes("included") ? "−" : "+"}</span>
+              </button>
+              <div
+                className={`${styles.accordionContent} ${openSections.includes("included") ? styles.accordionContentOpen : ""}`}
+              >
+                <ul className={styles.featuresList}>
+                  <li>
+                    <strong>Managed EDR:</strong> 24/7 endpoint detection and response monitoring by security experts
+                  </li>
+                  <li>
+                    <strong>Continuous Monitoring:</strong> Round-the-clock surveillance of your infrastructure
+                  </li>
+                  <li>
+                    <strong>Threat Intelligence:</strong> Access to curated Web3-specific threat feeds
+                  </li>
+                  <li>
+                    <strong>Incident Response:</strong> Expert-led response to security incidents
+                  </li>
+                  <li>
+                    <strong>Monthly Reports:</strong> Detailed security posture assessments
+                  </li>
+                </ul>
+              </div>
+            </div>
 
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Key Benefits</h2>
-            <ul className={styles.benefitsList}>
-              <li>Affordable entry point to enterprise-grade security</li>
-              <li>Proactive threat detection and response</li>
-              <li>Reduced risk of data breaches and cyber attacks</li>
-              <li>Peace of mind with 24/7 expert monitoring</li>
-              <li>Compliance support for basic regulatory requirements</li>
-            </ul>
-          </div>
+            {/* Key Benefits Accordion */}
+            <div className={styles.accordionItem}>
+              <button
+                className={`${styles.accordionHeader} ${openSections.includes("benefits") ? styles.accordionHeaderOpen : ""}`}
+                onClick={() => toggleSection("benefits")}
+                aria-expanded={openSections.includes("benefits")}
+              >
+                <h2 className={styles.accordionTitle}>Key Benefits</h2>
+                <span className={styles.accordionIcon}>{openSections.includes("benefits") ? "−" : "+"}</span>
+              </button>
+              <div
+                className={`${styles.accordionContent} ${openSections.includes("benefits") ? styles.accordionContentOpen : ""}`}
+              >
+                <ul className={styles.benefitsList}>
+                  <li>Foundational security coverage for emerging Web3 projects</li>
+                  <li>Expert security monitoring without building an in-house team</li>
+                  <li>Quick deployment with minimal configuration required</li>
+                  <li>Cost-effective entry point for professional security</li>
+                  <li>Scalable foundation that grows with your project</li>
+                </ul>
+              </div>
+            </div>
 
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Ideal For</h2>
-            <p className={styles.description}>
-              Emerging Decentralised Autonomous Organisations (DAOs), Non-Fungible Token (NFT) projects, Game Finance
-              (GameFi) platforms, and Decentralised Finance (DeFi) protocols with limited security resources that need
-              professional-grade protection without the complexity of managing it themselves. Perfect for Web3 projects
-              in their early growth phase.
-            </p>
+            {/* Ideal For Accordion */}
+            <div className={styles.accordionItem}>
+              <button
+                className={`${styles.accordionHeader} ${openSections.includes("ideal") ? styles.accordionHeaderOpen : ""}`}
+                onClick={() => toggleSection("ideal")}
+                aria-expanded={openSections.includes("ideal")}
+              >
+                <h2 className={styles.accordionTitle}>Ideal For</h2>
+                <span className={styles.accordionIcon}>{openSections.includes("ideal") ? "−" : "+"}</span>
+              </button>
+              <div
+                className={`${styles.accordionContent} ${openSections.includes("ideal") ? styles.accordionContentOpen : ""}`}
+              >
+                <p className={styles.description}>
+                  Early-stage Decentralised Finance (DeFi) protocols, emerging Decentralised Autonomous Organisations
+                  (DAOs), Non-Fungible Token (NFT) projects launching their first collections, and Web3 startups looking
+                  to establish security fundamentals without overwhelming complexity.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -309,6 +350,8 @@ export default function CorePage() {
                   {isSubmitting ? "SIGNING UP..." : "SIGN UP NOW"}
                 </button>
               </form>
+
+              <AddToAppsButton buttonClassName={styles.addButton} descriptionClassName={styles.addDescription} />
             </div>
           </div>
         </div>

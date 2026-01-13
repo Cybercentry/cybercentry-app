@@ -14,7 +14,7 @@ export const minikitConfig = {
     description:
       "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
     tagline: "Future of Web3 Security",
-    buttonTitle: "Get Started",
+    buttonTitle: "Get",
     imageUrl: `${ROOT_URL}/blue-hero.png`,
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
     iconUrl: `${ROOT_URL}/blue-icon.png`,

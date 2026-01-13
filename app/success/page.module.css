@@ -143,6 +143,34 @@
   box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
 }
 
+/* Added Add to My Apps button styles */
+.addButton {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: white;
+  border: none;
+  padding: 1rem 3rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
+}
+
+.addButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(76, 175, 80, 0.5);
+}
+
+.addDescription {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
 /* Adding mobile responsive styles */
 @media (max-width: 768px) {
   .container {
@@ -180,6 +208,16 @@
   .shareButton {
     width: 100%;
     padding: 1rem 2rem;
+  }
+
+  /* Added mobile styles for add button */
+  .addButton {
+    width: 100%;
+    padding: 1rem 2rem;
+  }
+
+  .addDescription {
+    font-size: 0.85rem;
   }
 }
 

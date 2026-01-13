@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useComposeCast } from "@coinbase/onchainkit/minikit"
+import { AddToAppsButton, ShareButton } from "@/components/add-to-apps-button"
 import styles from "./page.module.css"
 
 const minikitConfig = {
@@ -11,7 +11,6 @@ const minikitConfig = {
 }
 
 export default function Success() {
-  const { composeCastAsync } = useComposeCast()
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const [mouseVelocity, setMouseVelocity] = useState({ x: 0, y: 0 })
   const prevMousePos = { x: 0.5, y: 0.5 }
@@ -35,25 +34,6 @@ export default function Success() {
       window.removeEventListener("mousemove", handleMouseMove)
     }
   }, [])
-
-  const handleShare = async () => {
-    try {
-      const text = `Yay! I just signed up for ${minikitConfig.miniapp.name.toUpperCase()}! `
-
-      const result = await composeCastAsync({
-        text: text,
-        embeds: [process.env.NEXT_PUBLIC_URL || ""],
-      })
-
-      if (result?.cast) {
-        console.log("Cast created successfully:", result.cast.hash)
-      } else {
-        console.log("User cancelled the cast")
-      }
-    } catch (error) {
-      console.error("Error sharing cast:", error)
-    }
-  }
 
   return (
     <div className={styles.container}>
@@ -191,9 +171,13 @@ export default function Success() {
             Get ready to experience the future of Web3 security.
           </p>
 
-          <button onClick={handleShare} className={styles.shareButton}>
-            SHARE
-          </button>
+          <AddToAppsButton buttonClassName={styles.addButton} descriptionClassName={styles.addDescription} />
+
+          <ShareButton
+            buttonClassName={styles.shareButton}
+            text={`Yay! I just signed up for ${minikitConfig.miniapp.name.toUpperCase()}!`}
+            embedUrl={process.env.NEXT_PUBLIC_URL || ""}
+          />
         </div>
       </div>
     </div>
