@@ -35,11 +35,12 @@ This requires wallet signing, so it cannot be automated here.
 [`app/page.tsx`](app/page.tsx) handles three cases, in order:
 
 1. **Inside a Mini App host** (Base app, Farcaster) — calls `sdk.actions.ready()`
-   to dismiss the host splash screen, then `sdk.actions.openUrl()` so the host
-   opens the site in its own browser. The page stays on screen showing a manual
-   button, because the host, not the page, owns navigation.
-2. **A normal browser** — `window.location.replace()`, so the redirect does not
-   add a history entry.
+   to dismiss the host splash screen, then **waits for the user to tap** "Open
+   Cybercentry", which calls `sdk.actions.openUrl()`. It deliberately does *not*
+   auto-open: hosts block `openUrl()` that isn't tied to a user gesture, so an
+   automatic call can fail silently and strand the visitor.
+2. **A normal browser** — `window.location.replace()` immediately, so the
+   redirect is instant and adds no history entry.
 3. **No JavaScript** — a `<noscript>` meta refresh, plus a visible button that
    works regardless.
 

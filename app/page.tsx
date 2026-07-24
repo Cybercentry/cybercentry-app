@@ -1,10 +1,13 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import type React from "react"
 import { TARGET_URL, TARGET_HOST } from "@/lib/target"
 import styles from "./page.module.css"
 
 // The host can be slow to answer, so never let detection block the redirect.
 const DETECT_TIMEOUT_MS = 1500
+
+type MiniAppSdk = typeof import("@farcaster/miniapp-sdk")["sdk"]
 
 function withTimeout<T>(promise: Promise<T>, fallback: T): Promise<T> {
   return Promise.race([
@@ -14,14 +17,15 @@ function withTimeout<T>(promise: Promise<T>, fallback: T): Promise<T> {
 }
 
 export default function Home() {
-  // Inside a Mini App the host opens the site in its own browser, so this page
-  // stays visible and needs to offer a manual link instead of a progress bar.
-  const [handedOff, setHandedOff] = useState(false)
+  // "detecting" covers the brief moment before we know where we are. On plain
+  // web we never leave it, because the redirect fires first.
+  const [mode, setMode] = useState<"detecting" | "miniapp">("detecting")
+  const sdkRef = useRef<MiniAppSdk | null>(null)
 
   useEffect(() => {
     let cancelled = false
 
-    const divert = async () => {
+    const detect = async () => {
       try {
         const { sdk } = await import("@farcaster/miniapp-sdk")
         const inMiniApp = await withTimeout(sdk.isInMiniApp(), false)
@@ -29,11 +33,13 @@ export default function Home() {
         if (cancelled) return
 
         if (inMiniApp) {
-          // Dismiss the host splash screen before handing off, otherwise the
-          // Mini App hangs on the loading state.
+          sdkRef.current = sdk
+          // Dismiss the host splash screen, otherwise the Mini App hangs on
+          // the loading state.
           await sdk.actions.ready()
-          await sdk.actions.openUrl(TARGET_URL)
-          if (!cancelled) setHandedOff(true)
+          if (!cancelled) setMode("miniapp")
+          // Deliberately no auto-open: hosts block openUrl() that isn't tied to
+          // a user gesture, so we wait for the tap.
           return
         }
       } catch {
@@ -44,12 +50,27 @@ export default function Home() {
       if (!cancelled) window.location.replace(TARGET_URL)
     }
 
-    divert()
+    detect()
 
     return () => {
       cancelled = true
     }
   }, [])
+
+  const handleOpen = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+    const sdk = sdkRef.current
+    // Outside a Mini App the plain href does the right thing already.
+    if (!sdk) return
+
+    event.preventDefault()
+    try {
+      await sdk.actions.openUrl(TARGET_URL)
+    } catch {
+      window.location.href = TARGET_URL
+    }
+  }
+
+  const isMiniApp = mode === "miniapp"
 
   return (
     <div className={styles.page}>
@@ -65,22 +86,21 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className={styles.card}>
-          <span className={styles.eyebrow}>{handedOff ? "Opened in your browser" : "Redirecting"}</span>
+          <span className={styles.eyebrow}>{isMiniApp ? "Cybercentry" : "Redirecting"}</span>
 
           <h1 className={styles.title}>Security &amp; Verification for Every EVM Chain and Solana</h1>
 
           <p className={styles.message}>
-            {handedOff ? "Cybercentry has opened at " : "Taking you to "}
-            <span className={styles.domain}>{TARGET_HOST}</span>
-            {handedOff ? "." : ". If nothing happens, use the button below."}
+            {isMiniApp ? "Continue to the full site at " : "Taking you to "}
+            <span className={styles.domain}>{TARGET_HOST}</span>.
           </p>
 
-          <a className={styles.button} href={TARGET_URL} rel="noopener noreferrer">
-            Continue to Cybercentry
+          <a className={styles.button} href={TARGET_URL} onClick={handleOpen} rel="noopener noreferrer">
+            {isMiniApp ? "Open Cybercentry" : "Continue to Cybercentry"}
             <span aria-hidden="true">&rarr;</span>
           </a>
 
-          {!handedOff && (
+          {!isMiniApp && (
             <div className={styles.progress} role="presentation">
               <div className={styles.progressBar} />
             </div>
