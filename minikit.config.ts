@@ -1,43 +1,42 @@
 const ROOT_URL = process.env.NEXT_PUBLIC_URL || "https://cybercentry-mini-app.up.railway.app"
 
-// NOTE: `miniapp` below mirrors the manifest JSON supplied by the Base/Farcaster
-// dashboard verbatim, at the owner's explicit request. Four values do NOT pass
-// `domainMiniAppConfigSchema` from @farcaster/miniapp-core:
+// `miniapp` mirrors the manifest JSON supplied by the Base/Farcaster dashboard
+// verbatim, at the owner's explicit request. Known issues kept as supplied:
 //
-//   imageUrl        " "            -> not a URL (deprecated field; ogImageUrl is set)
-//   webhookUrl      " "            -> not a URL (no /api/webhook route exists)
-//   splashImageUrl  " https://..." -> leading space, so not an https URL
-//   subtitle                       -> 54 chars (max 30) and contains "&", which is rejected
+//   webhookUrl      " "         -> not a URL (no /api/webhook route exists)
+//   subtitle                    -> 54 chars (max 30) and contains "&"; both rejected
+//   imageUrl        /image.png  -> 404, this file does not exist in /public
+//   splashImageUrl  /splash.png -> exists but is leftover template placeholder art,
+//                                  not Cybercentry branding (blue-icon.png is the logo)
 //
-// If a validator rejects this manifest, these are why. `git revert` the commit
-// that introduced them to restore the schema-valid version.
+// If a validator rejects the manifest, or the splash/embed art looks wrong,
+// these are why.
 export const minikitConfig = {
-  // ⚠️ STALE — this signature is bound to the old domain
-  // `cybercentry-one-mini-app.up.railway.app` and will FAIL verification on
-  // `cybercentry-mini-app.up.railway.app`. Regenerate it for the new domain at
-  // https://farcaster.xyz/~/developers/mini-apps/manifest and replace all three
-  // fields below.
+  // Signed 2026-07-24 for cybercentry-mini-app.up.railway.app by the FID 1302392
+  // custody key 0x2826EaeFc3Ff379491589c5BF53f026199dEC9A4. If the domain ever
+  // changes, this must be regenerated at
+  // https://farcaster.xyz/~/developers/mini-apps/manifest
   accountAssociation: {
     header:
-      "eyJmaWQiOjEzMDIzOTIsInR5cGUiOiJhdXRoIiwia2V5IjoiMHhiOEVmNkNFOEQ3N2U3NzcxNTQzRUMyNDJEMkNkM0E5RjFmMjBFNkZBIn0",
-    payload: "eyJkb21haW4iOiJjeWJlcmNlbnRyeS1vbmUtbWluaS1hcHAudXAucmFpbHdheS5hcHAifQ",
-    signature: "l8FgDdJ16mhquxCkixGASWGawyv6yG0ayFcA+iAGqb5kT+a06Rjzhzjz6sz8Q60tYWW4ncQokUQ/7oJt26wU0Rw=",
+      "eyJmaWQiOjEzMDIzOTIsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgyODI2RWFlRmMzRmYzNzk0OTE1ODljNUJGNTNmMDI2MTk5ZEVDOUE0In0",
+    payload: "eyJkb21haW4iOiJjeWJlcmNlbnRyeS1taW5pLWFwcC51cC5yYWlsd2F5LmFwcCJ9",
+    signature: "Xkgbc06EaGL8NpKb+s1dR64GTcl4QQ7B3+VoIhYELnd6hw8eSyNCv7O6KBZWzSuCfeTAI0s91g9vleoFexOGNRw=",
   },
   miniapp: {
     name: "Cybercentry",
     version: "1",
     iconUrl: `${ROOT_URL}/blue-icon.png`,
     homeUrl: ROOT_URL,
-    imageUrl: " ",
+    imageUrl: `${ROOT_URL}/image.png`,
     buttonTitle: "Open Mini App",
-    splashImageUrl: ` ${ROOT_URL}/blue-icon.png`,
+    splashImageUrl: `${ROOT_URL}/splash.png`,
     splashBackgroundColor: "#fcfcfc",
     webhookUrl: " ",
-    description: "Verify wallets, agents, contracts and applications before execution.",
     subtitle: "Security & Verification for Every EVM Chain and Solana",
+    description: "Verify wallets, agents, contracts and applications before execution.",
     primaryCategory: "utility",
     heroImageUrl: `${ROOT_URL}/blue-hero.png`,
-    tags: ["cybersecurity"],
+    tags: ["security"],
     tagline: "Future of Web3 Security",
     ogTitle: "Cybercentry",
     ogDescription: "Anticipate, prevent, and respond to cyber threats with confidence. Future of Web3 security.",
