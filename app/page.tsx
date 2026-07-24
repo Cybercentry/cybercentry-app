@@ -80,6 +80,9 @@ export default function Home() {
 
       <header className={styles.header}>
         <div className={styles.headerInner}>
+          {/* next/image is pointless here: next.config sets images.unoptimized,
+              and this is a single static logo on a page that redirects away. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/Cybercentry_Logo_Blue.png" alt="Cybercentry" className={styles.logo} />
         </div>
       </header>
@@ -101,7 +104,7 @@ export default function Home() {
           </a>
 
           {!isMiniApp && (
-            <div className={styles.progress} role="presentation">
+            <div className={styles.progress} aria-hidden="true">
               <div className={styles.progressBar} />
             </div>
           )}

@@ -122,7 +122,9 @@
   padding: 20px 16px;
   text-align: center;
   font-size: 0.75rem;
-  color: var(--text-subtle);
+  /* --text-subtle (#a1a1aa) is only 2.50:1 on the page background, below the
+     WCAG AA 4.5:1 threshold. --text-muted is 4.71:1. */
+  color: var(--text-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {

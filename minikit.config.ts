@@ -14,14 +14,14 @@ export const minikitConfig = {
   miniapp: {
     name: "Cybercentry",
     version: "1",
-    iconUrl: `${ROOT_URL}/blue-icon.png`,
+    // Every image below is generated from blue-icon.png to the sizes Farcaster
+    // documents: icon 1024x1024 with no alpha, splash 200x200, hero/og
+    // 1200x630 (1.91:1), embed 3:2. See scripts note in README.
+    iconUrl: `${ROOT_URL}/icon-1024.png`,
     homeUrl: ROOT_URL,
-    // /image.png does not exist; blue-hero.png is the branded asset and matches
-    // ogImageUrl below.
-    imageUrl: `${ROOT_URL}/blue-hero.png`,
+    imageUrl: `${ROOT_URL}/embed-1200x800.png`,
     buttonTitle: "Open Mini App",
-    // /splash.png is leftover template placeholder art, not Cybercentry branding.
-    splashImageUrl: `${ROOT_URL}/blue-icon.png`,
+    splashImageUrl: `${ROOT_URL}/splash-200.png`,
     splashBackgroundColor: "#fcfcfc",
     // Max 30 chars and no "&" — the schema rejects both, so the site's full
     // "Security & Verification for Every EVM Chain and Solana" line lives on the
@@ -29,12 +29,12 @@ export const minikitConfig = {
     subtitle: "Security and Verification",
     description: "Verify wallets, agents, contracts and applications before execution.",
     primaryCategory: "utility",
-    heroImageUrl: `${ROOT_URL}/blue-hero.png`,
+    heroImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     tags: ["security"],
     tagline: "Future of Web3 Security",
     ogTitle: "Cybercentry",
     ogDescription: "Anticipate, prevent, and respond to cyber threats with confidence. Future of Web3 security.",
-    ogImageUrl: `${ROOT_URL}/blue-hero.png`,
+    ogImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     castShareUrl: ROOT_URL,
   },
   baseBuilder: {
