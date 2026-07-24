@@ -15,13 +15,13 @@ export const minikitConfig = {
   miniapp: {
     version: "1",
     name: "Cybercentry",
-    subtitle: "Managed Detection and Response",
-    description:
-      "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
+    // Max 30 chars and no `&` — the schema rejects both, so the site's full
+    // "Security & Verification for Every EVM Chain and Solana" line lives on
+    // the page heading instead.
+    subtitle: "Security and Verification",
+    description: "Verify wallets, agents, contracts and applications before execution.",
     tagline: "Future of Web3 Security",
-    buttonTitle: "Get",
-    imageUrl: `${ROOT_URL}/blue-hero.png`,
-    screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
+    buttonTitle: "Open Mini App",
     iconUrl: `${ROOT_URL}/blue-icon.png`,
     // Light splash to match the destination site, so the handoff doesn't flash
     // from dark to light.
@@ -29,7 +29,7 @@ export const minikitConfig = {
     splashBackgroundColor: "#fcfcfc",
     homeUrl: ROOT_URL,
     primaryCategory: "utility",
-    tags: ["cybersecurity", "subscription", "msp", "mdr", "compliance"],
+    tags: ["cybersecurity"],
     heroImageUrl: `${ROOT_URL}/blue-hero.png`,
     ogTitle: "Cybercentry",
     ogDescription: "Anticipate, prevent, and respond to cyber threats with confidence. Future of Web3 security.",
