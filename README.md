@@ -1,133 +1,103 @@
-# Waitlist Mini App Quickstart
+# Cybercentry Mini App
 
-This is a demo Mini App application built using OnchainKit and the Farcaster SDK. Build a waitlist sign-up mini app for your company that can be published to the Base app and Farcaster.
+A minimal Farcaster / Base Mini App whose only job is to divert visitors to
+**https://centry.cybercentry.co.uk**.
 
-## Prerequisites
+The app still needs to exist and stay deployed because the signed Mini App
+manifest at `/.well-known/farcaster.json` is bound to this app's own domain. The
+`accountAssociation` signature covers that domain specifically, so the manifest
+cannot simply be moved to the destination site.
 
-Before getting started, make sure you have:
+## ⚠️ Outstanding: re-sign the manifest
 
-* Base app account
-* A [Farcaster](https://farcaster.xyz/) account
-* [Vercel](https://vercel.com/) account for hosting the application
-* [Coinbase Developer Platform](https://portal.cdp.coinbase.com/) Client API Key
+The app moved from `cybercentry-one-mini-app.up.railway.app` to
+`cybercentry-mini-app.up.railway.app`. The `accountAssociation` block in
+[`minikit.config.ts`](minikit.config.ts) is **still signed for the old domain**
+and will fail verification until it is regenerated:
 
-## Getting Started
+1. Go to the [Farcaster Manifest tool](https://farcaster.xyz/~/developers/mini-apps/manifest).
+2. Enter `cybercentry-mini-app.up.railway.app`.
+3. Sign with the Farcaster custody wallet and copy the new `accountAssociation`.
+4. Replace all three fields (`header`, `payload`, `signature`) in `minikit.config.ts`.
 
-### 1. Clone this repository 
+This requires wallet signing, so it cannot be automated here.
 
-\`\`\`bash
-git clone https://github.com/base/demos.git
-\`\`\`
+## Domains
 
-### 2. Install dependencies:
+| Host | Use |
+| --- | --- |
+| `cybercentry-mini-app.up.railway.app` | Public URL — manifest, embeds, Mini App entry point |
+| `cybercentry-mini-app.railway.internal` | Railway private network only. Not publicly reachable — never use it in the manifest |
+| `centry.cybercentry.co.uk` | The divert destination |
 
-\`\`\`bash
-cd demos/minikit/waitlist-mini-app-qs
-npm install
-\`\`\`
+## How the divert works
 
-### 3. Configure environment variables
+[`app/page.tsx`](app/page.tsx) handles three cases, in order:
 
-Create a `.env.local` file and add your environment variables:
+1. **Inside a Mini App host** (Base app, Farcaster) — calls `sdk.actions.ready()`
+   to dismiss the host splash screen, then `sdk.actions.openUrl()` so the host
+   opens the site in its own browser. The page stays on screen showing a manual
+   button, because the host, not the page, owns navigation.
+2. **A normal browser** — `window.location.replace()`, so the redirect does not
+   add a history entry.
+3. **No JavaScript** — a `<noscript>` meta refresh, plus a visible button that
+   works regardless.
 
-\`\`\`bash
-NEXT_PUBLIC_PROJECT_NAME="Your App Name"
-NEXT_PUBLIC_ONCHAINKIT_API_KEY=<Replace-WITH-YOUR-CDP-API-KEY>
-NEXT_PUBLIC_URL=
-\`\`\`
+Host detection is raced against a 1.5s timeout so a slow or unresponsive host can
+never leave a visitor stuck on this page.
 
-### 4. Run locally:
+The destination lives in one place: [`lib/target.ts`](lib/target.ts).
 
-\`\`\`bash
-npm run dev
-\`\`\`
+## Styling
 
-## Customization
+The divert page mirrors the destination site so the handoff reads as one product:
 
-### Update Manifest Configuration
+| Token | Value |
+| --- | --- |
+| Brand | `#0d2b6b` |
+| Accent | `#93c5fd` |
+| Page background | `#fcfcfc` |
+| Surface | `#ffffff` |
+| Border | `#e4e4e4` |
+| Text / muted / subtle | `#18181b` / `#71717a` / `#a1a1aa` |
+| Font | Geist + Geist Mono |
 
-The `minikit.config.ts` file configures your manifest located at `app/.well-known/farcaster.json`.
+Defined in [`app/globals.css`](app/globals.css). The manifest splash is light
+(`#fcfcfc` + `blue-icon.png`) to match, so launching the Mini App doesn't flash
+dark before landing on a light page.
 
-**Skip the `accountAssociation` object for now.**
+## Routes
 
-To personalize your app, change the `name`, `subtitle`, and `description` fields and add images to your `/public` folder. Then update their URLs in the file.
+| Route | Purpose |
+| --- | --- |
+| `/` | The divert page |
+| `/.well-known/farcaster.json` | Mini App manifest, generated from `minikit.config.ts` |
+
+Nothing else is served. The previous waitlist form, product/pricing pages,
+`/api/*` routes, and Postgres integration were removed — see git history if any
+of it needs to come back.
+
+## Verification tags
+
+The Base app domain-ownership tag (`base:app_id`) is emitted into `<head>` from
+`generateMetadata` in [`app/layout.tsx`](app/layout.tsx).
+
+## Local development
+
+```bash
+pnpm install
+pnpm dev
+```
+
+No environment variables are required. `NEXT_PUBLIC_URL` is optional and
+overrides the base URL used for manifest asset links; it defaults to the public
+Railway domain.
 
 ## Deployment
 
-### 1. Deploy to Vercel
+Deployed on Railway. `pnpm build` then `pnpm start` (the start script honours
+`$PORT`).
 
-\`\`\`bash
-vercel --prod
-\`\`\`
+## Changing the destination
 
-You should have a URL deployed to a domain similar to: `https://your-vercel-project-name.vercel.app/`
-
-### 2. Update environment variables
-
-Add your production URL to your local `.env` file:
-
-\`\`\`bash
-NEXT_PUBLIC_PROJECT_NAME="Your App Name"
-NEXT_PUBLIC_ONCHAINKIT_API_KEY=<Replace-WITH-YOUR-CDP-API-KEY>
-NEXT_PUBLIC_URL=https://your-vercel-project-name.vercel.app/
-\`\`\`
-
-### 3. Upload environment variables to Vercel
-
-Add environment variables to your production environment:
-
-\`\`\`bash
-vercel env add NEXT_PUBLIC_PROJECT_NAME production
-vercel env add NEXT_PUBLIC_ONCHAINKIT_API_KEY production
-vercel env add NEXT_PUBLIC_URL production
-\`\`\`
-
-## Account Association
-
-### 1. Sign Your Manifest
-
-1. Navigate to [Farcaster Manifest tool](https://farcaster.xyz/~/developers/mini-apps/manifest)
-2. Paste your domain in the form field (ex: your-vercel-project-name.vercel.app)
-3. Click the `Generate account association` button and follow the on-screen instructions for signing with your Farcaster wallet
-4. Copy the `accountAssociation` object
-
-### 2. Update Configuration
-
-Update your `minikit.config.ts` file to include the `accountAssociation` object:
-
-\`\`\`ts
-export const minikitConfig = {
-    accountAssociation: {
-        "header": "your-header-here",
-        "payload": "your-payload-here",
-        "signature": "your-signature-here"
-    },
-    frame: {
-        // ... rest of your frame configuration
-    },
-}
-\`\`\`
-
-### 3. Deploy Updates
-
-\`\`\`bash
-vercel --prod
-\`\`\`
-
-## Testing and Publishing
-
-### 1. Preview Your App
-
-Go to [base.dev/preview](https://base.dev/preview) to validate your app:
-
-1. Add your app URL to view the embeds and click the launch button to verify the app launches as expected
-2. Use the "Account association" tab to verify the association credentials were created correctly
-3. Use the "Metadata" tab to see the metadata added from the manifest and identify any missing fields
-
-### 2. Publish to Base App
-
-To publish your app, create a post in the Base app with your app's URL.
-
-## Learn More
-
-For detailed step-by-step instructions, see the [Create a Mini App tutorial](https://docs.base.org/docs/mini-apps/quickstart/create-new-miniapp/) in the Base documentation.
+Edit `TARGET_URL` in [`lib/target.ts`](lib/target.ts) and redeploy.

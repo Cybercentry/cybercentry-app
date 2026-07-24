@@ -1,6 +1,11 @@
-const ROOT_URL = process.env.NEXT_PUBLIC_URL || "https://cybercentry-one-mini-app.up.railway.app"
+const ROOT_URL = process.env.NEXT_PUBLIC_URL || "https://cybercentry-mini-app.up.railway.app"
 
 export const minikitConfig = {
+  // ⚠️ STALE — this signature is bound to the old domain
+  // `cybercentry-one-mini-app.up.railway.app` and will FAIL verification on
+  // `cybercentry-mini-app.up.railway.app`. Regenerate it for the new domain at
+  // https://farcaster.xyz/~/developers/mini-apps/manifest and replace all three
+  // fields below.
   accountAssociation: {
     header:
       "eyJmaWQiOjEzMDIzOTIsInR5cGUiOiJhdXRoIiwia2V5IjoiMHhiOEVmNkNFOEQ3N2U3NzcxNTQzRUMyNDJEMkNkM0E5RjFmMjBFNkZBIn0",
@@ -9,7 +14,7 @@ export const minikitConfig = {
   },
   miniapp: {
     version: "1",
-    name: "Cybercentry One",
+    name: "Cybercentry",
     subtitle: "Managed Detection and Response",
     description:
       "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
@@ -18,14 +23,15 @@ export const minikitConfig = {
     imageUrl: `${ROOT_URL}/blue-hero.png`,
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
     iconUrl: `${ROOT_URL}/blue-icon.png`,
-    splashImageUrl: `${ROOT_URL}/white-icon.png`,
-    splashBackgroundColor: "#0d2b6b",
+    // Light splash to match the destination site, so the handoff doesn't flash
+    // from dark to light.
+    splashImageUrl: `${ROOT_URL}/blue-icon.png`,
+    splashBackgroundColor: "#fcfcfc",
     homeUrl: ROOT_URL,
-    webhookUrl: `${ROOT_URL}/api/webhook`,
     primaryCategory: "utility",
     tags: ["cybersecurity", "subscription", "msp", "mdr", "compliance"],
     heroImageUrl: `${ROOT_URL}/blue-hero.png`,
-    ogTitle: "Cybercentry One",
+    ogTitle: "Cybercentry",
     ogDescription: "Anticipate, prevent, and respond to cyber threats with confidence. Future of Web3 security.",
     ogImageUrl: `${ROOT_URL}/blue-hero.png`,
     castShareUrl: ROOT_URL,

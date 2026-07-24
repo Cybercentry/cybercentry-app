@@ -1,32 +1,27 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter, Source_Code_Pro } from "next/font/google"
-import { RootProvider } from "./rootProvider"
-import { LiveChat } from "./livechat-widget"
+import { Geist, Geist_Mono } from "next/font/google"
+import { minikitConfig } from "../minikit.config"
 import "./globals.css"
 
-const minikitConfig = {
-  miniapp: {
-    version: "1",
-    name: "Cybercentry One",
-    description:
-      "Empowers individuals and organisations to anticipate, prevent, and respond to cyber threats with confidence.",
-    heroImageUrl: "https://cybercentry-one-mini-app.up.railway.app/blue-hero.png",
-  },
-}
+/** Base app domain-ownership verification. Renders into <head> on every page. */
+const BASE_APP_ID = "69f84bd5879b4ae3fa1c713f"
 
 export async function generateMetadata(): Promise<Metadata> {
+  const { miniapp } = minikitConfig
+
   return {
-    title: minikitConfig.miniapp.name,
-    description: minikitConfig.miniapp.description,
+    title: miniapp.name,
+    description: miniapp.description,
     other: {
+      "base:app_id": BASE_APP_ID,
       "fc:frame": JSON.stringify({
-        version: minikitConfig.miniapp.version,
-        imageUrl: minikitConfig.miniapp.heroImageUrl,
+        version: miniapp.version,
+        imageUrl: miniapp.heroImageUrl,
         button: {
-          title: "Future of Web3 Security",
+          title: miniapp.tagline,
           action: {
-            name: `Launch ${minikitConfig.miniapp.name}`,
+            name: `Launch ${miniapp.name}`,
             type: "launch_frame",
           },
         },
@@ -35,13 +30,13 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-const inter = Inter({
-  variable: "--font-inter",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
 })
 
-const sourceCodePro = Source_Code_Pro({
-  variable: "--font-source-code-pro",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 })
 
@@ -52,10 +47,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${sourceCodePro.variable}`}>
-        <RootProvider>{children}</RootProvider>
-        <LiveChat />
-      </body>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
     </html>
   )
 }
