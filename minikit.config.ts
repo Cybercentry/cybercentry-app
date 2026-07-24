@@ -1,16 +1,5 @@
 const ROOT_URL = process.env.NEXT_PUBLIC_URL || "https://cybercentry-mini-app.up.railway.app"
 
-// `miniapp` mirrors the manifest JSON supplied by the Base/Farcaster dashboard
-// verbatim, at the owner's explicit request. Known issues kept as supplied:
-//
-//   webhookUrl      " "         -> not a URL (no /api/webhook route exists)
-//   subtitle                    -> 54 chars (max 30) and contains "&"; both rejected
-//   imageUrl        /image.png  -> 404, this file does not exist in /public
-//   splashImageUrl  /splash.png -> exists but is leftover template placeholder art,
-//                                  not Cybercentry branding (blue-icon.png is the logo)
-//
-// If a validator rejects the manifest, or the splash/embed art looks wrong,
-// these are why.
 export const minikitConfig = {
   // Signed 2026-07-24 for cybercentry-mini-app.up.railway.app by the FID 1302392
   // custody key 0x2826EaeFc3Ff379491589c5BF53f026199dEC9A4. If the domain ever
@@ -27,12 +16,17 @@ export const minikitConfig = {
     version: "1",
     iconUrl: `${ROOT_URL}/blue-icon.png`,
     homeUrl: ROOT_URL,
-    imageUrl: `${ROOT_URL}/image.png`,
+    // /image.png does not exist; blue-hero.png is the branded asset and matches
+    // ogImageUrl below.
+    imageUrl: `${ROOT_URL}/blue-hero.png`,
     buttonTitle: "Open Mini App",
-    splashImageUrl: `${ROOT_URL}/splash.png`,
+    // /splash.png is leftover template placeholder art, not Cybercentry branding.
+    splashImageUrl: `${ROOT_URL}/blue-icon.png`,
     splashBackgroundColor: "#fcfcfc",
-    webhookUrl: " ",
-    subtitle: "Security & Verification for Every EVM Chain and Solana",
+    // Max 30 chars and no "&" — the schema rejects both, so the site's full
+    // "Security & Verification for Every EVM Chain and Solana" line lives on the
+    // divert page heading instead.
+    subtitle: "Security and Verification",
     description: "Verify wallets, agents, contracts and applications before execution.",
     primaryCategory: "utility",
     heroImageUrl: `${ROOT_URL}/blue-hero.png`,
