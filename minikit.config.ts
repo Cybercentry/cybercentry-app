@@ -1,5 +1,16 @@
 const ROOT_URL = process.env.NEXT_PUBLIC_URL || "https://cybercentry-mini-app.up.railway.app"
 
+// NOTE: `miniapp` below mirrors the manifest JSON supplied by the Base/Farcaster
+// dashboard verbatim, at the owner's explicit request. Four values do NOT pass
+// `domainMiniAppConfigSchema` from @farcaster/miniapp-core:
+//
+//   imageUrl        " "            -> not a URL (deprecated field; ogImageUrl is set)
+//   webhookUrl      " "            -> not a URL (no /api/webhook route exists)
+//   splashImageUrl  " https://..." -> leading space, so not an https URL
+//   subtitle                       -> 54 chars (max 30) and contains "&", which is rejected
+//
+// If a validator rejects this manifest, these are why. `git revert` the commit
+// that introduced them to restore the schema-valid version.
 export const minikitConfig = {
   // ⚠️ STALE — this signature is bound to the old domain
   // `cybercentry-one-mini-app.up.railway.app` and will FAIL verification on
@@ -13,24 +24,21 @@ export const minikitConfig = {
     signature: "l8FgDdJ16mhquxCkixGASWGawyv6yG0ayFcA+iAGqb5kT+a06Rjzhzjz6sz8Q60tYWW4ncQokUQ/7oJt26wU0Rw=",
   },
   miniapp: {
-    version: "1",
     name: "Cybercentry",
-    // Max 30 chars and no `&` — the schema rejects both, so the site's full
-    // "Security & Verification for Every EVM Chain and Solana" line lives on
-    // the page heading instead.
-    subtitle: "Security and Verification",
-    description: "Verify wallets, agents, contracts and applications before execution.",
-    tagline: "Future of Web3 Security",
-    buttonTitle: "Open Mini App",
+    version: "1",
     iconUrl: `${ROOT_URL}/blue-icon.png`,
-    // Light splash to match the destination site, so the handoff doesn't flash
-    // from dark to light.
-    splashImageUrl: `${ROOT_URL}/blue-icon.png`,
-    splashBackgroundColor: "#fcfcfc",
     homeUrl: ROOT_URL,
+    imageUrl: " ",
+    buttonTitle: "Open Mini App",
+    splashImageUrl: ` ${ROOT_URL}/blue-icon.png`,
+    splashBackgroundColor: "#fcfcfc",
+    webhookUrl: " ",
+    description: "Verify wallets, agents, contracts and applications before execution.",
+    subtitle: "Security & Verification for Every EVM Chain and Solana",
     primaryCategory: "utility",
-    tags: ["cybersecurity"],
     heroImageUrl: `${ROOT_URL}/blue-hero.png`,
+    tags: ["cybersecurity"],
+    tagline: "Future of Web3 Security",
     ogTitle: "Cybercentry",
     ogDescription: "Anticipate, prevent, and respond to cyber threats with confidence. Future of Web3 security.",
     ogImageUrl: `${ROOT_URL}/blue-hero.png`,

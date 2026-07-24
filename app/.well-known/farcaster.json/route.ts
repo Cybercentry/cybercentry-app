@@ -13,7 +13,12 @@ const headers = {
 }
 
 export async function GET() {
-  return Response.json(minikitConfig, { headers })
+  const { accountAssociation, miniapp, baseBuilder } = minikitConfig
+
+  // `frame` is the legacy key and `miniapp` the current one. The schema accepts
+  // either, so both are emitted with identical content — the Base dashboard
+  // reads `frame`, newer tooling reads `miniapp`.
+  return Response.json({ accountAssociation, frame: miniapp, miniapp, baseBuilder }, { headers })
 }
 
 export async function OPTIONS() {
