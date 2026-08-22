@@ -24,17 +24,17 @@ export const minikitConfig = {
     splashImageUrl: `${ROOT_URL}/splash-200.png`,
     splashBackgroundColor: "#fcfcfc",
     // Copy mirrors the live site (centry.cybercentry.co.uk): its web manifest
-    // brands as "Security Verification for EVM and Solana", and its service
+    // brands as "Web3 Security Verification for EVM and Solana", and its service
     // catalogue is pay-per-call ("Pay for the call, not the seat"). Kept within
     // the schema's 30-char subtitle limit and free of banned characters.
-    subtitle: "Security Verification",
+    subtitle: "Web3 Security Verification",
     description: "Verify wallets, agents, contracts and applications before execution.",
     primaryCategory: "utility",
     heroImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     tags: ["security"],
     tagline: "Verify before you transact",
     ogTitle: "Cybercentry",
-    ogDescription: "Pay-per-call verification for tokens, wallets, contracts and agents across EVM and Solana.",
+    ogDescription: "Pay-per-call Web3 verification for tokens, wallets, contracts and agents across EVM and Solana.",
     ogImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     castShareUrl: ROOT_URL,
   },
