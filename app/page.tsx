@@ -91,7 +91,7 @@ export default function Home() {
         <div className={styles.card}>
           <span className={styles.eyebrow}>{isMiniApp ? "Cybercentry" : "Redirecting"}</span>
 
-          <h1 className={styles.title}>Security &amp; Verification for Every EVM Chain and Solana</h1>
+          <h1 className={styles.title}>Security Verification for EVM and Solana</h1>
 
           <p className={styles.message}>
             {isMiniApp ? "Continue to the full site at " : "Taking you to "}
