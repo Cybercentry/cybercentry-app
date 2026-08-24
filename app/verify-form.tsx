@@ -225,7 +225,7 @@ export function VerifyForm() {
         <p className={styles.hint}>
           {elapsed < 60
             ? "Running a real on-chain buy-and-sell round trip and reading the contract — usually under a minute."
-            : "Still going — this is a busy token (many pools / lots of history). Your payment is safe; keep the app open, it can take a few minutes."}
+            : "Still going — this is a busy token (many pools / lots of history). Keep the app open, it can take a few minutes."}
         </p>
       ) : (
         <ul className={styles.miniChecks}>
