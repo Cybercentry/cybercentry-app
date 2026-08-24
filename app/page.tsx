@@ -156,7 +156,7 @@ export default function Home() {
               <span className={styles.metaDot} />$1 per check
             </span>
             <span className={styles.metaItem}>
-              <span className={styles.metaDot} />results in seconds
+              <span className={styles.metaDot} />results in Seconds
             </span>
             <span className={styles.metaItem}>
               <span className={styles.metaDot} />Base mainnet
