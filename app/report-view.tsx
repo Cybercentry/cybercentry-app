@@ -179,7 +179,8 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
             <section className={styles.reportSection}>
               <h3 className={styles.reportH3}>Before you buy</h3>
               <p className={styles.reportNote}>
-                This may well be the genuine token. These are cautions about the wider market, not faults in this contract.
+                This may well be the genuine token. Others have minted copycats with the same ticker, so confirm the
+                contract address before buying.
               </p>
               <ul className={styles.findings}>
                 {advisories.map((f) => (
