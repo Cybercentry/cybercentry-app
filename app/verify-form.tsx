@@ -161,7 +161,6 @@ export function VerifyForm() {
 
       <button type="submit" className={styles.cta} disabled={busy}>
         {ctaLabel}
-        {!busy ? <span aria-hidden="true"> &rarr;</span> : null}
       </button>
 
       {!busy ? <p className={styles.priceNote}>$1 in USDC per check · paid once with Base Pay</p> : null}
