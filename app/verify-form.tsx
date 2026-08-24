@@ -1,5 +1,5 @@
 "use client"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 // Browser payment entry: pay() without the node/CDP subscription code, which
 // pulls the optional @x402/evm dep we don't use.
 import { pay } from "@base-org/account/payment/browser"
@@ -30,8 +30,20 @@ export function VerifyForm() {
   const [phase, setPhase] = useState<Phase>("idle")
   const [error, setError] = useState("")
   const [report, setReport] = useState<CbtvReport | null>(null)
+  const [elapsed, setElapsed] = useState(0)
   const busy = phase === "paying" || phase === "scanning"
   const cancelled = useRef(false)
+
+  // Tick a seconds counter while a scan runs so ~30s of waiting has live feedback.
+  useEffect(() => {
+    if (phase !== "scanning") {
+      setElapsed(0)
+      return
+    }
+    const start = Date.now()
+    const iv = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000)
+    return () => clearInterval(iv)
+  }, [phase])
 
   const reset = () => {
     cancelled.current = true
@@ -111,6 +123,10 @@ export function VerifyForm() {
     return <ReportView report={report} onReset={reset} />
   }
 
+  let ctaLabel = "Verify a B20 token — $1"
+  if (phase === "paying") ctaLabel = "Confirm payment…"
+  else if (phase === "scanning") ctaLabel = `Scanning… ${elapsed}s`
+
   return (
     <form className={styles.verify} onSubmit={onSubmit}>
       <label className={styles.label} htmlFor="token">
@@ -144,7 +160,7 @@ export function VerifyForm() {
       {error ? <p className={styles.error}>{error}</p> : null}
 
       <button type="submit" className={styles.cta} disabled={busy}>
-        {phase === "paying" ? "Confirm payment…" : phase === "scanning" ? "Scanning…" : "Verify a B20 token — $1"}
+        {ctaLabel}
         {!busy ? <span aria-hidden="true"> &rarr;</span> : null}
       </button>
 
@@ -155,7 +171,10 @@ export function VerifyForm() {
       ) : null}
 
       {phase === "scanning" ? (
-        <p className={styles.hint}>Reading the contract and running a real buy-and-sell round trip. This takes a few seconds.</p>
+        <p className={styles.hint}>
+          Running a real on-chain buy-and-sell round trip and reading the contract. This usually takes about 30
+          seconds — keep the app open.
+        </p>
       ) : (
         <ul className={styles.miniChecks}>
           {CHECKS.map((c) => (

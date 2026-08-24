@@ -277,32 +277,35 @@
   color: var(--text-muted);
 }
 
-/* Risk-first headline: the single most important reason, right under the verdict. */
-.headline {
+/* The hero answer to the app's question: Can you sell it? */
+.answer {
   margin-top: 16px;
-  padding: 14px 16px;
+  padding: 16px;
   border: 1px solid var(--border);
-  border-left-width: 4px;
-  border-radius: 0.5rem;
+  border-left-width: 5px;
+  border-radius: 0.6rem;
   background: var(--surface);
 }
 
-.headlineLabel {
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.headlineTitle {
-  margin-top: 4px;
-  font-size: 1rem;
+.answerQ {
+  display: block;
+  font-size: 0.78rem;
   font-weight: 700;
-  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
 }
 
-.headlineWhy {
-  margin-top: 6px;
+.answerA {
+  display: block;
+  margin-top: 2px;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.answerWhy {
+  margin-top: 8px;
   font-size: 0.9rem;
   line-height: 1.5;
   color: var(--text-muted);

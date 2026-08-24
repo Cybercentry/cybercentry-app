@@ -61,16 +61,29 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
   const detectors = report.detectors ?? []
   const notB20 = report.is_b20 === false || report.status === "not_b20"
 
-  // Findings sorted worst-first; a sell-side/honeypot result is pulled to the top
-  // as the headline reason regardless of the model's ordering.
+  // Findings sorted worst-first.
   const findings = (report.findings ?? [])
     .filter((f) => f.title)
     .sort((a, b) => RISK_ORDER[toLevel(b.severity)] - RISK_ORDER[toLevel(a.severity)])
-  const honeypot = findings.find((f) => /sold|can.?not be sold|sell/i.test(f.title))
-  const headline = honeypot ?? findings[0]
 
   const threats = detectors.filter((d) => d.category === "threat")
   const controls = detectors.filter((d) => d.category === "control" && d.impact !== "Informational")
+
+  // The app's whole promise is "Can you sell it?" — answer it directly and first.
+  // A sell-side result lives in the venue findings (cannot be sold / honeypot) or
+  // a honeypot detector.
+  const sellFinding = findings.find((f) => /cannot be sold|sold back|honeypot/i.test(f.title))
+  const honeypotDetector = detectors.find(
+    (d) => d.check === "honeypot" || d.check === "receive-restricted" || /honeypot/i.test(d.description),
+  )
+  const cannotSell = Boolean(sellFinding || honeypotDetector)
+  const sellReason =
+    sellFinding?.why ||
+    honeypotDetector?.description ||
+    (cannotSell
+      ? "The pool won't let you sell this token back at value."
+      : "No sell-side trap was found — this token looks sellable. Still weigh the risks below.")
+  const sellColor = cannotSell ? "#dc2626" : "#16a34a"
 
   // The verdict is the WORST of overall_risk, the capped grade, and the findings —
   // never the mildest. Stops a Medium control surface hiding a High-risk honeypot.
@@ -105,16 +118,14 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
         </p>
       ) : (
         <>
-          {/* Risk first + the reason why. */}
-          {headline ? (
-            <div className={styles.headline} style={{ borderColor: vColor }}>
-              <span className={styles.headlineLabel} style={{ color: vColor }}>
-                Why {displayLevel.toLowerCase()} risk
-              </span>
-              <p className={styles.headlineTitle}>{headline.title}</p>
-              {headline.why ? <p className={styles.headlineWhy}>{headline.why}</p> : null}
-            </div>
-          ) : null}
+          {/* The app's promise, answered first and unmissably. */}
+          <div className={styles.answer} style={{ borderColor: sellColor }}>
+            <span className={styles.answerQ}>Can you sell it?</span>
+            <span className={styles.answerA} style={{ color: sellColor }}>
+              {cannotSell ? "No" : "Yes"}
+            </span>
+            <p className={styles.answerWhy}>{sellReason}</p>
+          </div>
 
           <div className={styles.summaryRow}>
             <span>
