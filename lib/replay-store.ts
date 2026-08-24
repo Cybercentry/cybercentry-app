@@ -5,9 +5,13 @@ import postgres from "postgres"
 
 // Fast in-instance cache; also the fallback whenever the DB is unavailable.
 const mem = new Set<string>()
+// jobId → payer wallet. In-instance fast path + fallback; the DB copy is what
+// makes it work when POST and the GET poll land on different replicas.
+const memPayer = new Map<string, string>()
 
 let sql: ReturnType<typeof postgres> | null = null
 let tableReady = false
+let payerTableReady = false
 // Circuit breaker: once the DB errors, skip it for this long so we don't pay the
 // connect timeout on every request while it's down. It reads ECONNREFUSED-fast.
 let dbDownUntil = 0
@@ -29,6 +33,7 @@ function tripBreaker(err: unknown) {
   console.warn("[replay] DB unavailable, using in-memory guard:", err instanceof Error ? err.message : err)
   dbDownUntil = Date.now() + BREAKER_MS
   tableReady = false
+  payerTableReady = false
   const old = sql
   sql = null
   old?.end({ timeout: 1 }).catch(() => {})
@@ -70,5 +75,53 @@ export async function claimPayment(id: string): Promise<boolean> {
     tripBreaker(err)
     mem.add(id)
     return true
+  }
+}
+
+/**
+ * Record who paid for a job so a High-risk result can notify them — even when the
+ * POST and the GET poll are served by different replicas. Best-effort: always
+ * kept in-memory, mirrored to Postgres when available; never throws.
+ */
+export async function setPayer(jobId: string, wallet: string): Promise<void> {
+  memPayer.set(jobId, wallet)
+  const db = getSql()
+  if (!db) return
+  try {
+    if (!payerTableReady) {
+      await db`
+        CREATE TABLE IF NOT EXISTS payer_by_job (
+          job_id text PRIMARY KEY,
+          wallet text NOT NULL,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `
+      payerTableReady = true
+    }
+    await db`
+      INSERT INTO payer_by_job (job_id, wallet) VALUES (${jobId}, ${wallet})
+      ON CONFLICT (job_id) DO UPDATE SET wallet = ${wallet}
+    `
+  } catch (err) {
+    tripBreaker(err)
+  }
+}
+
+/**
+ * Consume the payer for a job (returns the wallet once, then forgets it — so a
+ * repeated poll can't fire a duplicate notification). Reads the durable row when
+ * available, falls back to the in-instance map. Never throws.
+ */
+export async function takePayer(jobId: string): Promise<string | null> {
+  const local = memPayer.get(jobId) ?? null
+  if (local) memPayer.delete(jobId)
+  const db = getSql()
+  if (!db) return local
+  try {
+    const rows = await db`DELETE FROM payer_by_job WHERE job_id = ${jobId} RETURNING wallet`
+    return (rows[0]?.wallet as string | undefined) ?? local
+  } catch (err) {
+    tripBreaker(err)
+    return local
   }
 }

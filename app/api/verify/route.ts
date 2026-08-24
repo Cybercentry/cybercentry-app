@@ -4,13 +4,9 @@ import { NextResponse } from "next/server"
 // code we don't use.
 import { getPaymentStatus } from "@base-org/account/payment/browser"
 import { PAY_AMOUNT, TREASURY, PAY_TESTNET } from "@/lib/payments"
-import { claimPayment } from "@/lib/replay-store"
+import { claimPayment, setPayer, takePayer } from "@/lib/replay-store"
 import { reportRiskLevel } from "@/lib/cbtv"
 import { notifyHighRisk } from "@/lib/notify"
-
-// jobId → payer wallet, so a High-risk result can notify the person who paid.
-// In-memory + short-lived (one scan); fine on a single instance.
-const payerByJob = new Map<string, string>()
 
 // Node runtime: getPaymentStatus makes RPC calls, and the CBTV key must never
 // reach the edge/client.
@@ -204,8 +200,8 @@ export async function POST(request: Request) {
 
   const jobId = job.job_id ?? job.jobId
   if (!jobId) return bad(502, "Verification service returned no job")
-  // Remember who paid, so a High-risk result can notify them.
-  if (verified.sender) payerByJob.set(jobId, verified.sender)
+  // Remember who paid (durable, cross-replica), so a High-risk result can notify them.
+  if (verified.sender) await setPayer(jobId, verified.sender)
   return NextResponse.json({ jobId })
 }
 
@@ -232,11 +228,9 @@ export async function GET(request: Request) {
   if (!res.ok) return bad(502, "Verification service error")
 
   const report = await res.json()
-  // Notify the payer once if the result is High risk.
-  const wallet = payerByJob.get(jobId)
-  if (wallet) {
-    payerByJob.delete(jobId)
-    if (reportRiskLevel(report) === "High") void notifyHighRisk(wallet, report)
-  }
+  // Notify the payer once if the result is High risk. takePayer consumes the
+  // record (durable), so a repeated poll can't fire a duplicate notification.
+  const wallet = await takePayer(jobId)
+  if (wallet && reportRiskLevel(report) === "High") void notifyHighRisk(wallet, report)
   return NextResponse.json({ status: "done", report })
 }
