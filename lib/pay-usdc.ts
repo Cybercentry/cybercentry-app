@@ -65,7 +65,9 @@ async function connectWallet(): Promise<{ provider: EIP1193Provider; account: `0
   }
   if (!provider?.request) {
     provider = injectedProvider()
-    if (provider && !account) {
+    if (provider) {
+      // Authorize this provider and use ITS account — mixing a wagmi account with
+      // the injected provider yields "account not authorized" on send.
       const accts = (await provider.request({ method: "eth_requestAccounts" })) as `0x${string}`[]
       account = accts?.[0]
     }
