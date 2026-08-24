@@ -33,13 +33,13 @@ export const minikitConfig = {
     // schema's length limits and free of banned characters.
     subtitle: "Base Token Verification",
     description:
-      "Verify any B20 (Base) token before you buy. One check flags honeypots, freeze-and-seize, live pauses, fake B20s, and ticker copycats, plus issuer controls — in Seconds.",
+      "Can you actually sell it? Verify a B20 before you buy — pool-hook honeypots, whitelisted exits, freeze-and-seize, live pauses, fakes and issuer controls. In Seconds.",
     primaryCategory: "utility",
     heroImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     tags: ["security"],
     tagline: "Verify a B20 before you buy it",
     ogTitle: "Cybercentry",
-    ogDescription: "Check a B20 token before you buy: honeypots, freeze-and-seize, fake B20s and copycats.",
+    ogDescription: "A clean B20 can still be a honeypot. Cybercentry tests whether you can actually sell — in Seconds.",
     ogImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     castShareUrl: ROOT_URL,
   },

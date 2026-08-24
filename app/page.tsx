@@ -13,13 +13,14 @@ const WEB_REDIRECT_MS = 2600
 
 type MiniAppSdk = typeof import("@farcaster/miniapp-sdk")["sdk"]
 
-// What the Base Token Verification service checks — risk first.
+// What the Base Token Verification service checks — sellability first, because
+// it's the trap a clean contract hides.
 const CHECKS: { title: string; desc: string }[] = [
-  { title: "Honeypots", desc: "tokens you can buy but never sell" },
+  { title: "Sell-side honeypots", desc: "you can buy, but the pool won't let you sell" },
+  { title: "Whitelisted exits", desc: "a hook that quotes the deployer far better than a stranger" },
   { title: "Armed freeze-and-seize", desc: "issuer can freeze or take your balance" },
   { title: "A live pause", desc: "transfers already halted" },
-  { title: "Fake B20s", desc: "counterfeit standard tokens" },
-  { title: "Ticker-impersonation copycats", desc: "impostors riding a known name" },
+  { title: "Fake B20s & copycats", desc: "counterfeits and ticker impersonators" },
 ]
 
 function withTimeout<T>(promise: Promise<T>, fallback: T): Promise<T> {
@@ -119,11 +120,12 @@ export default function Home() {
         <div className={styles.card}>
           <span className={styles.eyebrow}>Cybercentry · Base Token Verification</span>
 
-          <h1 className={styles.title}>Know the risk before you buy a B20 token</h1>
+          <h1 className={styles.title}>You can buy it. Can you sell it?</h1>
 
           <p className={styles.lede}>
-            A B20 is a Base token. Most B20 scams are detectable <strong>before</strong> you spend a cent — one check
-            reads the contract and names what is wrong, so you don&rsquo;t find out after buying.
+            A B20 (a Base token) can pass every contract check and still be a honeypot — the trap lives in the{" "}
+            <strong>pool</strong>, not the token. Cybercentry runs a real buy-and-sell round trip and names what stops
+            you getting out.
           </p>
 
           <ul className={styles.checks}>
