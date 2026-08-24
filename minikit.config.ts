@@ -27,7 +27,11 @@ export const minikitConfig = {
     splashBackgroundColor: "#fcfcfc",
     // Portrait 1284x2778 promo of the landing; also uploaded to the Base.dev
     // listing. Farcaster catalog shows it too.
-    screenshotUrls: [`${ROOT_URL}/basedev-screenshot-1284x2778.png`],
+    screenshotUrls: [
+      `${ROOT_URL}/basedev-screenshot-1284x2778.png`,
+      `${ROOT_URL}/basedev-screenshot-2-1284x2778.png`,
+      `${ROOT_URL}/basedev-screenshot-3-1284x2778.png`,
+    ],
     // App diverts straight to the Base Token Verification service, so the copy
     // is that service's, not the whole catalogue. Fields kept within the
     // schema's length limits and free of banned characters.
