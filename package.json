@@ -13,6 +13,7 @@
     "electron-to-chromium": "1.5.260"
   },
   "dependencies": {
+    "@base-org/account": "^2.5.10",
     "@farcaster/miniapp-sdk": "^0.2.1",
     "next": "15.3.8",
     "react": "^19.0.0",
