@@ -19,7 +19,7 @@ export const minikitConfig = {
     // Every image below is generated from blue-icon.png to the sizes Farcaster
     // documents: icon 1024x1024 with no alpha, splash 200x200, hero/og
     // 1200x630 (1.91:1), embed 3:2. See scripts note in README.
-    iconUrl: `${ROOT_URL}/icon-1024.png`,
+    iconUrl: `${ROOT_URL}/icon-1024-maskable.png`,
     homeUrl: ROOT_URL,
     imageUrl: `${ROOT_URL}/embed-1200x800.png`,
     buttonTitle: "Verify a B20 token",
@@ -40,12 +40,15 @@ export const minikitConfig = {
       "Can you actually sell it? Verify a B20 before you buy: pool-hook honeypots, whitelisted exits, freeze-and-seize, live pauses, fakes and issuer controls. In seconds.",
     primaryCategory: "utility",
     heroImageUrl: `${ROOT_URL}/hero-1200x630.png`,
-    tags: ["security"],
+    tags: ["security", "base", "token", "honeypot", "defi"],
     tagline: "Verify a B20 before you buy it",
     ogTitle: "Cybercentry",
     ogDescription: "A clean B20 can still be a honeypot. Cybercentry tests whether you can actually sell, in seconds.",
     ogImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     castShareUrl: ROOT_URL,
+    // The canonical host for this app, used by Base to dedupe/attribute it.
+    // Derived from ROOT_URL so it follows a domain change automatically.
+    canonicalDomain: ROOT_URL.replace(/^https?:\/\//, ""),
     // Explicitly indexable — Base's guidance is to set this false (not just omit
     // it) so the app is eligible for search and leaderboards.
     noindex: false,
