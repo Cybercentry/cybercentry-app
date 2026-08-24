@@ -3,8 +3,6 @@ import type { CbtvReport, Detector, Finding, RiskLevel } from "@/lib/cbtv"
 import { RISK_COLOR, RISK_ORDER } from "@/lib/cbtv"
 import styles from "./page.module.css"
 
-const LEVELS: RiskLevel[] = ["High", "Medium", "Low", "Informational"]
-
 function short(addr: string) {
   return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr
 }
