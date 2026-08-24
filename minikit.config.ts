@@ -28,7 +28,7 @@ export const minikitConfig = {
     // Portrait 1284x2778 promo of the landing; also uploaded to the Base.dev
     // listing. Farcaster catalog shows it too.
     screenshotUrls: [
-      `${ROOT_URL}/basedev-screenshot-1284x2778.png`,
+      `${ROOT_URL}/basedev-screenshot-1-1284x2778.png`,
       `${ROOT_URL}/basedev-screenshot-2-1284x2778.png`,
       `${ROOT_URL}/basedev-screenshot-3-1284x2778.png`,
     ],
