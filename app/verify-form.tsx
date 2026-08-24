@@ -223,8 +223,9 @@ export function VerifyForm() {
 
       {phase === "scanning" ? (
         <p className={styles.hint}>
-          Running a real on-chain buy-and-sell round trip and reading the contract. This can take 1–3 minutes on a
-          busy token — keep the app open.
+          {elapsed < 60
+            ? "Running a real on-chain buy-and-sell round trip and reading the contract — usually under a minute."
+            : "Still going — this is a busy token (many pools / lots of history). Your payment is safe; keep the app open, it can take a few minutes."}
         </p>
       ) : (
         <ul className={styles.miniChecks}>
