@@ -12,7 +12,8 @@ export const dynamic = "force-dynamic"
 
 // SERVER-ONLY secrets — no NEXT_PUBLIC_ prefix, so Next never ships them to the
 // browser. The whole point of this route is to hold the CBTV key server-side.
-const CBTV_API_URL = process.env.CBTV_API_URL ?? ""
+// Strip any trailing slash so `${CBTV_API_URL}/verify-b20` never doubles up.
+const CBTV_API_URL = (process.env.CBTV_API_URL ?? "").replace(/\/+$/, "")
 const CBTV_API_KEY = process.env.CBTV_API_KEY ?? ""
 
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
