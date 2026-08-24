@@ -28,8 +28,24 @@ const CBTV_API_KEY = process.env.CBTV_API_KEY ?? ""
 // bundler (e.g. a CDP Base RPC) when provided.
 const BUNDLER_URL = process.env.PAY_BUNDLER_URL || undefined
 
+// Full JSON-RPC endpoint for reading tx receipts (sendCalls path). A CDP Base
+// RPC serves both eth_ and bundler methods, so PAY_BUNDLER_URL usually works;
+// PAY_RPC_URL overrides if the bundler endpoint is bundler-only.
+const RPC_URL = process.env.PAY_RPC_URL || process.env.PAY_BUNDLER_URL || undefined
+
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
+const TX_RE = /^0x[a-fA-F0-9]{64}$/
 const CHAINS = new Set(["base", "base-sepolia"])
+
+// USDC contracts + the ERC-20 Transfer topic, for verifying a sendCalls payment
+// directly from its on-chain receipt.
+const USDC: Record<string, string> = {
+  base: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "base-sepolia": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+}
+const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+// $1.00 USDC = 1_000_000 (6 decimals). Matches PAY_AMOUNT.
+const MIN_UNITS = BigInt(1_000_000)
 
 function bad(status: number, error: string) {
   return NextResponse.json({ error }, { status })
@@ -75,11 +91,66 @@ async function verifyPayment(
   return { ok: false, msg: last }
 }
 
-// POST — verify the Base Pay payment, then kick off an async CBTV scan.
+async function rpc(method: string, params: unknown[]): Promise<unknown> {
+  const res = await fetch(RPC_URL as string, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+  })
+  const j = (await res.json()) as { result?: unknown; error?: { message?: string } }
+  if (j.error) throw new Error(j.error.message || "RPC error")
+  return j.result
+}
+
+// Verify a sendCalls payment straight from its on-chain receipt: the tx must
+// have succeeded and contain a USDC Transfer of >= $1 to the treasury. Trust is
+// on-chain, not on the client — a spoofed / wrong-amount / wrong-recipient hash
+// fails. Retries ~45s because the receipt can lag the wallet resolving.
+async function verifyByTxHash(
+  txHash: string,
+  chain: string,
+): Promise<{ ok: true; sender?: string } | { ok: false; msg: string }> {
+  if (!RPC_URL) return { ok: false, msg: "Payment verification is not configured" }
+  const usdc = USDC[chain]?.toLowerCase()
+  if (!usdc || !TREASURY) return { ok: false, msg: "Payment verification is not configured" }
+  const treasuryTopic = "0x" + TREASURY.toLowerCase().replace(/^0x/, "").padStart(64, "0")
+  const deadline = Date.now() + 45_000
+  let attempt = 0
+  while (Date.now() < deadline) {
+    attempt++
+    try {
+      const r = (await rpc("eth_getTransactionReceipt", [txHash])) as {
+        status?: string
+        logs?: { address: string; topics: string[]; data: string }[]
+      } | null
+      if (r) {
+        if (r.status !== "0x1") return { ok: false, msg: "Payment transaction failed" }
+        for (const log of r.logs ?? []) {
+          if (
+            log.address.toLowerCase() === usdc &&
+            log.topics[0]?.toLowerCase() === TRANSFER_TOPIC &&
+            log.topics[2]?.toLowerCase() === treasuryTopic &&
+            BigInt(log.data) >= MIN_UNITS
+          ) {
+            return { ok: true, sender: "0x" + log.topics[1].slice(-40) }
+          }
+        }
+        return { ok: false, msg: "No matching USDC payment in this transaction" }
+      }
+      // Not mined yet — wait and retry.
+    } catch (err) {
+      console.error(`[verify] eth_getTransactionReceipt threw (attempt ${attempt}):`, err instanceof Error ? err.message : err)
+    }
+    await sleep(3000)
+  }
+  return { ok: false, msg: "Payment not yet confirmed" }
+}
+
+// POST — verify the payment (pay() id or sendCalls tx hash), then kick off a scan.
 export async function POST(request: Request) {
   if (!CBTV_API_URL || !CBTV_API_KEY) return bad(500, "Service not configured")
 
-  let body: { address?: string; chain?: string; paymentId?: string }
+  let body: { address?: string; chain?: string; paymentId?: string; txHash?: string }
   try {
     body = await request.json()
   } catch {
@@ -89,21 +160,32 @@ export async function POST(request: Request) {
   const address = (body.address ?? "").trim()
   const chain = (body.chain ?? "base").trim()
   const paymentId = (body.paymentId ?? "").trim()
+  const txHash = (body.txHash ?? "").trim()
 
   if (!ADDRESS_RE.test(address)) return bad(400, "Enter a valid 0x… token address")
   if (!CHAINS.has(chain)) return bad(400, "Unsupported chain")
-  if (!paymentId) return bad(402, "Payment required")
 
-  // Verify the payment against the on-chain USDC transfer. Retries because the
-  // receipt can lag a few seconds behind pay() resolving, and surfaces + logs the
-  // real reason instead of a blanket "could not be verified".
-  const verified = await verifyPayment(paymentId)
+  // Verify the payment on-chain and pick the single-use id to replay-guard on:
+  // a sendCalls tx hash (receipt parse) or a pay() id (getPaymentStatus). Retries
+  // because the receipt can lag the wallet resolving; surfaces the real reason.
+  let verified: { ok: true; sender?: string } | { ok: false; msg: string }
+  let claimId: string
+  if (txHash) {
+    if (!TX_RE.test(txHash)) return bad(400, "Invalid payment reference")
+    verified = await verifyByTxHash(txHash, chain)
+    claimId = txHash
+  } else if (paymentId) {
+    verified = await verifyPayment(paymentId)
+    claimId = paymentId
+  } else {
+    return bad(402, "Payment required")
+  }
   if (!verified.ok) return bad(402, verified.msg)
 
-  // Atomically claim the payment id (Postgres, durable). First use → proceed;
-  // already used → replay, reject. This also consumes it before the CBTV kickoff,
-  // so a failed kickoff can't leave the id re-usable.
-  if (!(await claimPayment(paymentId))) return bad(409, "This payment has already been used")
+  // Atomically claim the id (Postgres, durable). First use → proceed; already
+  // used → replay, reject. Consumed before the CBTV kickoff, so a failed kickoff
+  // can't leave the id re-usable.
+  if (!(await claimPayment(claimId))) return bad(409, "This payment has already been used")
 
   // Kick off the async scan — no client waits on the connection, so it runs to
   // completion instead of shedding sections under the sync 60s limit.

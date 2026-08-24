@@ -1,10 +1,10 @@
 "use client"
 import { useEffect, useRef, useState } from "react"
-// Browser payment entry: pay() without the node/CDP subscription code, which
-// pulls the optional @x402/evm dep we don't use.
-import { pay } from "@base-org/account/payment/browser"
+// Native-wallet sendCalls with a pay() fallback (see lib/pay-usdc.ts): no
+// Coinbase sheet on the primary path, and the builder-code lands on-chain.
+import { payUsdc } from "@/lib/pay-usdc"
 import type { CbtvReport, Chain, VerifyStatus } from "@/lib/cbtv"
-import { PAY_AMOUNT, TREASURY, PAY_TESTNET, DATA_SUFFIX } from "@/lib/payments"
+import { PAY_AMOUNT, TREASURY, PAY_TESTNET } from "@/lib/payments"
 import { ReportView } from "./report-view"
 import styles from "./page.module.css"
 
@@ -90,22 +90,19 @@ export function VerifyForm() {
 
     cancelled.current = false
     try {
-      // 1) Base Pay — one-tap USDC. Throws if the user cancels or it fails.
+      // 1) Pay the USDC fee — native wallet (no flash), pay() fallback. Throws if
+      // the user cancels or it fails.
       setPhase("paying")
-      const payment = await pay({
-        amount: PAY_AMOUNT,
-        to: TREASURY,
-        testnet: PAY_TESTNET,
-        ...(DATA_SUFFIX ? { dataSuffix: DATA_SUFFIX } : {}),
-      })
-      if (!payment?.id) throw new Error("Payment did not complete.")
+      const payment = await payUsdc({ amount: PAY_AMOUNT, to: TREASURY, chain, testnet: PAY_TESTNET })
 
       // 2) Kick off the scan (server verifies the payment, holds the API key).
+      // Send whichever proof we got: a sendCalls tx hash or a pay() id.
       setPhase("scanning")
+      const proof = payment.method === "sendcalls" ? { txHash: payment.txHash } : { paymentId: payment.paymentId }
       const res = await fetch("/api/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: addr, chain, paymentId: payment.id }),
+        body: JSON.stringify({ address: addr, chain, ...proof }),
       })
       const kick = await res.json()
       if (!res.ok) throw new Error(kick.error || "Could not start the scan.")
