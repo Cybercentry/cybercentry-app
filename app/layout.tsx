@@ -1,11 +1,21 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { minikitConfig } from "../minikit.config"
 import "./globals.css"
 
 /** Base app domain-ownership verification. Renders into <head> on every page. */
 const BASE_APP_ID = "69f84bd5879b4ae3fa1c713f"
+
+// viewport-fit=cover lets content use the full screen and enables the
+// env(safe-area-inset-*) values the layout relies on for the iOS notch / home
+// indicator (the Base app renders inside an iOS WKWebView).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#fcfcfc",
+}
 
 /** Full product name. The manifest `name` is capped at 32 chars, so it carries
  *  a shortened form; the untruncated name lives in the page title and heading. */

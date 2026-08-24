@@ -11,6 +11,8 @@
   border-bottom: 1px solid var(--border);
   background: rgb(252 252 252 / 0.9);
   backdrop-filter: blur(8px);
+  /* Extend the bar under the iOS notch / status bar so the logo isn't clipped. */
+  padding-top: env(safe-area-inset-top);
 }
 
 .headerInner {
@@ -29,7 +31,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 32px 16px;
+  /* Horizontal safe-area insets keep content clear of the notch in landscape. */
+  padding: 32px max(16px, env(safe-area-inset-right)) 32px max(16px, env(safe-area-inset-left));
 }
 
 .card {
@@ -73,7 +76,8 @@
 }
 
 .footer {
-  padding: 20px 16px;
+  /* Bottom inset clears the iOS home indicator. */
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
   text-align: center;
   font-size: 0.75rem;
   color: var(--text-muted);
