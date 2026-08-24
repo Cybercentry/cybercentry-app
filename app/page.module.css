@@ -277,6 +277,37 @@
   color: var(--text-muted);
 }
 
+/* Risk-first headline: the single most important reason, right under the verdict. */
+.headline {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 0.5rem;
+  background: var(--surface);
+}
+
+.headlineLabel {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.headlineTitle {
+  margin-top: 4px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.headlineWhy {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
 .chips {
   margin-top: 16px;
   display: flex;
