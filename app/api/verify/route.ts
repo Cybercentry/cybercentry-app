@@ -4,6 +4,7 @@ import { NextResponse } from "next/server"
 // code we don't use.
 import { getPaymentStatus } from "@base-org/account/payment/browser"
 import { PAY_AMOUNT, TREASURY, PAY_TESTNET } from "@/lib/payments"
+import { claimPayment } from "@/lib/replay-store"
 
 // Node runtime: getPaymentStatus makes RPC calls, and the CBTV key must never
 // reach the edge/client.
@@ -18,10 +19,6 @@ const CBTV_API_KEY = process.env.CBTV_API_KEY ?? ""
 
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
 const CHAINS = new Set(["base", "base-sepolia"])
-
-// In-memory replay guard. One payment id → one scan. Fine on a single Railway
-// instance; a multi-instance deploy would need a shared store (see plan).
-const usedPayments = new Set<string>()
 
 function bad(status: number, error: string) {
   return NextResponse.json({ error }, { status })
@@ -46,9 +43,6 @@ export async function POST(request: Request) {
   if (!CHAINS.has(chain)) return bad(400, "Unsupported chain")
   if (!paymentId) return bad(402, "Payment required")
 
-  // Replay guard first — reject a re-used payment before doing any work.
-  if (usedPayments.has(paymentId)) return bad(409, "This payment has already been used")
-
   // Verify the payment against the on-chain USDC transfer. expectedPayment makes
   // getPaymentStatus assert the amount and recipient match, and throw otherwise —
   // so a spoofed id, wrong amount, or wrong recipient never passes.
@@ -64,8 +58,10 @@ export async function POST(request: Request) {
   }
   if (status.status !== "completed") return bad(402, `Payment ${status.status}`)
 
-  // Consume the payment now so it can't be replayed even if CBTV kickoff fails.
-  usedPayments.add(paymentId)
+  // Atomically claim the payment id (Postgres, durable). First use → proceed;
+  // already used → replay, reject. This also consumes it before the CBTV kickoff,
+  // so a failed kickoff can't leave the id re-usable.
+  if (!(await claimPayment(paymentId))) return bad(409, "This payment has already been used")
 
   // Kick off the async scan — no client waits on the connection, so it runs to
   // completion instead of shedding sections under the sync 60s limit.

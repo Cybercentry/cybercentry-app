@@ -16,6 +16,7 @@
     "@base-org/account": "^2.5.10",
     "@farcaster/miniapp-sdk": "^0.2.1",
     "next": "15.3.8",
+    "postgres": "^3.4.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
