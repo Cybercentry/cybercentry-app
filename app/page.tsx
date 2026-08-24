@@ -36,15 +36,13 @@ export default function Home() {
     ;(async () => {
       try {
         const { sdk } = await import("@farcaster/miniapp-sdk")
+        // Call ready() on mount, unconditionally, so the host dismisses its
+        // splash screen — required by the Mini App spec. NOT gated on
+        // isInMiniApp: a slow host handshake must never leave the splash hung.
+        // Fire-and-forget; harmless outside a host.
+        void sdk.actions.ready().catch(() => {})
         const inMiniApp = await withTimeout(sdk.isInMiniApp(), false)
-        if (cancelled || !inMiniApp) return
-        sdkRef.current = sdk
-        // Best-effort: dismisses the Farcaster splash; harmless in Base.
-        try {
-          await sdk.actions.ready()
-        } catch {
-          /* ignore */
-        }
+        if (!cancelled && inMiniApp) sdkRef.current = sdk
       } catch {
         /* not a Mini App host */
       }
