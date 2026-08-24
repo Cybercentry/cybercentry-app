@@ -119,11 +119,11 @@ export default function Home() {
         <div className={styles.card}>
           <span className={styles.eyebrow}>Cybercentry · Base Token Verification</span>
 
-          <h1 className={styles.title}>Know the risk before you buy a Base token</h1>
+          <h1 className={styles.title}>Know the risk before you buy a B20 token</h1>
 
           <p className={styles.lede}>
-            Most Base token scams are detectable <strong>before</strong> you spend a cent. One check reads the contract
-            and names what is wrong — so you don&rsquo;t find out after buying.
+            A B20 is a Base token. Most B20 scams are detectable <strong>before</strong> you spend a cent — one check
+            reads the contract and names what is wrong, so you don&rsquo;t find out after buying.
           </p>
 
           <ul className={styles.checks}>
@@ -164,7 +164,7 @@ export default function Home() {
           </div>
 
           <a className={styles.cta} href={TARGET_URL} onClick={handleOpen} rel="noopener noreferrer">
-            {isMiniApp ? "Verify a Base token" : "Open the verifier now"}
+            {isMiniApp ? "Verify a B20 token" : "Open the verifier now"}
             <span aria-hidden="true">&rarr;</span>
           </a>
 

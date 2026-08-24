@@ -23,7 +23,7 @@ export const minikitConfig = {
     iconUrl: `${ROOT_URL}/icon-1024.png`,
     homeUrl: ROOT_URL,
     imageUrl: `${ROOT_URL}/embed-1200x800.png`,
-    buttonTitle: "Verify a Base token",
+    buttonTitle: "Verify a B20 token",
     splashImageUrl: `${ROOT_URL}/splash-200.png`,
     splashBackgroundColor: "#fcfcfc",
     // App diverts straight to the Base Token Verification service, so the copy
@@ -31,13 +31,13 @@ export const minikitConfig = {
     // schema's length limits and free of banned characters.
     subtitle: "Base Token Verification",
     description:
-      "Check a Base token contract before you buy — detect honeypots, freeze-and-seize, live pauses, fake B20s and ticker-impersonation copycats before they cost you.",
+      "Check a B20 token contract before you buy — detect honeypots, freeze-and-seize, live pauses, fake B20s and ticker-impersonation copycats before they cost you.",
     primaryCategory: "utility",
     heroImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     tags: ["security"],
     tagline: "Verify before you buy",
     ogTitle: "Cybercentry Base Token Verify",
-    ogDescription: "Check a Base token before you buy: honeypots, freeze-and-seize, fake B20s and copycats.",
+    ogDescription: "Check a B20 token before you buy: honeypots, freeze-and-seize, fake B20s and copycats.",
     ogImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     castShareUrl: ROOT_URL,
   },
