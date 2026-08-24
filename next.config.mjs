@@ -40,6 +40,15 @@ const nextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }]
   },
+
+  // The wagmi `baseAccount` connector pulls @coinbase/cdp-sdk, which statically
+  // references optional @x402/* packages (x402 payments) we never use. Stub them
+  // so the build resolves; the code path that would call them is never taken in
+  // our wallet-connect / USDC-transfer flow.
+  webpack: (config, { webpack }) => {
+    config.plugins.push(new webpack.IgnorePlugin({ resourceRegExp: /^@x402\// }))
+    return config
+  },
 }
 
 export default nextConfig
