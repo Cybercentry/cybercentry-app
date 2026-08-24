@@ -10,7 +10,8 @@ import styles from "./page.module.css"
 
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
 const POLL_INTERVAL_MS = 3000
-const POLL_TIMEOUT_MS = 180_000
+// Busy tokens (many pools / high transfer counts) can take a few minutes.
+const POLL_TIMEOUT_MS = 300_000
 
 const CHECKS = [
   "Sell-side honeypots",
@@ -20,7 +21,7 @@ const CHECKS = [
   "Fake B20s & copycats",
 ]
 
-type Phase = "idle" | "paying" | "scanning" | "done" | "error"
+type Phase = "idle" | "paying" | "scanning" | "done" | "error" | "timeout"
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -33,6 +34,9 @@ export function VerifyForm() {
   const [elapsed, setElapsed] = useState(0)
   const busy = phase === "paying" || phase === "scanning"
   const cancelled = useRef(false)
+  // Held so a scan that outran the client poll can be recovered without paying
+  // again — the job keeps running on the backend.
+  const jobRef = useRef<string | null>(null)
 
   // Tick a seconds counter while a scan runs so ~30s of waiting has live feedback.
   useEffect(() => {
@@ -105,6 +109,7 @@ export function VerifyForm() {
       })
       const kick = await res.json()
       if (!res.ok) throw new Error(kick.error || "Could not start the scan.")
+      jobRef.current = kick.jobId
 
       // 3) Poll to completion, then render.
       const result = await poll(kick.jobId)
@@ -114,13 +119,58 @@ export function VerifyForm() {
     } catch (err) {
       if (cancelled.current) return
       const msg = err instanceof Error ? err.message : "Something went wrong."
+      // Scan outran the poll but the paid job is still running — offer recovery.
+      if (/timed out/i.test(msg) && jobRef.current) {
+        setPhase("timeout")
+        return
+      }
       setError(/cancel|reject|denied/i.test(msg) ? "Payment cancelled." : msg)
+      setPhase("error")
+    }
+  }
+
+  // Re-poll the already-paid job (no new payment).
+  async function recheck() {
+    if (!jobRef.current) return
+    cancelled.current = false
+    setError("")
+    setPhase("scanning")
+    try {
+      const result = await poll(jobRef.current)
+      if (cancelled.current) return
+      setReport(result)
+      setPhase("done")
+    } catch (err) {
+      if (cancelled.current) return
+      const msg = err instanceof Error ? err.message : "Something went wrong."
+      if (/timed out/i.test(msg)) {
+        setPhase("timeout")
+        return
+      }
+      setError(msg)
       setPhase("error")
     }
   }
 
   if (phase === "done" && report) {
     return <ReportView report={report} onReset={reset} />
+  }
+
+  if (phase === "timeout") {
+    return (
+      <div className={styles.verify}>
+        <p className={styles.hint}>
+          The scan is taking longer than usual — it&rsquo;s still running on our side and{" "}
+          <strong>your payment isn&rsquo;t lost</strong>. Give it a moment, then check again.
+        </p>
+        <button type="button" className={styles.cta} onClick={recheck}>
+          Check result
+        </button>
+        <button type="button" className={styles.secondaryBtn} onClick={reset}>
+          Start over
+        </button>
+      </div>
+    )
   }
 
   let ctaLabel = "Verify"
@@ -173,8 +223,8 @@ export function VerifyForm() {
 
       {phase === "scanning" ? (
         <p className={styles.hint}>
-          Running a real on-chain buy-and-sell round trip and reading the contract. This usually takes about 60
-          seconds — keep the app open.
+          Running a real on-chain buy-and-sell round trip and reading the contract. This can take 1–3 minutes on a
+          busy token — keep the app open.
         </p>
       ) : (
         <ul className={styles.miniChecks}>

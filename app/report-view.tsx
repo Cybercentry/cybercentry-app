@@ -1,26 +1,10 @@
 "use client"
 import type { CbtvReport, Detector, Finding, RiskLevel } from "@/lib/cbtv"
-import { RISK_COLOR, RISK_ORDER } from "@/lib/cbtv"
+import { RISK_COLOR, RISK_ORDER, toLevel, worst } from "@/lib/cbtv"
 import styles from "./page.module.css"
 
 function short(addr: string) {
   return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr
-}
-
-// CBTV grades / finding severities come as strings like "high_risk", "Critical",
-// "Medium". Map them onto the four-level scale so one worst-case headline can be
-// derived — a venue honeypot lives in the findings/grade, not in overall_risk,
-// and must not be undersold.
-function toLevel(v?: string | null): RiskLevel {
-  const s = (v || "").toLowerCase()
-  if (/terminal|escalate|critical|high/.test(s)) return "High"
-  if (/medium/.test(s)) return "Medium"
-  if (/\blow\b/.test(s)) return "Low"
-  return "Informational"
-}
-
-function worst(levels: RiskLevel[]): RiskLevel {
-  return levels.reduce<RiskLevel>((a, b) => (RISK_ORDER[b] > RISK_ORDER[a] ? b : a), "Informational")
 }
 
 function DetectorRow({ d }: { d: Detector }) {

@@ -81,3 +81,36 @@ export type VerifyStatus =
   | { status: "running" }
   | { status: "done"; report: CbtvReport }
   | { status: "error"; error: string }
+
+// ── Risk derivation, shared by the report view (client) and the notification
+// trigger (server) so both agree on what "High risk" means. ──────────────────
+
+/** Map a grade / finding-severity string onto the four-level scale. */
+export function toLevel(v?: string | null): RiskLevel {
+  const s = (v || "").toLowerCase()
+  if (/terminal|escalate|critical|high/.test(s)) return "High"
+  if (/medium/.test(s)) return "Medium"
+  if (/\blow\b/.test(s)) return "Low"
+  return "Informational"
+}
+
+export function worst(levels: RiskLevel[]): RiskLevel {
+  return levels.reduce<RiskLevel>((a, b) => (RISK_ORDER[b] > RISK_ORDER[a] ? b : a), "Informational")
+}
+
+/** The headline verdict: the worst of overall_risk, the capped grade, and findings. */
+export function reportRiskLevel(report: CbtvReport): RiskLevel {
+  if (report.is_b20 === false || report.status === "not_b20") return "Informational"
+  const findings = report.findings ?? []
+  return worst([report.overall_risk ?? "Informational", toLevel(report.grade), ...findings.map((f) => toLevel(f.severity))])
+}
+
+/** Whether the venue check found the token unsellable (honeypot). */
+export function reportCannotSell(report: CbtvReport): boolean {
+  const findings = report.findings ?? []
+  const detectors = report.detectors ?? []
+  return (
+    findings.some((f) => /cannot be sold|sold back|honeypot/i.test(f.title)) ||
+    detectors.some((d) => d.check === "honeypot" || d.check === "receive-restricted" || /honeypot/i.test(d.description))
+  )
+}
