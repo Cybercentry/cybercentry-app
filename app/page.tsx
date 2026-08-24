@@ -1,15 +1,10 @@
 "use client"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import type React from "react"
-import { TARGET_URL, TARGET_HOST } from "@/lib/target"
+import { TARGET_URL } from "@/lib/target"
 import styles from "./page.module.css"
 
-// Host detection can be slow; never let it block. On plain web the page
-// auto-forwards after this delay so the landing is seen but the divert is still
-// direct. Inside a Mini App there is no auto-forward — hosts require a user
-// gesture to open an external URL — so the visitor taps the CTA.
 const DETECT_TIMEOUT_MS = 1500
-const WEB_REDIRECT_MS = 2600
 
 type MiniAppSdk = typeof import("@farcaster/miniapp-sdk")["sdk"]
 
@@ -31,72 +26,37 @@ function withTimeout<T>(promise: Promise<T>, fallback: T): Promise<T> {
 }
 
 export default function Home() {
-  // "detecting" until we know the context. Web never dwells here — the redirect
-  // fires. Mini App switches to a tap-to-open landing.
-  const [mode, setMode] = useState<"detecting" | "miniapp" | "web">("detecting")
+  // The page shows the same landing everywhere — no auto-redirect. We only
+  // detect the Mini App host so the CTA can hand off through the SDK (which a
+  // plain <a> can't do inside a webview); on the web the anchor navigates.
   const sdkRef = useRef<MiniAppSdk | null>(null)
 
   useEffect(() => {
     let cancelled = false
-
-    // ?preview=app renders the in-Mini-App state (tap CTA, no redirect) so store
-    // screenshots capture what a Base user actually sees. No effect otherwise.
-    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("preview") === "app") {
-      setMode("miniapp")
-      return
-    }
-
-    const run = async () => {
-      let inMiniApp = false
+    ;(async () => {
       try {
         const { sdk } = await import("@farcaster/miniapp-sdk")
-        inMiniApp = await withTimeout(sdk.isInMiniApp(), false)
-        if (inMiniApp) {
-          sdkRef.current = sdk
-          // Harmless in Base (no longer required there); still dismisses the
-          // splash in Farcaster hosts. Best-effort.
-          try {
-            await sdk.actions.ready()
-          } catch {
-            /* ignore */
-          }
+        const inMiniApp = await withTimeout(sdk.isInMiniApp(), false)
+        if (cancelled || !inMiniApp) return
+        sdkRef.current = sdk
+        // Best-effort: dismisses the Farcaster splash; harmless in Base.
+        try {
+          await sdk.actions.ready()
+        } catch {
+          /* ignore */
         }
       } catch {
-        // SDK unavailable — treat as plain web.
+        /* not a Mini App host */
       }
-
-      if (cancelled) return
-
-      if (inMiniApp) {
-        setMode("miniapp")
-        return
-      }
-
-      // Plain web: show the landing briefly, then forward. location.replace adds
-      // no history entry.
-      setMode("web")
-      const t = setTimeout(() => {
-        if (!cancelled) window.location.replace(TARGET_URL)
-      }, WEB_REDIRECT_MS)
-      cleanup.push(() => clearTimeout(t))
-    }
-
-    const cleanup: (() => void)[] = []
-    run()
-
+    })()
     return () => {
       cancelled = true
-      cleanup.forEach((fn) => fn())
     }
   }, [])
 
   const handleOpen = (event: React.MouseEvent<HTMLAnchorElement>) => {
     const sdk = sdkRef.current
-    if (!sdk) return // plain web: let the <a href> navigate natively
-
-    // Inside a Mini App, hand off through the SDK. openUrl is being superseded by
-    // window.open in Base's newer model, so fall back to that, then to the
-    // anchor's own navigation.
+    if (!sdk) return // web: let the <a href> navigate
     event.preventDefault()
     Promise.resolve()
       .then(() => sdk.actions.openUrl(TARGET_URL))
@@ -106,15 +66,8 @@ export default function Home() {
       })
   }
 
-  const isMiniApp = mode === "miniapp"
-  const isWeb = mode === "web"
-
   return (
     <div className={styles.page}>
-      <noscript>
-        <meta httpEquiv="refresh" content={`0; url=${TARGET_URL}`} />
-      </noscript>
-
       <header className={styles.header}>
         <div className={styles.headerInner}>
           {/* next/image is pointless here: next.config sets images.unoptimized. */}
@@ -165,7 +118,7 @@ export default function Home() {
               <span className={styles.metaDot} />$1 per check
             </span>
             <span className={styles.metaItem}>
-              <span className={styles.metaDot} />results in Seconds
+              <span className={styles.metaDot} />Results in seconds
             </span>
             <span className={styles.metaItem}>
               <span className={styles.metaDot} />Base mainnet
@@ -173,20 +126,9 @@ export default function Home() {
           </div>
 
           <a className={styles.cta} href={TARGET_URL} onClick={handleOpen} rel="noopener noreferrer">
-            {isMiniApp ? "Verify a B20 token" : "Open the verifier now"}
+            Verify a B20 token
             <span aria-hidden="true">&rarr;</span>
           </a>
-
-          {isWeb && (
-            <>
-              <div className={styles.progress} aria-hidden="true">
-                <div className={styles.progressBar} style={{ ["--redirect-ms" as string]: `${WEB_REDIRECT_MS}ms` }} />
-              </div>
-              <p className={styles.redirectNote}>
-                Taking you to <span className={styles.domain}>{TARGET_HOST}</span>…
-              </p>
-            </>
-          )}
         </div>
       </main>
 
