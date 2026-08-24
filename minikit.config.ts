@@ -42,6 +42,9 @@ export const minikitConfig = {
     ogDescription: "A clean B20 can still be a honeypot. Cybercentry tests whether you can actually sell — in Seconds.",
     ogImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     castShareUrl: ROOT_URL,
+    // Explicitly indexable — Base's guidance is to set this false (not just omit
+    // it) so the app is eligible for search and leaderboards.
+    noindex: false,
   },
   baseBuilder: {
     allowedAddresses: ["0xfee13309251b632317ea2d475d6aba7e7e0219e6"],
