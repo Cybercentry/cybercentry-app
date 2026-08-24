@@ -1,15 +1,14 @@
-const ROOT_URL = process.env.NEXT_PUBLIC_URL || "https://cybercentry-mini-app.up.railway.app"
+const ROOT_URL = process.env.NEXT_PUBLIC_URL || "https://app.cybercentry.co.uk"
 
 export const minikitConfig = {
-  // Signed 2026-07-24 for cybercentry-mini-app.up.railway.app by the FID 1302392
-  // custody key 0x2826EaeFc3Ff379491589c5BF53f026199dEC9A4. If the domain ever
-  // changes, this must be regenerated at
-  // https://farcaster.xyz/~/developers/mini-apps/manifest
+  // Signed 2026-08-24 for app.cybercentry.co.uk by the FID 1302392 custody key
+  // 0x2826EaeFc3Ff379491589c5BF53f026199dEC9A4. If the domain ever changes, this
+  // must be regenerated at https://farcaster.xyz/~/developers/mini-apps/manifest
   accountAssociation: {
     header:
       "eyJmaWQiOjEzMDIzOTIsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgyODI2RWFlRmMzRmYzNzk0OTE1ODljNUJGNTNmMDI2MTk5ZEVDOUE0In0",
-    payload: "eyJkb21haW4iOiJjeWJlcmNlbnRyeS1taW5pLWFwcC51cC5yYWlsd2F5LmFwcCJ9",
-    signature: "Xkgbc06EaGL8NpKb+s1dR64GTcl4QQ7B3+VoIhYELnd6hw8eSyNCv7O6KBZWzSuCfeTAI0s91g9vleoFexOGNRw=",
+    payload: "eyJkb21haW4iOiJhcHAuY3liZXJjZW50cnkuY28udWsifQ",
+    signature: "Rfrj69RCGkhkemIcfXpHfTtNfzhBns/KMuvDlrOeYXdNmXhkBH0SajJiFbmjecQLn83mm8Yl3NY3jirlSIu3WBw=",
   },
   miniapp: {
     // Brand name only; what it does is carried by subtitle/description. Matches

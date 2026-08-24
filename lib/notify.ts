@@ -6,7 +6,7 @@ import { reportCannotSell } from "./cbtv"
 
 const SEND_URL = "https://dashboard.base.org/api/v1/notifications/send"
 const KEY = process.env.MINI_APP_API_KEY
-const APP_URL = process.env.NEXT_PUBLIC_URL || "https://cybercentry-mini-app.up.railway.app"
+const APP_URL = process.env.NEXT_PUBLIC_URL || "https://app.cybercentry.co.uk"
 
 function clip(s: string, max: number) {
   return s.length <= max ? s : `${s.slice(0, max - 1)}…`
