@@ -1,28 +1,22 @@
 "use client"
-// USDC payment via the connected wallet (wagmi/viem — the Base-recommended path).
+// USDC payment via the connected wallet.
 //
-// Flow: connect a wallet (Base Account smart wallet or the Base App's injected
-// wallet) → send the USDC transfer → return the on-chain tx hash. The wagmi
-// config's dataSuffix appends the Builder Code automatically. The server then
-// verifies the payment by reading the tx receipt (see app/api/verify/route.ts).
+// wagmi is used ONLY to connect a wallet (its connectors handle the in-app +
+// web + extension cases). The actual chain-switch and send go through viem's
+// walletClient talking straight to the wallet's provider — this sidesteps
+// wagmi's connector abstraction, which some wallets (e.g. Privy) don't fully
+// implement (connector.getChainId is undefined, breaking switchChain/sendTx).
 //
-// Smart wallets get a batched call (EIP-5792 wallet_sendCalls); an EOA falls back
-// to a plain transfer. No Base Pay pay() sheet — so no "something went wrong" flash.
-import {
-  connect,
-  getConnections,
-  getChainId,
-  switchChain,
-  sendCalls,
-  waitForCallsStatus,
-  sendTransaction,
-  waitForTransactionReceipt,
-} from "@wagmi/core"
-import { encodeFunctionData, parseUnits, erc20Abi } from "viem"
+// No Base Pay pay() sheet — so no "something went wrong" flash. The Builder Code
+// (ERC-8021) rides on the calldata; inside the Base App, Base auto-appends it.
+import { connect, getConnections } from "@wagmi/core"
+import { createWalletClient, custom, encodeFunctionData, parseUnits, erc20Abi, type EIP1193Provider } from "viem"
+import { base, baseSepolia } from "viem/chains"
 import { config, BUILDER_DATA_SUFFIX } from "./wagmi"
 import type { Chain } from "./cbtv"
 
-const CHAIN_ID: Record<Chain, 8453 | 84532> = { base: 8453, "base-sepolia": 84532 }
+const CHAIN_ID: Record<Chain, number> = { base: 8453, "base-sepolia": 84532 }
+const VIEM_CHAIN = { base, "base-sepolia": baseSepolia } as const
 const USDC: Record<Chain, `0x${string}`> = {
   base: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
   "base-sepolia": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
@@ -30,62 +24,75 @@ const USDC: Record<Chain, `0x${string}`> = {
 
 const isRejection = (e: unknown) => /reject|denied|cancel/i.test(e instanceof Error ? e.message : String(e))
 
-async function ensureAccount(): Promise<`0x${string}`> {
-  const existing = getConnections(config)[0]?.accounts?.[0]
-  if (existing) return existing
-  let lastErr: unknown
-  // Try each connector: injected first (in-app browser / extension), then the
-  // Base Account popup. A user rejection stops here rather than trying the next.
-  for (const connector of config.connectors) {
-    try {
-      const res = await connect(config, { connector })
-      if (res.accounts[0]) return res.accounts[0]
-    } catch (e) {
-      lastErr = e
-      if (isRejection(e)) throw e
+/** Connect a wallet (or reuse an existing connection) and return its provider + account. */
+async function connectWallet(): Promise<{ provider: EIP1193Provider; account: `0x${string}` }> {
+  let conn = getConnections(config)[0]
+  if (!conn?.accounts?.[0]) {
+    let lastErr: unknown
+    for (const connector of config.connectors) {
+      try {
+        await connect(config, { connector })
+        conn = getConnections(config)[0]
+        if (conn?.accounts?.[0]) break
+      } catch (e) {
+        lastErr = e
+        if (isRejection(e)) throw e
+      }
+    }
+    if (!conn?.accounts?.[0]) throw lastErr instanceof Error ? lastErr : new Error("Could not connect a wallet")
+  }
+  const account = conn.accounts[0]
+  const provider = (await conn.connector.getProvider()) as EIP1193Provider
+  return { provider, account }
+}
+
+/** Ensure the wallet is on the target chain, via the raw provider (universal). */
+async function ensureChain(provider: EIP1193Provider, chainId: number): Promise<void> {
+  const current = Number.parseInt(String(await provider.request({ method: "eth_chainId" })), 16)
+  if (current === chainId) return
+  const hexId = `0x${chainId.toString(16)}` as `0x${string}`
+  try {
+    await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: hexId }] })
+  } catch (err) {
+    // 4902 = chain not added; add Base (which also selects it).
+    if ((err as { code?: number })?.code === 4902 && chainId === 8453) {
+      await provider.request({
+        method: "wallet_addEthereumChain",
+        params: [
+          {
+            chainId: hexId,
+            chainName: "Base",
+            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+            rpcUrls: ["https://mainnet.base.org"],
+            blockExplorerUrls: ["https://basescan.org"],
+          },
+        ],
+      })
+    } else {
+      throw err
     }
   }
-  throw lastErr instanceof Error ? lastErr : new Error("Could not connect a wallet")
 }
 
 /**
- * Pay the USDC fee. Returns the on-chain tx hash (server verifies from the
+ * Pay the USDC fee. Returns the on-chain tx hash (the server verifies it from the
  * receipt). Throws on user rejection or if no wallet can be reached.
  */
 export async function payUsdc(opts: { amount: string; to: `0x${string}`; chain: Chain }): Promise<{ txHash: string }> {
   const chainId = CHAIN_ID[opts.chain]
-  const account = await ensureAccount()
-  // The connected wallet may be on another chain (e.g. Ethereum) — move it to the
-  // target Base chain before sending, or the transaction reverts as a mismatch.
-  if (getChainId(config) !== chainId) {
-    await switchChain(config, { chainId })
-  }
-  const data = encodeFunctionData({
+  const { provider, account } = await connectWallet()
+  await ensureChain(provider, chainId)
+
+  const wallet = createWalletClient({ account, chain: VIEM_CHAIN[opts.chain], transport: custom(provider) })
+  const transfer = encodeFunctionData({
     abi: erc20Abi,
     functionName: "transfer",
     args: [opts.to, parseUnits(opts.amount, 6)],
   })
-  const to = USDC[opts.chain]
-  // EOAs carry the Builder Code as a calldata suffix; smart wallets via the
-  // ERC-5792 dataSuffix capability. (Inside the Base App attribution is automatic.)
-  const dataWithSuffix = (BUILDER_DATA_SUFFIX ? data + BUILDER_DATA_SUFFIX.slice(2) : data) as `0x${string}`
-  try {
-    // Smart wallet: one batched call (EIP-5792).
-    const { id } = await sendCalls(config, {
-      account,
-      chainId,
-      calls: [{ to, data }],
-      capabilities: { dataSuffix: { value: BUILDER_DATA_SUFFIX, optional: true } },
-    })
-    const status = await waitForCallsStatus(config, { id })
-    const hash = status.receipts?.[0]?.transactionHash
-    if (hash) return { txHash: hash }
-    throw new Error("Payment did not confirm")
-  } catch (err) {
-    if (isRejection(err)) throw err
-    // EOA / no batching support — plain transfer with the suffix appended.
-    const hash = await sendTransaction(config, { account, chainId, to, data: dataWithSuffix })
-    await waitForTransactionReceipt(config, { hash, chainId })
-    return { txHash: hash }
-  }
+  // Append the ERC-8021 Builder Code suffix to the calldata (EOAs support this
+  // directly; harmless on smart wallets, and Base auto-appends in-app anyway).
+  const data = (BUILDER_DATA_SUFFIX ? transfer + BUILDER_DATA_SUFFIX.slice(2) : transfer) as `0x${string}`
+
+  const txHash = await wallet.sendTransaction({ to: USDC[opts.chain], data })
+  return { txHash }
 }
