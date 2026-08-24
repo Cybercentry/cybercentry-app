@@ -179,7 +179,7 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
             <section className={styles.reportSection}>
               <h3 className={styles.reportH3}>Before you buy</h3>
               <p className={styles.reportNote}>
-                Cautions about the wider market, not faults in this contract &mdash; this may well be the genuine token.
+                This may well be the genuine token. These are cautions about the wider market, not faults in this contract.
               </p>
               <ul className={styles.findings}>
                 {advisories.map((f) => (
