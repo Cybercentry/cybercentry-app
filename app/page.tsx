@@ -39,6 +39,13 @@ export default function Home() {
   useEffect(() => {
     let cancelled = false
 
+    // ?preview=app renders the in-Mini-App state (tap CTA, no redirect) so store
+    // screenshots capture what a Base user actually sees. No effect otherwise.
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("preview") === "app") {
+      setMode("miniapp")
+      return
+    }
+
     const run = async () => {
       let inMiniApp = false
       try {
