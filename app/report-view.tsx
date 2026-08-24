@@ -63,6 +63,12 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
       .filter(isAdvisoryDetector)
       .map((d, i) => ({ key: `ad${i}`, title: d.description, text: d.recommendation })),
   ]
+  // The "genuine token / copycats exist" reassurance only fits when same-ticker
+  // copycats were actually found. The uniqueness-unknown caveat ("no same-ticker
+  // token was found, but the index is capped") must NOT claim copycats exist.
+  const hasCopycats = advisories.some((a) =>
+    /share|copycat|impersonation|dominance/i.test(`${a.title} ${a.text ?? ""}`),
+  )
 
   const threats = detectors.filter((d) => d.category === "threat" && !isAdvisoryDetector(d))
   const controls = detectors.filter(
@@ -188,10 +194,12 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
           {advisories.length > 0 && (
             <section className={styles.reportSection}>
               <h3 className={styles.reportH3}>Before you buy</h3>
-              <p className={styles.reportNote}>
-                This may well be the genuine token. Others have minted copycats with the same ticker, so confirm the
-                contract address before buying.
-              </p>
+              {hasCopycats ? (
+                <p className={styles.reportNote}>
+                  This may well be the genuine token. Others have minted copycats with the same ticker, so confirm the
+                  contract address before buying.
+                </p>
+              ) : null}
               <ul className={styles.findings}>
                 {advisories.map((a) => (
                   <li key={a.key} className={styles.finding}>
