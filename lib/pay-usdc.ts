@@ -24,7 +24,16 @@ const USDC: Record<Chain, `0x${string}`> = {
 
 const isRejection = (e: unknown) => /reject|denied|cancel/i.test(e instanceof Error ? e.message : String(e))
 
-/** Connect a wallet (or reuse an existing connection) and return its provider + account. */
+function injectedProvider(): EIP1193Provider | undefined {
+  if (typeof window === "undefined") return undefined
+  const p = (window as unknown as { ethereum?: EIP1193Provider }).ethereum
+  return p?.request ? p : undefined
+}
+
+/** Connect a wallet and return its provider + account. Connector shapes vary by
+ *  environment (Privy lacks getChainId, the Base App connector lacks
+ *  getProvider), so resolve the provider defensively and fall back to the
+ *  injected window.ethereum that in-app browsers / extensions expose. */
 async function connectWallet(): Promise<{ provider: EIP1193Provider; account: `0x${string}` }> {
   let conn = getConnections(config)[0]
   if (!conn?.accounts?.[0]) {
@@ -39,10 +48,29 @@ async function connectWallet(): Promise<{ provider: EIP1193Provider; account: `0
         if (isRejection(e)) throw e
       }
     }
-    if (!conn?.accounts?.[0]) throw lastErr instanceof Error ? lastErr : new Error("Could not connect a wallet")
+    if (!conn?.accounts?.[0] && !injectedProvider()) {
+      throw lastErr instanceof Error ? lastErr : new Error("Could not connect a wallet")
+    }
   }
-  const account = conn.accounts[0]
-  const provider = (await conn.connector.getProvider()) as EIP1193Provider
+
+  // Prefer the connector's provider + account; fall back to injected.
+  let provider: EIP1193Provider | undefined
+  let account = conn?.accounts?.[0]
+  try {
+    if (typeof conn?.connector?.getProvider === "function") {
+      provider = (await conn.connector.getProvider()) as EIP1193Provider
+    }
+  } catch {
+    /* connector provider unavailable — fall back below */
+  }
+  if (!provider?.request) {
+    provider = injectedProvider()
+    if (provider && !account) {
+      const accts = (await provider.request({ method: "eth_requestAccounts" })) as `0x${string}`[]
+      account = accts?.[0]
+    }
+  }
+  if (!provider?.request || !account) throw new Error("Could not reach the wallet provider")
   return { provider, account }
 }
 
