@@ -1,6 +1,6 @@
 "use client"
 import type { CbtvReport, Detector, Finding, RiskLevel } from "@/lib/cbtv"
-import { RISK_COLOR, RISK_ORDER, toLevel, worst } from "@/lib/cbtv"
+import { RISK_COLOR, RISK_ORDER, isAdvisoryFinding, toLevel, worst } from "@/lib/cbtv"
 import styles from "./page.module.css"
 
 function short(addr: string) {
@@ -45,9 +45,15 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
   const detectors = report.detectors ?? []
   const notB20 = report.is_b20 === false || report.status === "not_b20"
 
-  // Findings sorted worst-first.
-  const findings = (report.findings ?? [])
-    .filter((f) => f.title)
+  // Ecosystem/impersonation cautions (e.g. same-ticker copycats made by OTHERS)
+  // are separated out: they're a "check the address" caution for the buyer, not a
+  // fault of the scanned contract, so they never count toward its verdict.
+  const allFindings = (report.findings ?? []).filter((f) => f.title)
+  const advisories = allFindings.filter(isAdvisoryFinding)
+
+  // The token's OWN findings, sorted worst-first.
+  const findings = allFindings
+    .filter((f) => !isAdvisoryFinding(f))
     .sort((a, b) => RISK_ORDER[toLevel(b.severity)] - RISK_ORDER[toLevel(a.severity)])
 
   const threats = detectors.filter((d) => d.category === "threat")
@@ -164,6 +170,26 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
               <ul className={styles.findings}>
                 {findings.slice(0, 14).map((f) => (
                   <FindingRow key={f.id} f={f} />
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {advisories.length > 0 && (
+            <section className={styles.reportSection}>
+              <h3 className={styles.reportH3}>Before you buy</h3>
+              <p className={styles.reportNote}>
+                Cautions about the wider market, not faults in this contract &mdash; this may well be the genuine token.
+              </p>
+              <ul className={styles.findings}>
+                {advisories.map((f) => (
+                  <li key={f.id} className={styles.finding}>
+                    <span className={styles.findingBar} style={{ background: "#6b7280" }} aria-hidden="true" />
+                    <div className={styles.findingBody}>
+                      <span className={styles.findingTitle}>{f.title}</span>
+                      {f.why ? <p className={styles.findingText}>{f.why}</p> : null}
+                    </div>
+                  </li>
                 ))}
               </ul>
             </section>

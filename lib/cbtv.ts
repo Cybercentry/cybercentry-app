@@ -98,10 +98,23 @@ export function worst(levels: RiskLevel[]): RiskLevel {
   return levels.reduce<RiskLevel>((a, b) => (RISK_ORDER[b] > RISK_ORDER[a] ? b : a), "Informational")
 }
 
-/** The headline verdict: the worst of overall_risk, the capped grade, and findings. */
+/** Findings that describe the *ecosystem around* the token (e.g. other people
+ * minting same-ticker copycats), not a defect in the scanned contract. They're a
+ * genuine buyer caution ("check you have the right address") but NOT the scanned
+ * project's fault — so they're shown separately and never inflate its verdict.
+ * Note: this is distinct from a finding that the scanned token *is itself* a
+ * malicious fake, which stays a real risk. */
+export function isAdvisoryFinding(f: Finding): boolean {
+  const t = `${f.title} ${f.why ?? ""}`.toLowerCase()
+  return /shares? the ticker|same ticker|impersonation risk|multiple tokens .*(share|ticker)|verify the official|confirm the (contract )?address/.test(t)
+}
+
+/** The headline verdict: the worst of overall_risk, the capped grade, and the
+ * token's OWN findings — advisory/ecosystem findings are excluded so a legit
+ * project isn't marked risky for third-party copycats. */
 export function reportRiskLevel(report: CbtvReport): RiskLevel {
   if (report.is_b20 === false || report.status === "not_b20") return "Informational"
-  const findings = report.findings ?? []
+  const findings = (report.findings ?? []).filter((f) => !isAdvisoryFinding(f))
   return worst([report.overall_risk ?? "Informational", toLevel(report.grade), ...findings.map((f) => toLevel(f.severity))])
 }
 
