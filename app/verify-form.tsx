@@ -123,7 +123,7 @@ export function VerifyForm() {
     return <ReportView report={report} onReset={reset} />
   }
 
-  let ctaLabel = "Verify a B20 token — $1"
+  let ctaLabel = "Verify"
   if (phase === "paying") ctaLabel = "Confirm payment…"
   else if (phase === "scanning") ctaLabel = `Scanning… ${elapsed}s`
 
@@ -163,6 +163,8 @@ export function VerifyForm() {
         {ctaLabel}
         {!busy ? <span aria-hidden="true"> &rarr;</span> : null}
       </button>
+
+      {!busy ? <p className={styles.priceNote}>$1 in USDC per check · paid once with Base Pay</p> : null}
 
       {busy ? (
         <div className={styles.progress} aria-hidden="true">
