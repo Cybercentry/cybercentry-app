@@ -7,6 +7,10 @@ import "./globals.css"
 /** Base app domain-ownership verification. Renders into <head> on every page. */
 const BASE_APP_ID = "69f84bd5879b4ae3fa1c713f"
 
+/** Full product name. The manifest `name` is capped at 32 chars, so it carries
+ *  a shortened form; the untruncated name lives in the page title and heading. */
+const FULL_NAME = "Cybercentry Base Token Verification"
+
 export async function generateMetadata(): Promise<Metadata> {
   const { miniapp } = minikitConfig
 
@@ -14,7 +18,9 @@ export async function generateMetadata(): Promise<Metadata> {
   // parser: explicit url, plus splash so the handoff matches the app.
   const embed = {
     version: miniapp.version,
-    imageUrl: miniapp.heroImageUrl,
+    // Embed image must be 3:2 per the Farcaster spec; imageUrl (embed-1200x800)
+    // is 3:2, whereas heroImageUrl is 1.91:1 for the manifest hero slot.
+    imageUrl: miniapp.imageUrl,
     button: {
       title: miniapp.tagline,
       action: {
@@ -29,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const embedJson = JSON.stringify(embed)
 
   return {
-    title: miniapp.name,
+    title: FULL_NAME,
     description: miniapp.description,
     other: {
       "base:app_id": BASE_APP_ID,

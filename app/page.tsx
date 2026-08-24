@@ -4,10 +4,23 @@ import type React from "react"
 import { TARGET_URL, TARGET_HOST } from "@/lib/target"
 import styles from "./page.module.css"
 
-// The host can be slow to answer, so never let detection block the redirect.
+// Host detection can be slow; never let it block. On plain web the page
+// auto-forwards after this delay so the landing is seen but the divert is still
+// direct. Inside a Mini App there is no auto-forward — hosts require a user
+// gesture to open an external URL — so the visitor taps the CTA.
 const DETECT_TIMEOUT_MS = 1500
+const WEB_REDIRECT_MS = 2600
 
 type MiniAppSdk = typeof import("@farcaster/miniapp-sdk")["sdk"]
+
+// What the Base Token Verification service checks — risk first.
+const CHECKS: { title: string; desc: string }[] = [
+  { title: "Honeypots", desc: "tokens you can buy but never sell" },
+  { title: "Armed freeze-and-seize", desc: "issuer can freeze or take your balance" },
+  { title: "A live pause", desc: "transfers already halted" },
+  { title: "Fake B20s", desc: "counterfeit standard tokens" },
+  { title: "Ticker-impersonation copycats", desc: "impostors riding a known name" },
+]
 
 function withTimeout<T>(promise: Promise<T>, fallback: T): Promise<T> {
   return Promise.race([
@@ -17,60 +30,76 @@ function withTimeout<T>(promise: Promise<T>, fallback: T): Promise<T> {
 }
 
 export default function Home() {
-  // "detecting" covers the brief moment before we know where we are. On plain
-  // web we never leave it, because the redirect fires first.
-  const [mode, setMode] = useState<"detecting" | "miniapp">("detecting")
+  // "detecting" until we know the context. Web never dwells here — the redirect
+  // fires. Mini App switches to a tap-to-open landing.
+  const [mode, setMode] = useState<"detecting" | "miniapp" | "web">("detecting")
   const sdkRef = useRef<MiniAppSdk | null>(null)
 
   useEffect(() => {
     let cancelled = false
 
-    const detect = async () => {
+    const run = async () => {
+      let inMiniApp = false
       try {
         const { sdk } = await import("@farcaster/miniapp-sdk")
-        const inMiniApp = await withTimeout(sdk.isInMiniApp(), false)
-
-        if (cancelled) return
-
+        inMiniApp = await withTimeout(sdk.isInMiniApp(), false)
         if (inMiniApp) {
           sdkRef.current = sdk
-          // Dismiss the host splash screen, otherwise the Mini App hangs on
-          // the loading state.
-          await sdk.actions.ready()
-          if (!cancelled) setMode("miniapp")
-          // Deliberately no auto-open: hosts block openUrl() that isn't tied to
-          // a user gesture, so we wait for the tap.
-          return
+          // Harmless in Base (no longer required there); still dismisses the
+          // splash in Farcaster hosts. Best-effort.
+          try {
+            await sdk.actions.ready()
+          } catch {
+            /* ignore */
+          }
         }
       } catch {
-        // Not a Mini App host, or the SDK failed to load. Fall through to a
-        // plain browser redirect.
+        // SDK unavailable — treat as plain web.
       }
 
-      if (!cancelled) window.location.replace(TARGET_URL)
+      if (cancelled) return
+
+      if (inMiniApp) {
+        setMode("miniapp")
+        return
+      }
+
+      // Plain web: show the landing briefly, then forward. location.replace adds
+      // no history entry.
+      setMode("web")
+      const t = setTimeout(() => {
+        if (!cancelled) window.location.replace(TARGET_URL)
+      }, WEB_REDIRECT_MS)
+      cleanup.push(() => clearTimeout(t))
     }
 
-    detect()
+    const cleanup: (() => void)[] = []
+    run()
 
     return () => {
       cancelled = true
+      cleanup.forEach((fn) => fn())
     }
   }, [])
 
-  const handleOpen = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleOpen = (event: React.MouseEvent<HTMLAnchorElement>) => {
     const sdk = sdkRef.current
-    // Outside a Mini App the plain href does the right thing already.
-    if (!sdk) return
+    if (!sdk) return // plain web: let the <a href> navigate natively
 
+    // Inside a Mini App, hand off through the SDK. openUrl is being superseded by
+    // window.open in Base's newer model, so fall back to that, then to the
+    // anchor's own navigation.
     event.preventDefault()
-    try {
-      await sdk.actions.openUrl(TARGET_URL)
-    } catch {
-      window.location.href = TARGET_URL
-    }
+    Promise.resolve()
+      .then(() => sdk.actions.openUrl(TARGET_URL))
+      .catch(() => {
+        if (typeof window !== "undefined" && window.open) window.open(TARGET_URL, "_blank", "noopener")
+        else window.location.href = TARGET_URL
+      })
   }
 
   const isMiniApp = mode === "miniapp"
+  const isWeb = mode === "web"
 
   return (
     <div className={styles.page}>
@@ -80,8 +109,7 @@ export default function Home() {
 
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          {/* next/image is pointless here: next.config sets images.unoptimized,
-              and this is a single static logo on a page that redirects away. */}
+          {/* next/image is pointless here: next.config sets images.unoptimized. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/Cybercentry_Logo_Blue.png" alt="Cybercentry" className={styles.logo} />
         </div>
@@ -89,29 +117,71 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className={styles.card}>
-          <span className={styles.eyebrow}>{isMiniApp ? "Cybercentry" : "Redirecting"}</span>
+          <span className={styles.eyebrow}>Cybercentry · Base Token Verification</span>
 
-          <h1 className={styles.title}>Web3 Security Verification for EVM and Solana</h1>
+          <h1 className={styles.title}>Know the risk before you buy a Base token</h1>
 
-          <p className={styles.message}>
-            {isMiniApp ? "Continue to the full site at " : "Taking you to "}
-            <span className={styles.domain}>{TARGET_HOST}</span>.
+          <p className={styles.lede}>
+            Most Base token scams are detectable <strong>before</strong> you spend a cent. One check reads the contract
+            and names what is wrong — so you don&rsquo;t find out after buying.
           </p>
 
-          <a className={styles.button} href={TARGET_URL} onClick={handleOpen} rel="noopener noreferrer">
-            {isMiniApp ? "Open Cybercentry" : "Continue to Cybercentry"}
+          <ul className={styles.checks}>
+            {CHECKS.map((c) => (
+              <li key={c.title} className={styles.check}>
+                <svg className={styles.checkIcon} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path
+                    d="M10 2.5 3 5.5v4c0 3.6 2.7 6.6 7 8 4.3-1.4 7-4.4 7-8v-4L10 2.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinejoin="round"
+                  />
+                  <path d="m7.3 9.8 1.9 1.9 3.5-3.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>
+                  <span className={styles.checkTitle}>{c.title}</span>
+                  <span className={styles.checkDesc}> — {c.desc}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <p className={styles.lede}>
+            It also discloses issuer controls — admin centralisation, supply cap, transfer policy, rebase — so a
+            legitimate token isn&rsquo;t mistaken for a scam.
+          </p>
+
+          <div className={styles.meta}>
+            <span className={styles.metaItem}>
+              <span className={styles.metaDot} />$1 per check
+            </span>
+            <span className={styles.metaItem}>
+              <span className={styles.metaDot} />results in about a minute
+            </span>
+            <span className={styles.metaItem}>
+              <span className={styles.metaDot} />Base mainnet
+            </span>
+          </div>
+
+          <a className={styles.cta} href={TARGET_URL} onClick={handleOpen} rel="noopener noreferrer">
+            {isMiniApp ? "Verify a Base token" : "Open the verifier now"}
             <span aria-hidden="true">&rarr;</span>
           </a>
 
-          {!isMiniApp && (
-            <div className={styles.progress} aria-hidden="true">
-              <div className={styles.progressBar} />
-            </div>
+          {isWeb && (
+            <>
+              <div className={styles.progress} aria-hidden="true">
+                <div className={styles.progressBar} style={{ ["--redirect-ms" as string]: `${WEB_REDIRECT_MS}ms` }} />
+              </div>
+              <p className={styles.redirectNote}>
+                Taking you to <span className={styles.domain}>{TARGET_HOST}</span>…
+              </p>
+            </>
           )}
         </div>
       </main>
 
-      <footer className={styles.footer}>Verify wallets, agents, contracts and applications before execution.</footer>
+      <footer className={styles.footer}>Cybercentry — verify before you transact.</footer>
     </div>
   )
 }

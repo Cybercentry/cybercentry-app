@@ -15,13 +15,13 @@
 }
 
 .headerInner {
-  max-width: 72rem;
+  max-width: 48rem;
   margin: 0 auto;
   padding: 10px 16px;
 }
 
 .logo {
-  height: 48px;
+  height: 44px;
   width: auto;
 }
 
@@ -30,71 +30,142 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: 40px 16px;
 }
 
 .card {
   width: 100%;
-  max-width: 32rem;
-  padding: 28px;
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: var(--surface);
+  max-width: 34rem;
 }
 
 .eyebrow {
-  display: block;
-  font-size: 10px;
+  display: inline-block;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
+  letter-spacing: 0.14em;
+  color: var(--brand);
 }
 
 .title {
-  margin-top: 8px;
-  font-size: 1.5rem;
-  line-height: 1.25;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  margin-top: 10px;
+  font-size: 1.9rem;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   color: var(--text);
 }
 
-.message {
-  margin-top: 8px;
-  font-size: 0.875rem;
-  line-height: 1.6;
+.lede {
+  margin-top: 12px;
+  font-size: 1rem;
+  line-height: 1.55;
   color: var(--text-muted);
+}
+
+.lede strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* What the check catches — risk-first list. */
+.checks {
+  margin-top: 22px;
+  display: grid;
+  gap: 10px;
+  list-style: none;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.checkIcon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: var(--brand);
+}
+
+.checkTitle {
+  font-weight: 600;
+}
+
+.checkDesc {
+  color: var(--text-muted);
+}
+
+.meta {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metaDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px 20px;
+  border-radius: 0.5rem;
+  background: var(--brand);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: opacity 0.2s ease, transform 0.05s ease;
+}
+
+.cta:hover {
+  opacity: 0.92;
+}
+
+.cta:active {
+  transform: translateY(1px);
+}
+
+.redirectNote {
+  margin-top: 12px;
+  font-size: 0.78rem;
+  color: var(--text-subtle);
+  text-align: center;
 }
 
 .domain {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  color: var(--text);
+  color: var(--text-muted);
 }
 
-.button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 20px;
-  padding: 10px 16px;
-  border-radius: 0.375rem;
-  background: var(--brand);
-  color: #ffffff;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: opacity 0.2s ease;
-}
-
-.button:hover {
-  opacity: 0.9;
-}
-
-/* Indeterminate bar, tinted with the destination's accent blue. */
+/* Web countdown bar; drains over the redirect delay. */
 .progress {
   position: relative;
-  height: 2px;
-  margin-top: 24px;
+  height: 3px;
+  margin-top: 14px;
   border-radius: 999px;
   background: var(--surface-muted);
   overflow: hidden;
@@ -102,19 +173,19 @@
 
 .progressBar {
   position: absolute;
-  inset: 0 auto 0 0;
-  width: 40%;
+  inset: 0 0 0 0;
+  transform-origin: left;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--brand-soft), var(--brand));
-  animation: slide 1.4s ease-in-out infinite;
+  animation: drain var(--redirect-ms, 2600ms) linear forwards;
 }
 
-@keyframes slide {
-  0% {
-    transform: translateX(-100%);
+@keyframes drain {
+  from {
+    transform: scaleX(1);
   }
-  100% {
-    transform: translateX(350%);
+  to {
+    transform: scaleX(0);
   }
 }
 
@@ -122,19 +193,21 @@
   padding: 20px 16px;
   text-align: center;
   font-size: 0.75rem;
-  /* --text-subtle (#a1a1aa) is only 2.50:1 on the page background, below the
-     WCAG AA 4.5:1 threshold. --text-muted is 4.71:1. */
   color: var(--text-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .progressBar {
     animation: none;
-    width: 100%;
-    opacity: 0.5;
+    opacity: 0.4;
   }
-
-  .button {
+  .cta {
     transition: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.6rem;
   }
 }

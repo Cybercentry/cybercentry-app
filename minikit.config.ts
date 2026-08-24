@@ -12,7 +12,10 @@ export const minikitConfig = {
     signature: "Xkgbc06EaGL8NpKb+s1dR64GTcl4QQ7B3+VoIhYELnd6hw8eSyNCv7O6KBZWzSuCfeTAI0s91g9vleoFexOGNRw=",
   },
   miniapp: {
-    name: "Cybercentry",
+    // Full name "Cybercentry Base Token Verification" (35 chars) exceeds the
+    // schema's 32-char name limit, so it's shortened here; the untruncated name
+    // is the page <title> and <h1>.
+    name: "Cybercentry Base Token Verify",
     version: "1",
     // Every image below is generated from blue-icon.png to the sizes Farcaster
     // documents: icon 1024x1024 with no alpha, splash 200x200, hero/og
@@ -20,21 +23,21 @@ export const minikitConfig = {
     iconUrl: `${ROOT_URL}/icon-1024.png`,
     homeUrl: ROOT_URL,
     imageUrl: `${ROOT_URL}/embed-1200x800.png`,
-    buttonTitle: "Open Mini App",
+    buttonTitle: "Verify a Base token",
     splashImageUrl: `${ROOT_URL}/splash-200.png`,
     splashBackgroundColor: "#fcfcfc",
-    // Copy mirrors the live site (centry.cybercentry.co.uk): its web manifest
-    // brands as "Web3 Security Verification for EVM and Solana", and its service
-    // catalogue is pay-per-call ("Pay for the call, not the seat"). Kept within
-    // the schema's 30-char subtitle limit and free of banned characters.
-    subtitle: "Web3 Security Verification",
-    description: "Verify wallets, agents, contracts and applications before execution.",
+    // App diverts straight to the Base Token Verification service, so the copy
+    // is that service's, not the whole catalogue. Fields kept within the
+    // schema's length limits and free of banned characters.
+    subtitle: "Base Token Verification",
+    description:
+      "Check a Base token contract before you buy — detect honeypots, freeze-and-seize, live pauses, fake B20s and ticker-impersonation copycats before they cost you.",
     primaryCategory: "utility",
     heroImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     tags: ["security"],
-    tagline: "Verify before you transact",
-    ogTitle: "Cybercentry",
-    ogDescription: "Pay-per-call Web3 verification for tokens, wallets, contracts and agents across EVM and Solana.",
+    tagline: "Verify before you buy",
+    ogTitle: "Cybercentry Base Token Verify",
+    ogDescription: "Check a Base token before you buy: honeypots, freeze-and-seize, fake B20s and copycats.",
     ogImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     castShareUrl: ROOT_URL,
   },
