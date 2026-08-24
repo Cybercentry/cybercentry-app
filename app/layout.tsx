@@ -37,6 +37,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: FULL_NAME,
     description: miniapp.description,
+    // Declare icons explicitly. Chrome falls back to /favicon.ico on its own, but
+    // iOS in-app browsers (the Base app) only show a site icon when there's an
+    // apple-touch-icon link — without it they render a generic globe.
+    icons: {
+      icon: [
+        { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+        { url: "/icon-light-32x32.png", type: "image/png", sizes: "32x32" },
+      ],
+      apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+    },
     other: {
       "base:app_id": BASE_APP_ID,
       // fc:miniapp is the current tag name; fc:frame is the backwards-compat
