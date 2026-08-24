@@ -12,10 +12,9 @@ export const minikitConfig = {
     signature: "Xkgbc06EaGL8NpKb+s1dR64GTcl4QQ7B3+VoIhYELnd6hw8eSyNCv7O6KBZWzSuCfeTAI0s91g9vleoFexOGNRw=",
   },
   miniapp: {
-    // Full name "Cybercentry Base Token Verification" (35 chars) exceeds the
-    // schema's 32-char name limit, so it's shortened here; the untruncated name
-    // is the page <title> and <h1>.
-    name: "Cybercentry Base Token Verify",
+    // Brand name only; what it does is carried by subtitle/description. Matches
+    // the Base.dev listing name.
+    name: "Cybercentry",
     version: "1",
     // Every image below is generated from blue-icon.png to the sizes Farcaster
     // documents: icon 1024x1024 with no alpha, splash 200x200, hero/og
@@ -39,7 +38,7 @@ export const minikitConfig = {
     heroImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     tags: ["security"],
     tagline: "Verify before you buy",
-    ogTitle: "Cybercentry Base Token Verify",
+    ogTitle: "Cybercentry",
     ogDescription: "Check a B20 token before you buy: honeypots, freeze-and-seize, fake B20s and copycats.",
     ogImageUrl: `${ROOT_URL}/hero-1200x630.png`,
     castShareUrl: ROOT_URL,
