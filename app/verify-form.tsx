@@ -213,7 +213,7 @@ export function VerifyForm() {
         {ctaLabel}
       </button>
 
-      {!busy ? <p className={styles.priceNote}>$1 in USDC per check · paid once with Base Pay</p> : null}
+      {!busy ? <p className={styles.priceNote}>$1 in USDC per verification · paid with Base Pay</p> : null}
 
       {busy ? (
         <div className={styles.progress} aria-hidden="true">
