@@ -69,6 +69,13 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
   const threats = detectors.filter((d) => d.category === "threat")
   const controls = detectors.filter((d) => d.category === "control" && d.impact !== "Informational")
 
+  // Count the findings by severity for the summary — "threats" (detector-only)
+  // reads as 0 on a venue honeypot, which is misleading.
+  const findingLevels = findings.map((f) => toLevel(f.severity))
+  const highCount = findingLevels.filter((l) => l === "High").length
+  const medCount = findingLevels.filter((l) => l === "Medium").length
+  const lowCount = findingLevels.filter((l) => l === "Low").length
+
   // The app's whole promise is "Can you sell it?" — answer it directly and first.
   // A sell-side result lives in the venue findings (cannot be sold / honeypot) or
   // a honeypot detector.
@@ -128,12 +135,26 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
           </div>
 
           <div className={styles.summaryRow}>
-            <span>
-              <b>{report.threats_count ?? threats.length}</b> threats
-            </span>
-            <span>
-              <b>{report.control_flags ?? controls.length}</b> issuer controls
-            </span>
+            {highCount > 0 ? (
+              <span>
+                <b>{highCount}</b> high
+              </span>
+            ) : null}
+            {medCount > 0 ? (
+              <span>
+                <b>{medCount}</b> medium
+              </span>
+            ) : null}
+            {lowCount > 0 ? (
+              <span>
+                <b>{lowCount}</b> low
+              </span>
+            ) : null}
+            {controls.length > 0 ? (
+              <span>
+                <b>{controls.length}</b> issuer control{controls.length > 1 ? "s" : ""}
+              </span>
+            ) : null}
             {report.grade ? (
               <span>
                 grade <b>{String(report.grade)}</b>
