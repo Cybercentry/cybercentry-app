@@ -111,7 +111,8 @@
   background: var(--surface);
   color: var(--text);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 0.95rem;
+  /* >=16px stops iOS from auto-zooming the webview when the field is focused. */
+  font-size: 1rem;
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -131,7 +132,8 @@
   border-radius: 0.5rem;
   background: var(--surface);
   color: var(--text);
-  font-size: 0.9rem;
+  /* >=16px avoids iOS zoom-on-focus, matching the input. */
+  font-size: 1rem;
 }
 
 .error {
