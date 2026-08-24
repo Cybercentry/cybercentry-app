@@ -174,7 +174,7 @@ export function VerifyForm() {
 
       {phase === "scanning" ? (
         <p className={styles.hint}>
-          Running a real on-chain buy-and-sell round trip and reading the contract. This usually takes about 30
+          Running a real on-chain buy-and-sell round trip and reading the contract. This usually takes about 60
           seconds — keep the app open.
         </p>
       ) : (
