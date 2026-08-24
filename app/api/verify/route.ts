@@ -24,6 +24,42 @@ function bad(status: number, error: string) {
   return NextResponse.json({ error }, { status })
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+// Verify the Base Pay payment against the on-chain USDC transfer. expectedPayment
+// makes getPaymentStatus assert amount + recipient (and throw on mismatch), so a
+// spoofed id / wrong amount / wrong recipient never passes. Retries for ~24s
+// because the receipt can lag pay() resolving; logs the real error to the server
+// (Railway logs) and returns it so the UI shows why.
+async function verifyPayment(paymentId: string): Promise<{ ok: true } | { ok: false; msg: string }> {
+  const deadline = Date.now() + 24_000
+  let last = "Payment could not be verified"
+  let attempt = 0
+  while (Date.now() < deadline) {
+    attempt++
+    try {
+      const status = await getPaymentStatus({
+        id: paymentId,
+        expectedPayment: { amount: PAY_AMOUNT, recipient: TREASURY },
+        testnet: PAY_TESTNET,
+      })
+      if (status.status === "completed") return { ok: true }
+      if (status.status === "failed") {
+        const reason = status.reason ? `: ${status.reason}` : ""
+        return { ok: false, msg: `Payment failed${reason}` }
+      }
+      // pending / not_found — the receipt isn't indexed yet; wait and retry.
+      last = `Payment ${status.status}`
+      console.warn(`[verify] payment ${paymentId} ${status.status} (attempt ${attempt})`)
+    } catch (err) {
+      last = err instanceof Error ? err.message : String(err)
+      console.error(`[verify] getPaymentStatus threw (attempt ${attempt}, testnet=${PAY_TESTNET}):`, last)
+    }
+    await sleep(3000)
+  }
+  return { ok: false, msg: last }
+}
+
 // POST — verify the Base Pay payment, then kick off an async CBTV scan.
 export async function POST(request: Request) {
   if (!CBTV_API_URL || !CBTV_API_KEY) return bad(500, "Service not configured")
@@ -43,20 +79,11 @@ export async function POST(request: Request) {
   if (!CHAINS.has(chain)) return bad(400, "Unsupported chain")
   if (!paymentId) return bad(402, "Payment required")
 
-  // Verify the payment against the on-chain USDC transfer. expectedPayment makes
-  // getPaymentStatus assert the amount and recipient match, and throw otherwise —
-  // so a spoofed id, wrong amount, or wrong recipient never passes.
-  let status
-  try {
-    status = await getPaymentStatus({
-      id: paymentId,
-      expectedPayment: { amount: PAY_AMOUNT, recipient: TREASURY },
-      testnet: PAY_TESTNET,
-    })
-  } catch {
-    return bad(402, "Payment could not be verified")
-  }
-  if (status.status !== "completed") return bad(402, `Payment ${status.status}`)
+  // Verify the payment against the on-chain USDC transfer. Retries because the
+  // receipt can lag a few seconds behind pay() resolving, and surfaces + logs the
+  // real reason instead of a blanket "could not be verified".
+  const verified = await verifyPayment(paymentId)
+  if (!verified.ok) return bad(402, verified.msg)
 
   // Atomically claim the payment id (Postgres, durable). First use → proceed;
   // already used → replay, reject. This also consumes it before the CBTV kickoff,
