@@ -11,6 +11,8 @@
 import {
   connect,
   getConnections,
+  getChainId,
+  switchChain,
   sendCalls,
   waitForCallsStatus,
   sendTransaction,
@@ -53,6 +55,11 @@ async function ensureAccount(): Promise<`0x${string}`> {
 export async function payUsdc(opts: { amount: string; to: `0x${string}`; chain: Chain }): Promise<{ txHash: string }> {
   const chainId = CHAIN_ID[opts.chain]
   const account = await ensureAccount()
+  // The connected wallet may be on another chain (e.g. Ethereum) — move it to the
+  // target Base chain before sending, or the transaction reverts as a mismatch.
+  if (getChainId(config) !== chainId) {
+    await switchChain(config, { chainId })
+  }
   const data = encodeFunctionData({
     abi: erc20Abi,
     functionName: "transfer",
