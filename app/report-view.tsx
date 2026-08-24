@@ -1,6 +1,6 @@
 "use client"
 import type { CbtvReport, Detector, Finding, RiskLevel } from "@/lib/cbtv"
-import { RISK_COLOR, RISK_ORDER, isAdvisoryFinding, toLevel, worst } from "@/lib/cbtv"
+import { RISK_COLOR, RISK_ORDER, isAdvisoryFinding, isAdvisoryDetector, toLevel, worst } from "@/lib/cbtv"
 import styles from "./page.module.css"
 
 function short(addr: string) {
@@ -47,17 +47,27 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
 
   // Ecosystem/impersonation cautions (e.g. same-ticker copycats made by OTHERS)
   // are separated out: they're a "check the address" caution for the buyer, not a
-  // fault of the scanned contract, so they never count toward its verdict.
+  // fault of the scanned contract, so they never count toward its verdict, its
+  // findings, or its issuer controls. They arrive as either a finding or a
+  // control detector, so both are captured here into one "Before you buy" list.
   const allFindings = (report.findings ?? []).filter((f) => f.title)
-  const advisories = allFindings.filter(isAdvisoryFinding)
 
   // The token's OWN findings, sorted worst-first.
   const findings = allFindings
     .filter((f) => !isAdvisoryFinding(f))
     .sort((a, b) => RISK_ORDER[toLevel(b.severity)] - RISK_ORDER[toLevel(a.severity)])
 
-  const threats = detectors.filter((d) => d.category === "threat")
-  const controls = detectors.filter((d) => d.category === "control" && d.impact !== "Informational")
+  const advisories: { key: string; title: string; text?: string }[] = [
+    ...allFindings.filter(isAdvisoryFinding).map((f) => ({ key: f.id, title: f.title, text: f.why })),
+    ...(report.detectors ?? [])
+      .filter(isAdvisoryDetector)
+      .map((d, i) => ({ key: `ad${i}`, title: d.description, text: d.recommendation })),
+  ]
+
+  const threats = detectors.filter((d) => d.category === "threat" && !isAdvisoryDetector(d))
+  const controls = detectors.filter(
+    (d) => d.category === "control" && d.impact !== "Informational" && !isAdvisoryDetector(d),
+  )
 
   // Count the findings by severity for the summary — "threats" (detector-only)
   // reads as 0 on a venue honeypot, which is misleading.
@@ -183,12 +193,12 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
                 contract address before buying.
               </p>
               <ul className={styles.findings}>
-                {advisories.map((f) => (
-                  <li key={f.id} className={styles.finding}>
+                {advisories.map((a) => (
+                  <li key={a.key} className={styles.finding}>
                     <span className={styles.findingBar} style={{ background: "#6b7280" }} aria-hidden="true" />
                     <div className={styles.findingBody}>
-                      <span className={styles.findingTitle}>{f.title}</span>
-                      {f.why ? <p className={styles.findingText}>{f.why}</p> : null}
+                      <span className={styles.findingTitle}>{a.title}</span>
+                      {a.text ? <p className={styles.findingText}>{a.text}</p> : null}
                     </div>
                   </li>
                 ))}

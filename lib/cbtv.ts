@@ -98,15 +98,22 @@ export function worst(levels: RiskLevel[]): RiskLevel {
   return levels.reduce<RiskLevel>((a, b) => (RISK_ORDER[b] > RISK_ORDER[a] ? b : a), "Informational")
 }
 
-/** Findings that describe the *ecosystem around* the token (e.g. other people
- * minting same-ticker copycats), not a defect in the scanned contract. They're a
- * genuine buyer caution ("check you have the right address") but NOT the scanned
- * project's fault — so they're shown separately and never inflate its verdict.
- * Note: this is distinct from a finding that the scanned token *is itself* a
- * malicious fake, which stays a real risk. */
+// Ecosystem/impersonation cautions describe the world *around* the token (e.g.
+// other people minting same-ticker copycats), not a defect in the scanned
+// contract. They're a genuine buyer caution ("check you have the right address")
+// but NOT the scanned project's fault — shown separately, never inflating its
+// verdict, never counted as an issuer control. Distinct from a finding that the
+// scanned token *is itself* a malicious fake, which stays a real risk.
+const ADVISORY_RE =
+  /shares? the ticker|same ticker|impersonation|copycat|multiple tokens .*(share|ticker)|verify the official|confirm the (contract )?address/i
+
 export function isAdvisoryFinding(f: Finding): boolean {
-  const t = `${f.title} ${f.why ?? ""}`.toLowerCase()
-  return /shares? the ticker|same ticker|impersonation risk|multiple tokens .*(share|ticker)|verify the official|confirm the (contract )?address/.test(t)
+  return ADVISORY_RE.test(`${f.title} ${f.why ?? ""}`)
+}
+
+/** Detector form of the same ecosystem caution (proxy emits it as a control). */
+export function isAdvisoryDetector(d: Detector): boolean {
+  return ADVISORY_RE.test(`${d.description} ${d.recommendation ?? ""} ${d.check}`)
 }
 
 /** The headline verdict: the worst of overall_risk, the capped grade, and the
