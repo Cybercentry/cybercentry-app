@@ -17,6 +17,11 @@ export const dynamic = "force-dynamic"
 const CBTV_API_URL = (process.env.CBTV_API_URL ?? "").replace(/\/+$/, "")
 const CBTV_API_KEY = process.env.CBTV_API_KEY ?? ""
 
+// The SDK's default public bundler is unreliable on Base mainnet (rate limits →
+// "Invalid response" / "not_found"). Point payment verification at a dedicated
+// bundler (e.g. a CDP Base RPC) when provided.
+const BUNDLER_URL = process.env.PAY_BUNDLER_URL || undefined
+
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
 const CHAINS = new Set(["base", "base-sepolia"])
 
@@ -32,7 +37,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // because the receipt can lag pay() resolving; logs the real error to the server
 // (Railway logs) and returns it so the UI shows why.
 async function verifyPayment(paymentId: string): Promise<{ ok: true } | { ok: false; msg: string }> {
-  const deadline = Date.now() + 24_000
+  // Up to ~45s: mainnet userOp indexing can lag several seconds behind pay().
+  const deadline = Date.now() + 45_000
   let last = "Payment could not be verified"
   let attempt = 0
   while (Date.now() < deadline) {
@@ -42,6 +48,7 @@ async function verifyPayment(paymentId: string): Promise<{ ok: true } | { ok: fa
         id: paymentId,
         expectedPayment: { amount: PAY_AMOUNT, recipient: TREASURY },
         testnet: PAY_TESTNET,
+        ...(BUNDLER_URL ? { bundlerUrl: BUNDLER_URL } : {}),
       })
       if (status.status === "completed") return { ok: true }
       if (status.status === "failed") {
