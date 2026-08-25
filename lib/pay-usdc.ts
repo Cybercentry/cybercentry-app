@@ -135,8 +135,22 @@ export async function payUsdc(opts: { amount: string; to: `0x${string}`; chain: 
  * rejection or if no wallet can be reached.
  */
 export async function signFreeScan(): Promise<{ wallet: `0x${string}`; message: string; signature: string }> {
-  const { provider, account } = await connectWallet()
+  const { provider } = await connectWallet()
+  // Re-fetch the authorized account from THIS provider so the account we sign
+  // with always matches it — a stale wagmi account causes sporadic sign failures.
+  const accts = (await provider.request({ method: "eth_requestAccounts" })) as `0x${string}`[]
+  const account = accts?.[0]
+  if (!account) throw new Error("No wallet account")
   const wallet = createWalletClient({ account, transport: custom(provider) })
-  const signature = await wallet.signMessage({ account, message: FREE_SCAN_MESSAGE })
-  return { wallet: account, message: FREE_SCAN_MESSAGE, signature }
+  // Retry once on a transient failure (never on a user rejection).
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const signature = await wallet.signMessage({ account, message: FREE_SCAN_MESSAGE })
+      return { wallet: account, message: FREE_SCAN_MESSAGE, signature }
+    } catch (err) {
+      if (isRejection(err) || attempt === 1) throw err
+      await new Promise((r) => setTimeout(r, 400))
+    }
+  }
+  throw new Error("Could not sign the free-verification message")
 }

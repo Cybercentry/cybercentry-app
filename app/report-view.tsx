@@ -13,11 +13,30 @@ function AddApp() {
     let cancelled = false
     ;(async () => {
       try {
-        if (localStorage.getItem("cc_add_prompted") === "1") return
+        if (localStorage.getItem("cc_added") === "1") return
         const { sdk } = await import("@farcaster/miniapp-sdk")
-        if (!cancelled && (await sdk.isInMiniApp())) setShow(true)
+        // isInMiniApp() can read false / lag in the in-app browser, so fall back
+        // to the context Promise (resolves with a client only inside a host).
+        let inApp = false
+        try {
+          inApp = await sdk.isInMiniApp()
+        } catch {
+          /* try the context fallback */
+        }
+        if (!inApp) {
+          try {
+            const ctx = (await Promise.race([
+              sdk.context,
+              new Promise((r) => setTimeout(() => r(null), 1200)),
+            ])) as { client?: unknown } | null
+            inApp = !!ctx?.client
+          } catch {
+            /* not a host */
+          }
+        }
+        if (!cancelled && inApp) setShow(true)
       } catch {
-        /* not a Mini App host */
+        /* SDK unavailable */
       }
     })()
     return () => {
@@ -31,11 +50,11 @@ function AddApp() {
       const act = sdk.actions as { addMiniApp?: () => Promise<unknown>; addFrame?: () => Promise<unknown> }
       if (typeof act.addMiniApp === "function") await act.addMiniApp()
       else if (typeof act.addFrame === "function") await act.addFrame()
-      localStorage.setItem("cc_add_prompted", "1")
+      localStorage.setItem("cc_added", "1")
+      setShow(false)
     } catch {
-      /* dismissed or unsupported */
+      /* dismissed or unsupported — leave the button so they can retry */
     }
-    setShow(false)
   }
   return (
     <button type="button" className={styles.addBtn} onClick={add}>
