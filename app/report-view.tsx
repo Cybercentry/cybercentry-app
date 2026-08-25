@@ -34,6 +34,12 @@ function AddApp() {
             /* not a host */
           }
         }
+        // Last resort: the Base / Coinbase app webview by user-agent. addMiniApp
+        // is a no-op if the bridge isn't actually there, so this only ever adds a
+        // harmless button inside their app — never in a plain desktop browser.
+        if (!inApp && typeof navigator !== "undefined" && /coinbase|base\s?app|baseapp/i.test(navigator.userAgent)) {
+          inApp = true
+        }
         if (!cancelled && inApp) setShow(true)
       } catch {
         /* SDK unavailable */
