@@ -438,6 +438,26 @@
   border-color: var(--brand);
 }
 
+/* Add-to-apps: brand-tinted so it reads as a positive, optional next step —
+   distinct from the neutral "Verify another token" below it. */
+.addBtn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px 20px;
+  border: 1px solid var(--brand);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+  color: var(--brand);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.addBtn:hover {
+  background: color-mix(in srgb, var(--brand) 14%, var(--surface));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .progressBar {
     animation: none;

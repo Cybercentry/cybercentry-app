@@ -1,7 +1,48 @@
 "use client"
+import { useEffect, useState } from "react"
 import type { CbtvReport, Detector, Finding, RiskLevel } from "@/lib/cbtv"
 import { RISK_COLOR, RISK_ORDER, isAdvisoryFinding, isAdvisoryDetector, toLevel, worst } from "@/lib/cbtv"
 import styles from "./page.module.css"
+
+// A tap-to-add button — shown only inside a Mini App host and only until added.
+// "Adds to collection" is one of the signals Base/Farcaster discovery ranks on,
+// and a user gesture is far more reliable than an auto-fired prompt.
+function AddApp() {
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        if (localStorage.getItem("cc_add_prompted") === "1") return
+        const { sdk } = await import("@farcaster/miniapp-sdk")
+        if (!cancelled && (await sdk.isInMiniApp())) setShow(true)
+      } catch {
+        /* not a Mini App host */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  if (!show) return null
+  async function add() {
+    try {
+      const { sdk } = await import("@farcaster/miniapp-sdk")
+      const act = sdk.actions as { addMiniApp?: () => Promise<unknown>; addFrame?: () => Promise<unknown> }
+      if (typeof act.addMiniApp === "function") await act.addMiniApp()
+      else if (typeof act.addFrame === "function") await act.addFrame()
+      localStorage.setItem("cc_add_prompted", "1")
+    } catch {
+      /* dismissed or unsupported */
+    }
+    setShow(false)
+  }
+  return (
+    <button type="button" className={styles.addBtn} onClick={add}>
+      + Add Cybercentry to your apps
+    </button>
+  )
+}
 
 function short(addr: string) {
   return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr
@@ -226,6 +267,8 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
           )}
         </>
       )}
+
+      <AddApp />
 
       <button type="button" className={styles.secondaryBtn} onClick={onReset}>
         Verify another token

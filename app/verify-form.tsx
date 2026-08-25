@@ -12,10 +12,9 @@ const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
 const POLL_INTERVAL_MS = 3000
 // Busy tokens (many pools / high transfer counts) can take a few minutes.
 const POLL_TIMEOUT_MS = 300_000
-// Device hints (the server is the source of truth): whether the free scan has
-// been spent, and whether we've already prompted to add the app.
+// Device hint (the server is the source of truth): whether the free scan has
+// been spent, so a returning wallet skips a wasted signature prompt.
 const FREE_KEY = "cc_free_used"
-const ADD_KEY = "cc_add_prompted"
 
 const CHECKS = [
   "Sell-side honeypots",
@@ -119,7 +118,6 @@ export function VerifyForm() {
       if (cancelled.current) return
       setReport(result)
       setPhase("done")
-      void promptAdd() // nudge the user to add the app (feeds discovery), best-effort
     } catch (err) {
       if (cancelled.current) return
       const msg = err instanceof Error ? err.message : "Something went wrong."
@@ -186,21 +184,6 @@ export function VerifyForm() {
     const kick = await res.json()
     if (!res.ok) throw new Error(kick.error || "Could not start the scan.")
     return kick.jobId
-  }
-
-  // Prompt the user to add the Mini App — a genuine engagement signal Base's
-  // discovery ranks on. Once per device, best-effort, silent outside a host.
-  async function promptAdd() {
-    try {
-      if (localStorage.getItem(ADD_KEY) === "1") return
-      const { sdk } = await import("@farcaster/miniapp-sdk")
-      const act = sdk.actions as { addMiniApp?: () => Promise<unknown>; addFrame?: () => Promise<unknown> }
-      if (typeof act.addMiniApp === "function") await act.addMiniApp()
-      else if (typeof act.addFrame === "function") await act.addFrame()
-      localStorage.setItem(ADD_KEY, "1")
-    } catch {
-      /* not in a Mini App host, or the user dismissed it */
-    }
   }
 
   // Re-poll the already-paid job (no new payment).
