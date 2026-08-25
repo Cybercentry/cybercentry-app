@@ -20,7 +20,11 @@ export const BUILDER_DATA_SUFFIX = Attribution.toDataSuffix({ codes: [BUILDER_CO
 
 export const config = createConfig({
   chains: [base, baseSepolia],
-  connectors: [injected(), baseAccount({ appName: "Cybercentry" })],
+  // preference: "smartWalletOnly" forces the keys.coinbase.com passkey Smart
+  // Wallet and does NOT defer to the Coinbase Wallet browser extension — whose
+  // popup hangs on an infinite spinner in a normal Chrome tab. The Smart Wallet
+  // path is the one that already works (incl. incognito) and is paymaster-eligible.
+  connectors: [injected(), baseAccount({ appName: "Cybercentry", preference: { options: "smartWalletOnly" } })],
   transports: {
     [base.id]: http(),
     [baseSepolia.id]: http(),
