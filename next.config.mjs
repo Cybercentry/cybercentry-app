@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 
 // NOTE: deliberately no X-Frame-Options and no CSP `frame-ancestors` restriction.
-// Mini App hosts (Base app, Farcaster) load this page inside a webview/iframe,
-// so framing must stay permitted or the app cannot launch.
+// The Base app can load this page inside a webview/iframe, so framing must stay
+// permitted or the app cannot launch inside it.
 const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "X-Content-Type-Options", value: "nosniff" },

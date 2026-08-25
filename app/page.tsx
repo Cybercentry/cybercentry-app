@@ -1,26 +1,7 @@
-"use client"
-import { useEffect } from "react"
 import { VerifyForm } from "./verify-form"
 import styles from "./page.module.css"
 
 export default function Home() {
-  // Dismiss the host splash screen as soon as we mount — required by the Mini App
-  // spec, harmless outside a host. Fire-and-forget, never gated on detection.
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const { sdk } = await import("@farcaster/miniapp-sdk")
-        if (!cancelled) void sdk.actions.ready().catch(() => {})
-      } catch {
-        /* not a Mini App host */
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
   return (
     <div className={styles.page}>
       <header className={styles.header}>

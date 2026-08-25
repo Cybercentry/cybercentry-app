@@ -1,87 +1,79 @@
-# Cybercentry Mini App
+# Cybercentry — Base Token Verification
 
-A minimal Farcaster / Base Mini App whose only job is to divert visitors to
-**https://centry.cybercentry.co.uk**.
+A **Base App** (standard web app + wallet, listed on [base.dev](https://base.dev))
+that verifies a B20 token before you buy it: it runs a real on-chain buy-and-sell
+round trip and reads the contract to answer one question — **can you actually
+sell it?** — surfacing sell-side honeypots, whitelisted exits, freeze-and-seize,
+live pauses, copycats, and issuer controls.
 
-The app still needs to exist and stay deployed because the signed Mini App
-manifest at `/.well-known/farcaster.json` is bound to this app's own domain. The
-`accountAssociation` signature covers that domain specifically, so the manifest
-cannot simply be moved to the destination site.
+> This used to be a Farcaster Mini App. It has been migrated to the current Base
+> model — **standard web app + wallet, powered by base.dev** — per Base's
+> [migration guide](https://docs.base.org/apps/guides/migrate-to-standard-web-app).
+> There is no `farcaster.json` manifest, no `@farcaster/miniapp-sdk`, and no
+> `fc:miniapp` embed. Domain ownership is proven by the `base:app_id` meta tag;
+> discovery and the store listing live on base.dev.
 
-## ⚠️ Outstanding: re-sign the manifest
+## How it works
 
-The app moved from `cybercentry-one-mini-app.up.railway.app` to
-`cybercentry-mini-app.up.railway.app`. The `accountAssociation` block in
-[`minikit.config.ts`](minikit.config.ts) is **still signed for the old domain**
-and will fail verification until it is regenerated:
+```
+Browser / Base app webview            Next.js route (this repo)            CBTV proxy
+─ enter a B20 address
+─ free first scan: sign a message      POST /api/verify {address, freeSig}
+   (or pay $1 USDC via the wallet)     ─ verify signature / payment (server-side)
+                                        ─ replay-guard + free-scan guard (Postgres)
+                                        ─ POST /verify-b20/async (x-api-key) ──► {job_id}
+   ◄──────────────────────────────────  return {jobId}
+─ poll GET /api/verify?jobId=…          ─ GET /report/{job_id} (x-api-key) ──► status/result
+   ◄──────────────────────────────────  return {status, report}
+─ render the verdict + findings
+```
 
-1. Go to the [Farcaster Manifest tool](https://farcaster.xyz/~/developers/mini-apps/manifest).
-2. Enter `cybercentry-mini-app.up.railway.app`.
-3. Sign with the Farcaster custody wallet and copy the new `accountAssociation`.
-4. Replace all three fields (`header`, `payload`, `signature`) in `minikit.config.ts`.
+Payment/authorisation is verified **once**, server-side, at kickoff — the
+frontend is never trusted. Async + poll avoids the proxy's edge time limit so
+busy tokens still return a complete report.
 
-This requires wallet signing, so it cannot be automated here.
+## Wallet + payments
 
-## Domains
+- **Connect:** `@wagmi/core` + the `baseAccount` / `injected` connectors
+  (`@base-org/account`).
+- **Send:** `viem` `walletClient` talks straight to the wallet provider (chain
+  switch + USDC transfer). This sidesteps connector gaps in some in-app wallets.
+- **Builder attribution:** the ERC-8021 builder-code suffix rides on the transfer
+  calldata (see [`lib/wagmi.ts`](lib/wagmi.ts) / [`lib/pay-usdc.ts`](lib/pay-usdc.ts)).
+- **Free first scan:** a gasless wallet signature proves ownership; the server
+  grants one free verification per wallet (durable guard in Postgres).
 
-| Host | Use |
-| --- | --- |
-| `cybercentry-mini-app.up.railway.app` | Public URL — manifest, embeds, Mini App entry point |
-| `cybercentry-mini-app.railway.internal` | Railway private network only. Not publicly reachable — never use it in the manifest |
-| `centry.cybercentry.co.uk` | The divert destination |
-
-## How the divert works
-
-[`app/page.tsx`](app/page.tsx) handles three cases, in order:
-
-1. **Inside a Mini App host** (Base app, Farcaster) — calls `sdk.actions.ready()`
-   to dismiss the host splash screen, then **waits for the user to tap** "Open
-   Cybercentry", which calls `sdk.actions.openUrl()`. It deliberately does *not*
-   auto-open: hosts block `openUrl()` that isn't tied to a user gesture, so an
-   automatic call can fail silently and strand the visitor.
-2. **A normal browser** — `window.location.replace()` immediately, so the
-   redirect is instant and adds no history entry.
-3. **No JavaScript** — a `<noscript>` meta refresh, plus a visible button that
-   works regardless.
-
-Host detection is raced against a 1.5s timeout so a slow or unresponsive host can
-never leave a visitor stuck on this page.
-
-The destination lives in one place: [`lib/target.ts`](lib/target.ts).
-
-## Styling
-
-The divert page mirrors the destination site so the handoff reads as one product:
-
-| Token | Value |
-| --- | --- |
-| Brand | `#0d2b6b` |
-| Accent | `#93c5fd` |
-| Page background | `#fcfcfc` |
-| Surface | `#ffffff` |
-| Border | `#e4e4e4` |
-| Text / muted / subtle | `#18181b` / `#71717a` / `#a1a1aa` |
-| Font | Geist + Geist Mono |
-
-Defined in [`app/globals.css`](app/globals.css). The manifest splash is light
-(`#fcfcfc` + `blue-icon.png`) to match, so launching the Mini App doesn't flash
-dark before landing on a light page.
+See [`memory`](./) notes and [`lib/payments.ts`](lib/payments.ts) for the shared config.
 
 ## Routes
 
 | Route | Purpose |
 | --- | --- |
-| `/` | The divert page |
-| `/.well-known/farcaster.json` | Mini App manifest, generated from `minikit.config.ts` |
+| `/` | The verification app |
+| `/api/verify` | `POST` kicks off a scan (after verifying payment/signature); `GET ?jobId=` polls for the report |
 
-Nothing else is served. The previous waitlist form, product/pricing pages,
-`/api/*` routes, and Postgres integration were removed — see git history if any
-of it needs to come back.
+The CBTV `x-api-key` is server-only and never shipped to the client.
 
-## Verification tags
+## Discovery / ownership
 
-The Base app domain-ownership tag (`base:app_id`) is emitted into `<head>` from
-`generateMetadata` in [`app/layout.tsx`](app/layout.tsx).
+- **`base:app_id`** meta tag (in [`app/layout.tsx`](app/layout.tsx)) links this
+  domain to the base.dev project — this is the domain-ownership proof now.
+- App name, icon, tagline, screenshots, category and builder code are configured
+  on the **base.dev** project, not in a manifest.
+- Open Graph / Twitter card metadata gives the URL a rich preview when shared.
+
+App-level metadata lives in [`app.config.ts`](app.config.ts).
+
+## Environment (Railway)
+
+| Var | Purpose |
+| --- | --- |
+| `CBTV_API_URL` / `CBTV_API_KEY` | The CBTV verification proxy (server-only) |
+| `NEXT_PUBLIC_TREASURY_ADDRESS` | Where the USDC fee lands |
+| `NEXT_PUBLIC_PAY_TESTNET` | `true` for Base Sepolia while testing |
+| `DATABASE_URL` | Postgres durable store (replay / payer / free-scan guards); fails open to in-memory |
+| `MINI_APP_API_KEY` | Base Dashboard notifications API key (optional) |
+| `NEXT_PUBLIC_URL` | Public base URL (defaults to `https://app.cybercentry.co.uk`) |
 
 ## Local development
 
@@ -90,15 +82,7 @@ pnpm install
 pnpm dev
 ```
 
-No environment variables are required. `NEXT_PUBLIC_URL` is optional and
-overrides the base URL used for manifest asset links; it defaults to the public
-Railway domain.
-
 ## Deployment
 
-Deployed on Railway. `pnpm build` then `pnpm start` (the start script honours
-`$PORT`).
-
-## Changing the destination
-
-Edit `TARGET_URL` in [`lib/target.ts`](lib/target.ts) and redeploy.
+Deployed on Railway at **app.cybercentry.co.uk**. `pnpm build` then `pnpm start`
+(the start script honours `$PORT`).

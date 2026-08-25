@@ -1,73 +1,7 @@
 "use client"
-import { useEffect, useState } from "react"
 import type { CbtvReport, Detector, Finding, RiskLevel } from "@/lib/cbtv"
 import { RISK_COLOR, RISK_ORDER, isAdvisoryFinding, isAdvisoryDetector, toLevel, worst } from "@/lib/cbtv"
 import styles from "./page.module.css"
-
-// A tap-to-add button — shown only inside a Mini App host and only until added.
-// "Adds to collection" is one of the signals Base/Farcaster discovery ranks on,
-// and a user gesture is far more reliable than an auto-fired prompt.
-function AddApp() {
-  const [show, setShow] = useState(false)
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        if (localStorage.getItem("cc_added") === "1") return
-        const { sdk } = await import("@farcaster/miniapp-sdk")
-        // isInMiniApp() can read false / lag in the in-app browser, so fall back
-        // to the context Promise (resolves with a client only inside a host).
-        let inApp = false
-        try {
-          inApp = await sdk.isInMiniApp()
-        } catch {
-          /* try the context fallback */
-        }
-        if (!inApp) {
-          try {
-            const ctx = (await Promise.race([
-              sdk.context,
-              new Promise((r) => setTimeout(() => r(null), 1200)),
-            ])) as { client?: unknown } | null
-            inApp = !!ctx?.client
-          } catch {
-            /* not a host */
-          }
-        }
-        // Last resort: the Base / Coinbase app webview by user-agent. addMiniApp
-        // is a no-op if the bridge isn't actually there, so this only ever adds a
-        // harmless button inside their app — never in a plain desktop browser.
-        if (!inApp && typeof navigator !== "undefined" && /coinbase|base\s?app|baseapp/i.test(navigator.userAgent)) {
-          inApp = true
-        }
-        if (!cancelled && inApp) setShow(true)
-      } catch {
-        /* SDK unavailable */
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-  if (!show) return null
-  async function add() {
-    try {
-      const { sdk } = await import("@farcaster/miniapp-sdk")
-      const act = sdk.actions as { addMiniApp?: () => Promise<unknown>; addFrame?: () => Promise<unknown> }
-      if (typeof act.addMiniApp === "function") await act.addMiniApp()
-      else if (typeof act.addFrame === "function") await act.addFrame()
-      localStorage.setItem("cc_added", "1")
-      setShow(false)
-    } catch {
-      /* dismissed or unsupported — leave the button so they can retry */
-    }
-  }
-  return (
-    <button type="button" className={styles.addBtn} onClick={add}>
-      + Add Cybercentry to your apps
-    </button>
-  )
-}
 
 function short(addr: string) {
   return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr
@@ -292,8 +226,6 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
           )}
         </>
       )}
-
-      <AddApp />
 
       <button type="button" className={styles.secondaryBtn} onClick={onReset}>
         Verify another token

@@ -1,10 +1,12 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
-import { minikitConfig } from "../minikit.config"
+import { appConfig } from "../app.config"
 import "./globals.css"
 
-/** Base app domain-ownership verification. Renders into <head> on every page. */
+/** Base app domain-ownership verification — links this domain to the base.dev
+ *  project. This is what proves ownership now (the Farcaster accountAssociation
+ *  manifest is retired). Renders into <head> on every page. */
 const BASE_APP_ID = "69f84bd5879b4ae3fa1c713f"
 
 // viewport-fit=cover lets content use the full screen and enables the
@@ -17,36 +19,15 @@ export const viewport: Viewport = {
   themeColor: "#fcfcfc",
 }
 
-/** Full product name. The manifest `name` is capped at 32 chars, so it carries
- *  a shortened form; the untruncated name lives in the page title and heading. */
+/** Full product name — used for the page title. The short brand name
+ *  ("Cybercentry") lives in app.config.ts and the base.dev listing. */
 const FULL_NAME = "Cybercentry Base Token Verification"
 
-export async function generateMetadata(): Promise<Metadata> {
-  const { miniapp } = minikitConfig
-
-  // Full launch action so the card is unambiguous to every Base/Farcaster
-  // parser: explicit url, plus splash so the handoff matches the app.
-  const embed = {
-    version: miniapp.version,
-    // Embed image must be 3:2 per the Farcaster spec; imageUrl (embed-1200x800)
-    // is 3:2, whereas heroImageUrl is 1.91:1 for the manifest hero slot.
-    imageUrl: miniapp.imageUrl,
-    button: {
-      title: miniapp.tagline,
-      action: {
-        type: "launch_frame",
-        name: `Launch ${miniapp.name}`,
-        url: miniapp.homeUrl,
-        splashImageUrl: miniapp.splashImageUrl,
-        splashBackgroundColor: miniapp.splashBackgroundColor,
-      },
-    },
-  }
-  const embedJson = JSON.stringify(embed)
-
+export function generateMetadata(): Metadata {
   return {
+    metadataBase: new URL(appConfig.url),
     title: FULL_NAME,
-    description: miniapp.description,
+    description: appConfig.description,
     // Declare icons explicitly. Chrome falls back to /favicon.ico on its own, but
     // iOS in-app browsers (the Base app) only show a site icon when there's an
     // apple-touch-icon link — without it they render a generic globe.
@@ -57,12 +38,24 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
       apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
     },
+    // Open Graph / Twitter cards give the app a rich preview when its URL is
+    // shared (in the Base app feed, on X, in chats) — the Base-App equivalent of
+    // the old Farcaster embed card.
+    openGraph: {
+      type: "website",
+      url: appConfig.url,
+      title: appConfig.ogTitle,
+      description: appConfig.ogDescription,
+      images: [{ url: appConfig.ogImageUrl, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: appConfig.ogTitle,
+      description: appConfig.ogDescription,
+      images: [appConfig.ogImageUrl],
+    },
     other: {
       "base:app_id": BASE_APP_ID,
-      // fc:miniapp is the current tag name; fc:frame is the backwards-compat
-      // alias older clients still read. Emit both so every surface sees a card.
-      "fc:miniapp": embedJson,
-      "fc:frame": embedJson,
     },
   }
 }

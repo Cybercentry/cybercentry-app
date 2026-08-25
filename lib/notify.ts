@@ -1,4 +1,4 @@
-// Base Mini App notifications via the Base Dashboard REST API. Server-only.
+// Base App notifications via the Base Dashboard REST API. Server-only.
 // Auth is the x-api-key (MINI_APP_API_KEY); Base only delivers to wallets that
 // opted in, so an un-opted-in payer is simply a no-op.
 import type { CbtvReport } from "./cbtv"
