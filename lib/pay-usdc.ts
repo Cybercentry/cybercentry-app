@@ -11,6 +11,7 @@
 // (ERC-8021) rides on the calldata; inside the Base App, Base auto-appends it.
 import { connect, getConnections } from "@wagmi/core"
 import { createWalletClient, custom, encodeFunctionData, parseUnits, erc20Abi, type EIP1193Provider } from "viem"
+import { waitForCallsStatus } from "viem/actions"
 import { base, baseSepolia } from "viem/chains"
 import { config, BUILDER_DATA_SUFFIX } from "./wagmi"
 import { FREE_SCAN_MESSAGE } from "./payments"
@@ -182,12 +183,37 @@ export async function payUsdc(opts: { amount: string; to: `0x${string}`; chain: 
     functionName: "transfer",
     args: [opts.to, parseUnits(opts.amount, 6)],
   })
-  // Append the ERC-8021 Builder Code suffix to the calldata (EOAs support this
-  // directly; harmless on smart wallets, and Base auto-appends in-app anyway).
-  const data = (BUILDER_DATA_SUFFIX ? transfer + BUILDER_DATA_SUFFIX.slice(2) : transfer) as `0x${string}`
+  const suffix = BUILDER_DATA_SUFFIX || undefined
 
-  const txHash = await wallet.sendTransaction({ to: USDC[opts.chain], data })
-  return { txHash }
+  // ERC-8021 Builder Code attribution must land in the right place per wallet
+  // type (see Base docs). Smart wallets (Base Pay / EIP-5792): the suffix rides
+  // on the OUTER userOp.callData, which only the wallet can place — via
+  // sendCalls capabilities.dataSuffix. Nesting it in the transfer data (the old
+  // approach) attributes NOTHING — the suffix ends up in the inner call.
+  // EOAs: viem appends dataSuffix to tx.data on sendTransaction.
+  try {
+    const res = await wallet.sendCalls({
+      calls: [{ to: USDC[opts.chain], data: transfer }],
+      capabilities: suffix ? { dataSuffix: { value: suffix, optional: true } } : undefined,
+    })
+    const id = typeof res === "string" ? res : res.id
+    const status = await waitForCallsStatus(wallet, { id })
+    const txHash = status.receipts?.[status.receipts.length - 1]?.transactionHash
+    if (!txHash) throw new Error("Payment sent but no transaction hash was returned")
+    return { txHash }
+  } catch (err) {
+    if (isRejection(err)) throw err
+    // Only fall back when the wallet genuinely lacks EIP-5792 sendCalls — never
+    // on a real failure (e.g. insufficient funds), so we can't double-charge.
+    const msg = err instanceof Error ? err.message : String(err)
+    if (!/unsupported|not support|wallet_sendCalls|method not found|-32601|4200|does not exist/i.test(msg)) throw err
+    const txHash = await wallet.sendTransaction({
+      to: USDC[opts.chain],
+      data: transfer,
+      ...(suffix ? { dataSuffix: suffix } : {}),
+    })
+    return { txHash }
+  }
 }
 
 /**
