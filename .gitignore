@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local agent skills (installed via `npx skills add base/skills`) — dev tooling,
+# not app code; .claude/skills are machine-specific absolute symlinks
+.agents/
+.claude/
+skills-lock.json
