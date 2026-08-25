@@ -116,16 +116,18 @@ async function reachVia(connector: Connector): Promise<{ provider: EIP1193Provid
   return { provider, account }
 }
 
-/** Connect a wallet and return its provider + account. Tries the injected wallet
- *  first (Base app in-app browser + browser extensions), then Base Account /
- *  Base Pay. Every step is time-bounded so a wallet that never responds falls
- *  through to the next instead of spinning forever — which is what made a plain
- *  Chrome tab with an unresponsive injected wallet hang, while incognito (no
- *  injected wallet → Base Pay) worked. */
+/** Connect a wallet and return its provider + account.
+ *
+ *  Inside the Base app in-app browser the injected wallet is the native, working
+ *  one, so it's tried first. In any other browser we go straight to Base Account
+ *  (Base Pay) — a third-party injected wallet (Coinbase extension, Privy, etc.)
+ *  is what makes normal Chrome hang on a spinner, while incognito (no injected
+ *  wallet → Base Pay) works. Every step is time-bounded as a backstop. */
 async function connectWallet(): Promise<{ provider: EIP1193Provider; account: `0x${string}` }> {
   const injectedC = config.connectors.find((c) => c.type === "injected" || c.id === "injected")
   const baseC = config.connectors.find((c) => c.id === "baseAccount" || /base/i.test(c.name ?? ""))
-  const order = [injectedC, baseC].filter((c): c is Connector => Boolean(c))
+  const inBaseApp = typeof navigator !== "undefined" && /coinbase|base\s?app|baseapp/i.test(navigator.userAgent)
+  const order = (inBaseApp ? [injectedC, baseC] : [baseC, injectedC]).filter((c): c is Connector => Boolean(c))
 
   let lastErr: unknown
   for (const connector of order) {
