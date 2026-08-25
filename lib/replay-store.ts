@@ -8,10 +8,13 @@ const mem = new Set<string>()
 // jobId → payer wallet. In-instance fast path + fallback; the DB copy is what
 // makes it work when POST and the GET poll land on different replicas.
 const memPayer = new Map<string, string>()
+// Wallets that have already spent their one free verification.
+const freeMem = new Set<string>()
 
 let sql: ReturnType<typeof postgres> | null = null
 let tableReady = false
 let payerTableReady = false
+let freeTableReady = false
 // Circuit breaker: once the DB errors, skip it for this long so we don't pay the
 // connect timeout on every request while it's down. It reads ECONNREFUSED-fast.
 let dbDownUntil = 0
@@ -34,6 +37,7 @@ function tripBreaker(err: unknown) {
   dbDownUntil = Date.now() + BREAKER_MS
   tableReady = false
   payerTableReady = false
+  freeTableReady = false
   const old = sql
   sql = null
   old?.end({ timeout: 1 }).catch(() => {})
@@ -104,6 +108,43 @@ export async function setPayer(jobId: string, wallet: string): Promise<void> {
     `
   } catch (err) {
     tripBreaker(err)
+  }
+}
+
+/**
+ * Atomically claim a wallet's one free verification. Returns true the first time
+ * (grant it), false if the wallet has already used its free scan (→ require
+ * payment). Durable via Postgres; falls back to the in-instance set on DB error.
+ */
+export async function claimFreeScan(wallet: string): Promise<boolean> {
+  const key = wallet.toLowerCase()
+  if (freeMem.has(key)) return false
+  const db = getSql()
+  if (!db) {
+    freeMem.add(key)
+    return true
+  }
+  try {
+    if (!freeTableReady) {
+      await db`
+        CREATE TABLE IF NOT EXISTS free_scans (
+          wallet text PRIMARY KEY,
+          created_at timestamptz NOT NULL DEFAULT now()
+        )
+      `
+      freeTableReady = true
+    }
+    const rows = await db`
+      INSERT INTO free_scans (wallet) VALUES (${key})
+      ON CONFLICT (wallet) DO NOTHING
+      RETURNING wallet
+    `
+    freeMem.add(key)
+    return rows.length > 0
+  } catch (err) {
+    tripBreaker(err)
+    freeMem.add(key)
+    return true
   }
 }
 

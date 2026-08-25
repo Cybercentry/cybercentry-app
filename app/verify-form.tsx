@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react"
 // Wallet payment via wagmi/viem (see lib/pay-usdc.ts): connects the Base wallet
 // and sends USDC directly — no Base Pay sheet (no flash), builder code auto-appended.
-import { payUsdc } from "@/lib/pay-usdc"
+import { payUsdc, signFreeScan } from "@/lib/pay-usdc"
 import type { CbtvReport, Chain, VerifyStatus } from "@/lib/cbtv"
 import { PAY_AMOUNT, TREASURY } from "@/lib/payments"
 import { ReportView } from "./report-view"
@@ -12,6 +12,10 @@ const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
 const POLL_INTERVAL_MS = 3000
 // Busy tokens (many pools / high transfer counts) can take a few minutes.
 const POLL_TIMEOUT_MS = 300_000
+// Device hints (the server is the source of truth): whether the free scan has
+// been spent, and whether we've already prompted to add the app.
+const FREE_KEY = "cc_free_used"
+const ADD_KEY = "cc_add_prompted"
 
 const CHECKS = [
   "Sell-side honeypots",
@@ -32,11 +36,23 @@ export function VerifyForm() {
   const [error, setError] = useState("")
   const [report, setReport] = useState<CbtvReport | null>(null)
   const [elapsed, setElapsed] = useState(0)
+  // Whether this device still has its free first verification (server enforces
+  // per wallet; this just drives the button/price copy).
+  const [freeAvailable, setFreeAvailable] = useState(false)
   const busy = phase === "paying" || phase === "scanning"
   const cancelled = useRef(false)
   // Held so a scan that outran the client poll can be recovered without paying
   // again — the job keeps running on the backend.
   const jobRef = useRef<string | null>(null)
+
+  // First-load: offer the free scan unless this device has already used it.
+  useEffect(() => {
+    try {
+      setFreeAvailable(localStorage.getItem(FREE_KEY) !== "1")
+    } catch {
+      setFreeAvailable(true)
+    }
+  }, [])
 
   // Tick a seconds counter while a scan runs so ~30s of waiting has live feedback.
   useEffect(() => {
@@ -90,28 +106,20 @@ export function VerifyForm() {
 
     cancelled.current = false
     try {
-      // 1) Connect the wallet + pay the USDC fee (wagmi). Throws if the user
-      // cancels or no wallet can be reached.
+      // 1) Authorize + kick off the scan — free first verification if available,
+      // otherwise the $1 USDC payment. Throws if the user cancels.
       setPhase("paying")
-      const { txHash } = await payUsdc({ amount: PAY_AMOUNT, to: TREASURY as `0x${string}`, chain })
+      const jobId = await beginScan(addr)
+      if (cancelled.current) return
+      jobRef.current = jobId
 
-      // 2) Kick off the scan (server verifies the payment from the tx receipt,
-      // holds the API key).
+      // 2) Poll to completion, then render.
       setPhase("scanning")
-      const res = await fetch("/api/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: addr, chain, txHash }),
-      })
-      const kick = await res.json()
-      if (!res.ok) throw new Error(kick.error || "Could not start the scan.")
-      jobRef.current = kick.jobId
-
-      // 3) Poll to completion, then render.
-      const result = await poll(kick.jobId)
+      const result = await poll(jobId)
       if (cancelled.current) return
       setReport(result)
       setPhase("done")
+      void promptAdd() // nudge the user to add the app (feeds discovery), best-effort
     } catch (err) {
       if (cancelled.current) return
       const msg = err instanceof Error ? err.message : "Something went wrong."
@@ -122,6 +130,76 @@ export function VerifyForm() {
       }
       setError(/cancel|reject|denied/i.test(msg) ? "Payment cancelled." : msg)
       setPhase("error")
+    }
+  }
+
+  // Start a scan: free first-verification (a gasless signature, once per wallet)
+  // if the device still has it, otherwise the $1 USDC payment. Returns the jobId.
+  async function beginScan(addr: string): Promise<string> {
+    let freeUsedHere = false
+    try {
+      freeUsedHere = localStorage.getItem(FREE_KEY) === "1"
+    } catch {
+      /* storage blocked — just try the free path */
+    }
+
+    if (!freeUsedHere) {
+      let freeSig: Awaited<ReturnType<typeof signFreeScan>> | null = null
+      try {
+        freeSig = await signFreeScan()
+      } catch (e) {
+        // A cancelled signature is a real cancel; any other sign failure just
+        // falls back to paying.
+        if (/reject|denied|cancel/i.test(e instanceof Error ? e.message : String(e))) throw e
+      }
+      if (freeSig) {
+        const res = await fetch("/api/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ address: addr, chain, freeSig }),
+        })
+        // 402 = this wallet already used its free scan → fall through to paying.
+        // Anything else uses this response (jobId on success, error otherwise).
+        if (res.status !== 402) {
+          const kick = await res.json()
+          if (!res.ok) throw new Error(kick.error || "Could not start the scan.")
+          try {
+            localStorage.setItem(FREE_KEY, "1")
+          } catch {}
+          setFreeAvailable(false)
+          return kick.jobId
+        }
+        try {
+          localStorage.setItem(FREE_KEY, "1")
+        } catch {}
+        setFreeAvailable(false)
+      }
+    }
+
+    // Paid path.
+    const { txHash } = await payUsdc({ amount: PAY_AMOUNT, to: TREASURY as `0x${string}`, chain })
+    const res = await fetch("/api/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address: addr, chain, txHash }),
+    })
+    const kick = await res.json()
+    if (!res.ok) throw new Error(kick.error || "Could not start the scan.")
+    return kick.jobId
+  }
+
+  // Prompt the user to add the Mini App — a genuine engagement signal Base's
+  // discovery ranks on. Once per device, best-effort, silent outside a host.
+  async function promptAdd() {
+    try {
+      if (localStorage.getItem(ADD_KEY) === "1") return
+      const { sdk } = await import("@farcaster/miniapp-sdk")
+      const act = sdk.actions as { addMiniApp?: () => Promise<unknown>; addFrame?: () => Promise<unknown> }
+      if (typeof act.addMiniApp === "function") await act.addMiniApp()
+      else if (typeof act.addFrame === "function") await act.addFrame()
+      localStorage.setItem(ADD_KEY, "1")
+    } catch {
+      /* not in a Mini App host, or the user dismissed it */
     }
   }
 
@@ -169,8 +247,8 @@ export function VerifyForm() {
     )
   }
 
-  let ctaLabel = "Verify"
-  if (phase === "paying") ctaLabel = "Confirm payment…"
+  let ctaLabel = freeAvailable ? "Verify — first one free" : "Verify"
+  if (phase === "paying") ctaLabel = "Confirm in wallet…"
   else if (phase === "scanning") ctaLabel = `Scanning… ${elapsed}s`
 
   return (
@@ -209,7 +287,13 @@ export function VerifyForm() {
         {ctaLabel}
       </button>
 
-      {!busy ? <p className={styles.priceNote}>$1 in USDC per verification · paid with base pay</p> : null}
+      {!busy ? (
+        <p className={styles.priceNote}>
+          {freeAvailable
+            ? "Your first verification is free · just a wallet signature, no funds needed"
+            : "$1 in USDC per verification · paid with base pay"}
+        </p>
+      ) : null}
 
       {busy ? (
         <div className={styles.progress} aria-hidden="true">

@@ -6,6 +6,14 @@ import type { Hex } from "viem"
 /** Price per verification, in USDC. */
 export const PAY_AMOUNT = "1.00"
 
+/**
+ * Message a wallet signs to claim its one free verification. Signing is free
+ * (no gas, no funds) and proves the wallet owns the address, so the free scan
+ * can't be farmed by claiming arbitrary addresses. Shared by the client (signs
+ * it) and the server route (verifies it), so it must match exactly.
+ */
+export const FREE_SCAN_MESSAGE = "Cybercentry: unlock my one free B20 verification."
+
 /** Treasury that receives the USDC (Base / EVM). */
 export const TREASURY = (process.env.NEXT_PUBLIC_TREASURY_ADDRESS ?? "") as `0x${string}`
 

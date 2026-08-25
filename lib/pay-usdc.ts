@@ -13,6 +13,7 @@ import { connect, getConnections } from "@wagmi/core"
 import { createWalletClient, custom, encodeFunctionData, parseUnits, erc20Abi, type EIP1193Provider } from "viem"
 import { base, baseSepolia } from "viem/chains"
 import { config, BUILDER_DATA_SUFFIX } from "./wagmi"
+import { FREE_SCAN_MESSAGE } from "./payments"
 import type { Chain } from "./cbtv"
 
 const CHAIN_ID: Record<Chain, number> = { base: 8453, "base-sepolia": 84532 }
@@ -125,4 +126,17 @@ export async function payUsdc(opts: { amount: string; to: `0x${string}`; chain: 
 
   const txHash = await wallet.sendTransaction({ to: USDC[opts.chain], data })
   return { txHash }
+}
+
+/**
+ * Sign the free-scan message to claim this wallet's one free verification. Gasless
+ * and fundless — just proves wallet ownership. The server verifies the signature
+ * (EOA or smart-wallet) and grants the free scan once per wallet. Throws on
+ * rejection or if no wallet can be reached.
+ */
+export async function signFreeScan(): Promise<{ wallet: `0x${string}`; message: string; signature: string }> {
+  const { provider, account } = await connectWallet()
+  const wallet = createWalletClient({ account, transport: custom(provider) })
+  const signature = await wallet.signMessage({ account, message: FREE_SCAN_MESSAGE })
+  return { wallet: account, message: FREE_SCAN_MESSAGE, signature }
 }

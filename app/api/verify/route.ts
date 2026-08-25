@@ -3,8 +3,10 @@ import { NextResponse } from "next/server"
 // agnostic, works in Node) and avoids the node entry's @x402/evm/CDP subscription
 // code we don't use.
 import { getPaymentStatus } from "@base-org/account/payment/browser"
-import { PAY_AMOUNT, TREASURY, PAY_TESTNET } from "@/lib/payments"
-import { claimPayment, setPayer, takePayer } from "@/lib/replay-store"
+import { createPublicClient, http } from "viem"
+import { base, baseSepolia } from "viem/chains"
+import { PAY_AMOUNT, TREASURY, PAY_TESTNET, FREE_SCAN_MESSAGE } from "@/lib/payments"
+import { claimPayment, claimFreeScan, setPayer, takePayer } from "@/lib/replay-store"
 import { reportRiskLevel } from "@/lib/cbtv"
 import { notifyHighRisk } from "@/lib/notify"
 
@@ -42,6 +44,25 @@ const USDC: Record<string, string> = {
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 // $1.00 USDC = 1_000_000 (6 decimals). Matches PAY_AMOUNT.
 const MIN_UNITS = BigInt(1_000_000)
+
+// Verify a wallet signature over FREE_SCAN_MESSAGE, for the free-scan claim.
+// Uses a public client so it validates BOTH EOAs (ECDSA) and smart wallets
+// (EIP-1271 / ERC-6492) — the Base App wallet is a smart wallet, so plain
+// recovery isn't enough. Never throws.
+async function verifyFreeSignature(
+  wallet: `0x${string}`,
+  signature: `0x${string}`,
+  chain: string,
+): Promise<boolean> {
+  const rpc = chain === "base-sepolia" ? "https://sepolia.base.org" : RPC_URL || "https://mainnet.base.org"
+  const client = createPublicClient({ chain: chain === "base-sepolia" ? baseSepolia : base, transport: http(rpc) })
+  try {
+    return await client.verifyMessage({ address: wallet, message: FREE_SCAN_MESSAGE, signature })
+  } catch (err) {
+    console.error("[verify] free-scan signature check threw:", err instanceof Error ? err.message : err)
+    return false
+  }
+}
 
 function bad(status: number, error: string) {
   return NextResponse.json({ error }, { status })
@@ -146,7 +167,13 @@ async function verifyByTxHash(
 export async function POST(request: Request) {
   if (!CBTV_API_URL || !CBTV_API_KEY) return bad(500, "Service not configured")
 
-  let body: { address?: string; chain?: string; paymentId?: string; txHash?: string }
+  let body: {
+    address?: string
+    chain?: string
+    paymentId?: string
+    txHash?: string
+    freeSig?: { wallet?: string; message?: string; signature?: string }
+  }
   try {
     body = await request.json()
   } catch {
@@ -157,16 +184,29 @@ export async function POST(request: Request) {
   const chain = (body.chain ?? "base").trim()
   const paymentId = (body.paymentId ?? "").trim()
   const txHash = (body.txHash ?? "").trim()
+  const freeSig = body.freeSig
 
   if (!ADDRESS_RE.test(address)) return bad(400, "Enter a valid 0x… token address")
   if (!CHAINS.has(chain)) return bad(400, "Unsupported chain")
 
-  // Verify the payment on-chain and pick the single-use id to replay-guard on:
-  // a sendCalls tx hash (receipt parse) or a pay() id (getPaymentStatus). Retries
-  // because the receipt can lag the wallet resolving; surfaces the real reason.
+  // Authorize the scan one of three ways: a free-scan signature (once per wallet),
+  // a sendCalls tx hash (receipt parse), or a pay() id (getPaymentStatus). claimId
+  // is the single-use payment id to replay-guard; null for the free path, which is
+  // already guarded per-wallet by claimFreeScan.
   let verified: { ok: true; sender?: string } | { ok: false; msg: string }
-  let claimId: string
-  if (txHash) {
+  let claimId: string | null = null
+  if (freeSig?.wallet && freeSig?.signature) {
+    if (!ADDRESS_RE.test(freeSig.wallet) || freeSig.message !== FREE_SCAN_MESSAGE) {
+      return bad(400, "Invalid free-scan request")
+    }
+    const wallet = freeSig.wallet as `0x${string}`
+    const sig = freeSig.signature as `0x${string}`
+    if (!/^0x[0-9a-fA-F]+$/.test(sig)) return bad(400, "Invalid signature")
+    if (!(await verifyFreeSignature(wallet, sig, chain))) return bad(400, "Signature could not be verified")
+    // One free scan per wallet. Already used → 402 so the client falls back to paying.
+    if (!(await claimFreeScan(wallet))) return bad(402, "Free verification already used")
+    verified = { ok: true, sender: wallet }
+  } else if (txHash) {
     if (!TX_RE.test(txHash)) return bad(400, "Invalid payment reference")
     verified = await verifyByTxHash(txHash, chain)
     claimId = txHash
@@ -178,10 +218,10 @@ export async function POST(request: Request) {
   }
   if (!verified.ok) return bad(402, verified.msg)
 
-  // Atomically claim the id (Postgres, durable). First use → proceed; already
-  // used → replay, reject. Consumed before the CBTV kickoff, so a failed kickoff
-  // can't leave the id re-usable.
-  if (!(await claimPayment(claimId))) return bad(409, "This payment has already been used")
+  // Replay-guard paid scans (Postgres, durable): first use → proceed; already used
+  // → reject. Consumed before the CBTV kickoff so a failed kickoff can't re-use it.
+  // Free scans skip this — they're already guarded per-wallet above.
+  if (claimId && !(await claimPayment(claimId))) return bad(409, "This payment has already been used")
 
   // Kick off the async scan — no client waits on the connection, so it runs to
   // completion instead of shedding sections under the sync 60s limit.
