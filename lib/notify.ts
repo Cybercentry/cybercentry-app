@@ -1,6 +1,6 @@
 // Base App notifications via the Base Dashboard REST API. Server-only.
 // Auth is the x-api-key (APP_API_KEY); Base only delivers to wallets that have
-// pinned the app AND opted in, so an un-opted-in payer is simply a no-op.
+// saved the app AND opted in, so an un-opted-in payer is simply a no-op.
 //
 // Delivery is Base-App-only: users who hit the app in a normal browser will
 // never receive these, which is why every path here is best-effort and silent.
@@ -103,9 +103,12 @@ export async function sendNotification(
 }
 
 /**
- * Every wallet that has pinned the app, optionally filtered to those with
- * notifications on. Walks the cursor to the end. Returns null if the API is
- * unreachable — distinct from [], which means "nobody yet".
+ * Every wallet that has saved the app, optionally filtered to those with
+ * notifications on. Walks the cursor to the end. Returns null if the walk could
+ * not complete — distinct from [], which means "nobody yet". Never returns a
+ * partial list.
+ *
+ * Note: the API field is `appPinned`; the Base App UI calls this "Save".
  */
 export async function getOptedInUsers(notificationEnabled = true): Promise<AppUser[] | null> {
   if (!KEY) return null
@@ -116,7 +119,12 @@ export async function getOptedInUsers(notificationEnabled = true): Promise<AppUs
     if (notificationEnabled) qs.set("notification_enabled", "true")
     if (cursor) qs.set("cursor", cursor)
     const body = await call<{ users?: AppUser[]; nextCursor?: string }>(`/app/users?${qs}`, { method: "GET" })
-    if (!body) return users.length ? users : null
+    if (!body) {
+      // A mid-walk failure leaves an incomplete list. Returning it would look
+      // identical to a complete one, so callers could silently miss users.
+      console.warn(`[notify] pagination failed after ${users.length} users — returning null`)
+      return null
+    }
     users.push(...(body.users ?? []))
     cursor = body.nextCursor
     if (!cursor) return users
@@ -126,8 +134,8 @@ export async function getOptedInUsers(notificationEnabled = true): Promise<AppUs
 }
 
 /**
- * Whether one wallet has pinned the app and enabled notifications — cheaper than
- * paginating /app/users when all you need is a "pin this app" CTA. Null when the
+ * Whether one wallet has saved the app and enabled notifications — cheaper than
+ * paginating /app/users when all you need is a per-wallet check. Null when the
  * lookup itself failed, which is not the same as a plain false.
  */
 export async function getUserStatus(wallet: string): Promise<UserStatus | null> {
