@@ -144,7 +144,7 @@ export function VerifyForm() {
     if (!freeUsedHere) {
       let freeSig: Awaited<ReturnType<typeof signFreeScan>> | null = null
       try {
-        freeSig = await signFreeScan()
+        freeSig = await signFreeScan(chain)
       } catch (e) {
         // A cancelled signature is a real cancel; any other sign failure just
         // falls back to paying.

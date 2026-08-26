@@ -5,7 +5,15 @@ import { NextResponse } from "next/server"
 import { getPaymentStatus } from "@base-org/account/payment/browser"
 import { createPublicClient, http } from "viem"
 import { base, baseSepolia } from "viem/chains"
-import { PAY_AMOUNT, TREASURY, PAY_TESTNET, FREE_SCAN_MESSAGE } from "@/lib/payments"
+import { parseSiweMessage } from "viem/siwe"
+import {
+  PAY_AMOUNT,
+  TREASURY,
+  PAY_TESTNET,
+  FREE_SCAN_STATEMENT,
+  LEGACY_FREE_SCAN_MESSAGE,
+  FREE_SCAN_MAX_AGE_MS,
+} from "@/lib/payments"
 import { claimPayment, claimFreeScan, setPayer, takePayer } from "@/lib/replay-store"
 import { reportRiskLevel } from "@/lib/cbtv"
 import { notifyHighRisk } from "@/lib/notify"
@@ -45,19 +53,55 @@ const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a
 // $1.00 USDC = 1_000_000 (6 decimals). Matches PAY_AMOUNT.
 const MIN_UNITS = BigInt(1_000_000)
 
-// Verify a wallet signature over FREE_SCAN_MESSAGE, for the free-scan claim.
-// Uses a public client so it validates BOTH EOAs (ECDSA) and smart wallets
-// (EIP-1271 / ERC-6492) — the Base App wallet is a smart wallet, so plain
-// recovery isn't enough. Never throws.
+// Expected SIWE domain/origin for the free-scan message, from NEXT_PUBLIC_URL.
+const APP_ORIGIN = (process.env.NEXT_PUBLIC_URL || "https://app.cybercentry.co.uk").replace(/\/+$/, "")
+const APP_HOST = APP_ORIGIN.replace(/^https?:\/\//, "")
+const CHAIN_IDS: Record<string, number> = { base: 8453, "base-sepolia": 84532 }
+
+/**
+ * Check the free-scan message is a SIWE message issued by THIS app, for THIS
+ * wallet and chain, recently. Returns false for anything else.
+ *
+ * Without these bindings the message is a fixed string that reads the same on
+ * every site and never expires, so another page could harvest a signature over
+ * it and spend the visitor's free scan here.
+ */
+function siweFieldsOk(message: string, wallet: string, chain: string): boolean {
+  let f: ReturnType<typeof parseSiweMessage>
+  try {
+    f = parseSiweMessage(message)
+  } catch {
+    return false
+  }
+  if (!f.address || f.address.toLowerCase() !== wallet.toLowerCase()) return false
+  if (f.domain !== APP_HOST) return false
+  if (!f.uri || f.uri.replace(/\/+$/, "") !== APP_ORIGIN) return false
+  if (f.chainId !== CHAIN_IDS[chain]) return false
+  if (f.statement !== FREE_SCAN_STATEMENT) return false
+  // issuedAt must exist and be recent. A small negative allowance absorbs clock
+  // skew between the signer's device and this server.
+  if (!f.issuedAt) return false
+  const age = Date.now() - new Date(f.issuedAt).getTime()
+  if (!Number.isFinite(age) || age > FREE_SCAN_MAX_AGE_MS || age < -60_000) return false
+  // Honour the optional SIWE validity window if the signer set one.
+  if (f.expirationTime && Date.now() > new Date(f.expirationTime).getTime()) return false
+  if (f.notBefore && Date.now() < new Date(f.notBefore).getTime()) return false
+  return true
+}
+
+// Verify a wallet signature over the free-scan message. Uses a public client so
+// it validates BOTH EOAs (ECDSA) and smart wallets (EIP-1271 / ERC-6492) — the
+// Base App wallet is a smart wallet, so plain recovery isn't enough. Never throws.
 async function verifyFreeSignature(
   wallet: `0x${string}`,
   signature: `0x${string}`,
   chain: string,
+  message: string,
 ): Promise<boolean> {
   const rpc = chain === "base-sepolia" ? "https://sepolia.base.org" : RPC_URL || "https://mainnet.base.org"
   const client = createPublicClient({ chain: chain === "base-sepolia" ? baseSepolia : base, transport: http(rpc) })
   try {
-    return await client.verifyMessage({ address: wallet, message: FREE_SCAN_MESSAGE, signature })
+    return await client.verifyMessage({ address: wallet, message, signature })
   } catch (err) {
     console.error("[verify] free-scan signature check threw:", err instanceof Error ? err.message : err)
     return false
@@ -196,13 +240,20 @@ export async function POST(request: Request) {
   let verified: { ok: true; sender?: string } | { ok: false; msg: string }
   let claimId: string | null = null
   if (freeSig?.wallet && freeSig?.signature) {
-    if (!ADDRESS_RE.test(freeSig.wallet) || freeSig.message !== FREE_SCAN_MESSAGE) {
-      return bad(400, "Invalid free-scan request")
+    const message = freeSig.message ?? ""
+    if (!ADDRESS_RE.test(freeSig.wallet) || !message) return bad(400, "Invalid free-scan request")
+    // Accept the pre-SIWE bare message for one release, so a tab loaded before
+    // this deploy can still finish its free scan. Remove the legacy arm after.
+    const isLegacy = message === LEGACY_FREE_SCAN_MESSAGE
+    if (!isLegacy && !siweFieldsOk(message, freeSig.wallet, chain)) {
+      return bad(400, "Free-scan request expired or not issued by this app")
     }
     const wallet = freeSig.wallet as `0x${string}`
     const sig = freeSig.signature as `0x${string}`
     if (!/^0x[0-9a-fA-F]+$/.test(sig)) return bad(400, "Invalid signature")
-    if (!(await verifyFreeSignature(wallet, sig, chain))) return bad(400, "Signature could not be verified")
+    if (!(await verifyFreeSignature(wallet, sig, chain, message))) {
+      return bad(400, "Signature could not be verified")
+    }
     // One free scan per wallet. Already used → 402 so the client falls back to paying.
     if (!(await claimFreeScan(wallet))) return bad(402, "Free verification already used")
     verified = { ok: true, sender: wallet }

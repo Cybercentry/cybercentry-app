@@ -12,9 +12,10 @@
 import { connect, getConnections } from "@wagmi/core"
 import { createWalletClient, custom, encodeFunctionData, parseUnits, erc20Abi, type EIP1193Provider } from "viem"
 import { waitForCallsStatus } from "viem/actions"
+import { createSiweMessage, generateSiweNonce } from "viem/siwe"
 import { base, baseSepolia } from "viem/chains"
 import { config, BUILDER_DATA_SUFFIX } from "./wagmi"
-import { FREE_SCAN_MESSAGE } from "./payments"
+import { FREE_SCAN_STATEMENT } from "./payments"
 import type { Chain } from "./cbtv"
 
 const CHAIN_ID: Record<Chain, number> = { base: 8453, "base-sepolia": 84532 }
@@ -219,12 +220,19 @@ export async function payUsdc(opts: { amount: string; to: `0x${string}`; chain: 
 }
 
 /**
- * Sign the free-scan message to claim this wallet's one free verification. Gasless
- * and fundless — just proves wallet ownership. The server verifies the signature
+ * Sign a SIWE message to claim this wallet's one free verification. Gasless and
+ * fundless — just proves wallet ownership. The server verifies the signature
  * (EOA or smart-wallet) and grants the free scan once per wallet. Throws on
  * rejection or if no wallet can be reached.
+ *
+ * SIWE rather than a bare constant: the message is bound to this domain and
+ * carries an issuedAt the server can expire. A bare constant reads identically
+ * on every site and never goes stale, so any other page could collect a
+ * signature over it and spend the visitor's free scan here.
  */
-export async function signFreeScan(): Promise<{ wallet: `0x${string}`; message: string; signature: string }> {
+export async function signFreeScan(
+  chain: Chain,
+): Promise<{ wallet: `0x${string}`; message: string; signature: string }> {
   const { provider } = await connectWallet()
   // Re-fetch the authorized account from THIS provider so the account we sign
   // with always matches it — a stale wagmi account causes sporadic sign failures.
@@ -232,16 +240,27 @@ export async function signFreeScan(): Promise<{ wallet: `0x${string}`; message: 
   const account = accts?.[0]
   if (!account) throw new Error("No wallet account")
   const wallet = createWalletClient({ account, transport: custom(provider) })
+  // Built once, outside the retry loop: a retry must re-sign the SAME message,
+  // or the issuedAt/nonce would differ from what the first attempt showed.
+  // The nonce is client-generated for SIWE-format compliance and entropy; the
+  // server does not track it (replay is already bounded by one-free-scan-per-
+  // wallet plus the issuedAt window).
+  const message = createSiweMessage({
+    address: account,
+    chainId: CHAIN_ID[chain],
+    domain: window.location.host,
+    issuedAt: new Date(),
+    nonce: generateSiweNonce(),
+    statement: FREE_SCAN_STATEMENT,
+    uri: window.location.origin,
+    version: "1",
+  })
   // Retry once on a transient failure (never on a user rejection). Bounded so a
   // wallet whose signing UI never appears errors out instead of spinning forever.
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const signature = await withTimeout(
-        wallet.signMessage({ account, message: FREE_SCAN_MESSAGE }),
-        SIGN_MS,
-        "Wallet signature",
-      )
-      return { wallet: account, message: FREE_SCAN_MESSAGE, signature }
+      const signature = await withTimeout(wallet.signMessage({ account, message }), SIGN_MS, "Wallet signature")
+      return { wallet: account, message, signature }
     } catch (err) {
       if (isRejection(err) || attempt === 1) throw err
       await new Promise((r) => setTimeout(r, 400))
