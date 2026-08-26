@@ -72,7 +72,7 @@ App-level metadata lives in [`app.config.ts`](app.config.ts).
 | `NEXT_PUBLIC_TREASURY_ADDRESS` | Where the USDC fee lands |
 | `NEXT_PUBLIC_PAY_TESTNET` | `true` for Base Sepolia while testing |
 | `DATABASE_URL` | Postgres durable store (replay / payer / free-scan guards); fails open to in-memory |
-| `MINI_APP_API_KEY` | Base Dashboard notifications API key (optional) |
+| `APP_API_KEY` | Base Dashboard notifications API key (optional) |
 | `NEXT_PUBLIC_URL` | Public base URL (defaults to `https://app.cybercentry.co.uk`) |
 
 ## Local development
