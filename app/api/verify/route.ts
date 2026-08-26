@@ -11,7 +11,6 @@ import {
   TREASURY,
   PAY_TESTNET,
   FREE_SCAN_STATEMENT,
-  LEGACY_FREE_SCAN_MESSAGE,
   FREE_SCAN_MAX_AGE_MS,
 } from "@/lib/payments"
 import { claimPayment, claimFreeScan, setPayer, takePayer } from "@/lib/replay-store"
@@ -242,10 +241,11 @@ export async function POST(request: Request) {
   if (freeSig?.wallet && freeSig?.signature) {
     const message = freeSig.message ?? ""
     if (!ADDRESS_RE.test(freeSig.wallet) || !message) return bad(400, "Invalid free-scan request")
-    // Accept the pre-SIWE bare message for one release, so a tab loaded before
-    // this deploy can still finish its free scan. Remove the legacy arm after.
-    const isLegacy = message === LEGACY_FREE_SCAN_MESSAGE
-    if (!isLegacy && !siweFieldsOk(message, freeSig.wallet, chain)) {
+    // SIWE only. No bare-constant fallback: accepting one would let an attacker
+    // skip every domain/chain/freshness check simply by sending the old message,
+    // which would defeat the binding entirely. A tab loaded before this deploy
+    // fails once here and works on reload.
+    if (!siweFieldsOk(message, freeSig.wallet, chain)) {
       return bad(400, "Free-scan request expired or not issued by this app")
     }
     const wallet = freeSig.wallet as `0x${string}`

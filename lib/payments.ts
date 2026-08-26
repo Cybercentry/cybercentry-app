@@ -16,12 +16,6 @@ export const PAY_AMOUNT = "1.00"
  */
 export const FREE_SCAN_STATEMENT = "Cybercentry: unlock my one free B20 verification."
 
-/**
- * The bare pre-SIWE message. Still accepted by the server for one release so a
- * browser tab loaded before the deploy doesn't fail mid-flow. Remove after.
- */
-export const LEGACY_FREE_SCAN_MESSAGE = FREE_SCAN_STATEMENT
-
 /** How long a signed free-scan message stays valid, from its issuedAt. */
 export const FREE_SCAN_MAX_AGE_MS = 5 * 60_000
 
