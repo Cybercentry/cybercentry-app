@@ -28,6 +28,8 @@ export interface TokenInfo {
   total_supply?: string | number
   supply_cap?: string | number
   currency?: string
+  /** contractURI, added by the service alongside the tokenized-stock work. */
+  contract_uri?: string
 }
 
 export interface Finding {
@@ -98,22 +100,68 @@ export function worst(levels: RiskLevel[]): RiskLevel {
   return levels.reduce<RiskLevel>((a, b) => (RISK_ORDER[b] > RISK_ORDER[a] ? b : a), "Informational")
 }
 
-// Ecosystem/impersonation cautions describe the world *around* the token (e.g.
-// other people minting same-ticker copycats), not a defect in the scanned
-// contract. They're a genuine buyer caution ("check you have the right address")
-// but NOT the scanned project's fault — shown separately, never inflating its
-// verdict, never counted as an issuer control. Distinct from a finding that the
-// scanned token *is itself* a malicious fake, which stays a real risk.
+// Ecosystem cautions describe the world *around* the token (other people minting
+// same-ticker copycats), not a defect in the scanned contract. They're a genuine
+// buyer caution ("check you have the right address") but NOT the scanned
+// project's fault — shown separately, never inflating its verdict, never counted
+// as an issuer control.
+//
+// Matched by CHECK ID, not prose. The prose regex used to match the word
+// "impersonation" anywhere, which swallowed `tokenized-stock-impersonation` —
+// a High detector meaning THIS token is the fake — and filed it under "not this
+// project's fault". The two genuinely-ecosystem checks are named here; anything
+// else with a check id is not an advisory.
+const ADVISORY_CHECKS = new Set(["ticker-collision", "ticker-uniqueness-unknown"])
+
+// Fallback for a detector that arrives with no check id (older cached reports).
 const ADVISORY_RE =
-  /shares? the ticker|same ticker|impersonation|copycat|multiple tokens .*(share|ticker)|verify the official|confirm the (contract )?address/i
+  /shares? the ticker|same ticker|copycat|multiple tokens .*(share|ticker)|verify the official|confirm the (contract )?address/i
 
 export function isAdvisoryFinding(f: Finding): boolean {
+  // An advisory is by definition not a defect of this token, so the service
+  // never rates one High. Anything High stays a real finding whatever it says.
+  if (toLevel(f.severity) === "High") return false
   return ADVISORY_RE.test(`${f.title} ${f.why ?? ""}`)
 }
 
-/** Detector form of the same ecosystem caution (proxy emits it as a control). */
+/** Detector form of the same ecosystem caution (the proxy emits it as a control). */
 export function isAdvisoryDetector(d: Detector): boolean {
-  return ADVISORY_RE.test(`${d.description} ${d.recommendation ?? ""} ${d.check}`)
+  if (d.impact === "High" || d.impact === "Medium") return false
+  if (d.check) return ADVISORY_CHECKS.has(d.check)
+  return ADVISORY_RE.test(`${d.description} ${d.recommendation ?? ""}`)
+}
+
+/**
+ * A check the service could not complete — e.g. a truncated log window, an
+ * unreadable role. The service deliberately stopped reporting these as clean
+ * (an absent role on a short history is not "immutable"), so the app must not
+ * silently drop them: they arrive as Informational, which every severity filter
+ * discards, and a check that never renders reads exactly like a check that
+ * passed.
+ */
+export function isUndetermined(d: Detector): boolean {
+  return /^could not determine\b/i.test(d.description)
+}
+
+/** The token's address matches the issuer's published tokenized-stock list. */
+export function isVerifiedTokenizedStock(d: Detector): boolean {
+  return d.check === "verified-tokenized-stock"
+}
+
+/** The scanned token is impersonating a verified tokenized stock. */
+export function isTokenizedStockImpersonation(d: Detector): boolean {
+  return d.check === "tokenized-stock-impersonation"
+}
+
+/**
+ * Detectors that describe a holder-harm risk. Takes the service's `category`
+ * when it says "threat", but ALSO any High-impact detector: the service
+ * categorises by a check-name allowlist, and a new High check that hasn't been
+ * added to it defaults to "control" — which is how tokenized-stock
+ * impersonation first surfaced in the wrong section. Impact is the safer signal.
+ */
+export function isThreatDetector(d: Detector): boolean {
+  return (d.category === "threat" || d.impact === "High") && !isAdvisoryDetector(d)
 }
 
 /** The headline verdict: the worst of overall_risk, the capped grade, and the

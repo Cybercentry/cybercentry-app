@@ -1,6 +1,16 @@
 "use client"
 import type { CbtvReport, Detector, Finding, RiskLevel } from "@/lib/cbtv"
-import { RISK_COLOR, RISK_ORDER, isAdvisoryFinding, isAdvisoryDetector, toLevel, worst } from "@/lib/cbtv"
+import {
+  RISK_COLOR,
+  RISK_ORDER,
+  isAdvisoryFinding,
+  isAdvisoryDetector,
+  isThreatDetector,
+  isUndetermined,
+  isVerifiedTokenizedStock,
+  toLevel,
+  worst,
+} from "@/lib/cbtv"
 import styles from "./page.module.css"
 
 function short(addr: string) {
@@ -70,10 +80,21 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
     /share|copycat|impersonation|dominance/i.test(`${a.title} ${a.text ?? ""}`),
   )
 
-  const threats = detectors.filter((d) => d.category === "threat" && !isAdvisoryDetector(d))
+  // Threats are taken by impact as well as category — see isThreatDetector.
+  const threats = detectors.filter(isThreatDetector)
+  // Controls exclude High so a High detector cannot appear in both sections.
   const controls = detectors.filter(
-    (d) => d.category === "control" && d.impact !== "Informational" && !isAdvisoryDetector(d),
+    (d) =>
+      d.category === "control" &&
+      d.impact !== "Informational" &&
+      d.impact !== "High" &&
+      !isAdvisoryDetector(d),
   )
+  // Checks the service could not complete. Informational, so every severity
+  // filter above drops them — listed separately so an incomplete check is
+  // visibly not a passed one.
+  const undetermined = detectors.filter(isUndetermined)
+  const verifiedStock = detectors.find(isVerifiedTokenizedStock)
 
   // Count the findings by severity for the summary — "threats" (detector-only)
   // reads as 0 on a venue honeypot, which is misleading.
@@ -131,6 +152,15 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
         </p>
       ) : (
         <>
+          {/* Positive identity signal: the address matches the issuer's published
+              tokenized-stock list. Informational, so every severity filter drops
+              it, but "this IS the official one" is exactly what a buyer needs. */}
+          {verifiedStock && (
+            <p className={styles.reportNote} style={{ color: "#16a34a" }}>
+              Verified tokenized stock — this address matches the issuer&rsquo;s published list.
+            </p>
+          )}
+
           {/* The app's promise, answered first and unmissably. */}
           <div className={styles.answer} style={{ borderColor: sellColor }}>
             <span className={styles.answerQ}>Can you sell it?</span>
@@ -220,6 +250,21 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
               <ul className={styles.findings}>
                 {controls.map((d, i) => (
                   <DetectorRow key={`c${i}`} d={d} />
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {undetermined.length > 0 && (
+            <section className={styles.reportSection}>
+              <h3 className={styles.reportH3}>Could not be checked</h3>
+              <p className={styles.reportNote}>
+                These checks did not complete, so they are neither a pass nor a fail. Treat them as unknown rather
+                than clean — a short log history can hide a control that is really there.
+              </p>
+              <ul className={styles.findings}>
+                {undetermined.map((d, i) => (
+                  <DetectorRow key={`u${i}`} d={d} />
                 ))}
               </ul>
             </section>
