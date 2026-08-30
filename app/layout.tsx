@@ -26,6 +26,17 @@ const FULL_NAME = "Cybercentry Base Token Verification"
 export function generateMetadata(): Metadata {
   return {
     metadataBase: new URL(appConfig.url),
+    // One canonical host. The apex redirects to the marketing site, so without
+    // this a crawler reaching the app by any other route could split ranking
+    // signals across near-duplicate URLs.
+    alternates: { canonical: appConfig.url },
+    // Explicit rather than implied: this page is meant to be indexed, and the
+    // richer directives tell crawlers they may show a full snippet and preview.
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true, "max-snippet": -1, "max-image-preview": "large", "max-video-preview": -1 },
+    },
     title: FULL_NAME,
     description: appConfig.description,
     // Declare icons explicitly. Chrome falls back to /favicon.ico on its own, but
