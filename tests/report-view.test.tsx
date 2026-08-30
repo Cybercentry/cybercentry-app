@@ -102,4 +102,34 @@ describe("ReportView", () => {
     expect(screen.getByText("NOT A B20")).toBeTruthy()
     expect(screen.queryByText("Can you sell it?")).toBeNull()
   })
+
+  // The local list may only escalate. It exists because the proxy covered four
+  // of the thirteen stocks; it must never argue with the proxy once it speaks.
+  it("flags a copycat the service stayed silent about", () => {
+    const r = report({ address: "0x1111111111111111111111111111111111111111", token_info: { symbol: "TSLAc" } })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText(/presents the ticker TSLAc/)).toBeTruthy()
+  })
+
+  it("stays silent when the service already settled identity", () => {
+    const r = report({
+      address: "0x1111111111111111111111111111111111111111",
+      token_info: { symbol: "TSLAc" },
+      detectors: [d("tokenized-stock-impersonation", "High", "IMPERSONATION OF A VERIFIED TOKENIZED STOCK.", "control")],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText(/IMPERSONATION OF A VERIFIED TOKENIZED STOCK/)).toBeTruthy()
+    expect(screen.queryByText(/presents the ticker TSLAc/)).toBeNull()
+  })
+
+  it("recognises a published address on its own", () => {
+    const r = report({ address: "0xb20000000000000000000078ee7ce2fE4908108C" })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText(/matches NVDAc on the issuer/)).toBeTruthy()
+  })
+
+  it("says nothing about an ordinary token", () => {
+    render(<ReportView report={report({ token_info: { symbol: "WETH" } })} onReset={noop} />)
+    expect(screen.queryByText(/published list/)).toBeNull()
+  })
 })

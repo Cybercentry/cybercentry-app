@@ -4,9 +4,15 @@ import { useEffect, useRef, useState } from "react"
 // and sends USDC directly — no Base Pay sheet (no flash), builder code auto-appended.
 import { payUsdc, signFreeScan } from "@/lib/pay-usdc"
 import type { CbtvReport, Chain, VerifyStatus } from "@/lib/cbtv"
-import { PAY_AMOUNT, TREASURY } from "@/lib/payments"
+import { PAY_AMOUNT, TREASURY, PAY_TESTNET } from "@/lib/payments"
 import { ReportView } from "./report-view"
 import styles from "./page.module.css"
+
+// One field: the contract address. The network is not a user decision — a
+// production build scans Base mainnet, a testnet build scans Base Sepolia.
+// Asking buyers to choose meant a wrong choice returned "not an initialised
+// B20", which reads like a verdict on the token rather than a mis-set control.
+const CHAIN: Chain = PAY_TESTNET ? "base-sepolia" : "base"
 
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
 const POLL_INTERVAL_MS = 3000
@@ -30,7 +36,6 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 export function VerifyForm() {
   const [address, setAddress] = useState("")
-  const [chain, setChain] = useState<Chain>("base")
   const [phase, setPhase] = useState<Phase>("idle")
   const [error, setError] = useState("")
   const [report, setReport] = useState<CbtvReport | null>(null)
@@ -144,7 +149,7 @@ export function VerifyForm() {
     if (!freeUsedHere) {
       let freeSig: Awaited<ReturnType<typeof signFreeScan>> | null = null
       try {
-        freeSig = await signFreeScan(chain)
+        freeSig = await signFreeScan(CHAIN)
       } catch (e) {
         // A cancelled signature is a real cancel; any other sign failure just
         // falls back to paying.
@@ -154,7 +159,7 @@ export function VerifyForm() {
         const res = await fetch("/api/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ address: addr, chain, freeSig }),
+          body: JSON.stringify({ address: addr, chain: CHAIN, freeSig }),
         })
         // 402 = this wallet already used its free scan → fall through to paying.
         // Anything else uses this response (jobId on success, error otherwise).
@@ -175,11 +180,11 @@ export function VerifyForm() {
     }
 
     // Paid path.
-    const { txHash } = await payUsdc({ amount: PAY_AMOUNT, to: TREASURY as `0x${string}`, chain })
+    const { txHash } = await payUsdc({ amount: PAY_AMOUNT, to: TREASURY as `0x${string}`, chain: CHAIN })
     const res = await fetch("/api/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address: addr, chain, txHash }),
+      body: JSON.stringify({ address: addr, chain: CHAIN, txHash }),
     })
     const kick = await res.json()
     if (!res.ok) throw new Error(kick.error || "Could not start the scan.")
@@ -252,16 +257,6 @@ export function VerifyForm() {
           inputMode="text"
           disabled={busy}
         />
-        <select
-          className={styles.chain}
-          value={chain}
-          onChange={(e) => setChain(e.target.value as Chain)}
-          disabled={busy}
-          aria-label="Network"
-        >
-          <option value="base">Base</option>
-          <option value="base-sepolia">Base Sepolia</option>
-        </select>
       </div>
 
       {error ? <p className={styles.error}>{error}</p> : null}

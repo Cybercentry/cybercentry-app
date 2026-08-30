@@ -8,6 +8,7 @@ import {
   toLevel,
   worst,
 } from "@/lib/cbtv"
+import { stockIdentity, TOKENIZED_STOCK_LIST_URL } from "@/lib/tokenized-stocks"
 import styles from "./page.module.css"
 
 function short(addr: string) {
@@ -84,6 +85,18 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
     /share|copycat|impersonation|dominance/i.test(`${a.title} ${a.text ?? ""}`),
   )
 
+  // Settle the token against the issuer's published list ourselves, as a floor
+  // under the service's own check. The proxy is authoritative — it confirms
+  // on-chain — but its copy of the list covers four of the thirteen, so a
+  // copycat wearing one of the other nine tickers currently passes its check
+  // untouched. This can only ESCALATE: it is suppressed the moment the service
+  // has spoken on identity, and a match that agrees is never shown twice.
+  const serviceSettledIdentity = Boolean(bucket.verified[0] || bucket.caveat[0]) ||
+    detectors.some((x) => x.check === "tokenized-stock-impersonation")
+  const localIdentity = serviceSettledIdentity ? null : stockIdentity(report.address, ti.symbol, ti.name)
+  const localImpersonation = localIdentity?.verdict === "impersonation" ? localIdentity : null
+  const localVerified = localIdentity?.verdict === "verified" ? localIdentity : null
+
   // Count the findings by severity for the summary — "threats" (detector-only)
   // reads as 0 on a venue honeypot, which is misleading.
   const findingLevels = findings.map((f) => toLevel(f.severity))
@@ -143,6 +156,23 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
           {/* Positive identity signal: the address matches the issuer's published
               tokenized-stock list. Informational, so every severity filter drops
               it, but "this IS the official one" is exactly what a buyer needs. */}
+          {/* Escalation only. The service settles identity on-chain and wins whenever
+              it has spoken; this fires solely when it stayed silent — which is what
+              happened while its published list covered four of the thirteen stocks. */}
+          {localImpersonation && (
+            <p className={styles.reportNote} style={{ color: "#dc2626", fontWeight: 600 }}>
+              This token presents the ticker {localImpersonation.ticker}, but the contract issued
+              under that ticker is {localImpersonation.official}. This is not that address.
+              Check the published list at {TOKENIZED_STOCK_LIST_URL} before buying.
+            </p>
+          )}
+
+          {localVerified && (
+            <p className={styles.reportNote} style={{ color: "#16a34a" }}>
+              Address matches {localVerified.ticker} on the issuer&rsquo;s published list.
+            </p>
+          )}
+
           {verifiedStock && (
             <p className={styles.reportNote} style={{ color: "#16a34a" }}>
               Verified tokenized stock — this address matches the issuer&rsquo;s published list.
