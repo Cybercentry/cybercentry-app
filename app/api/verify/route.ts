@@ -5,13 +5,11 @@ import { NextResponse } from "next/server"
 import { getPaymentStatus } from "@base-org/account/payment/browser"
 import { createPublicClient, http } from "viem"
 import { base, baseSepolia } from "viem/chains"
-import { parseSiweMessage } from "viem/siwe"
+import { siweFieldsOk } from "@/lib/free-scan-siwe"
 import {
   PAY_AMOUNT,
   TREASURY,
   PAY_TESTNET,
-  FREE_SCAN_STATEMENT,
-  FREE_SCAN_MAX_AGE_MS,
 } from "@/lib/payments"
 import { claimPayment, claimFreeScan, setPayer, takePayer } from "@/lib/replay-store"
 import { reportRiskLevel } from "@/lib/cbtv"
@@ -51,42 +49,6 @@ const USDC: Record<string, string> = {
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 // $1.00 USDC = 1_000_000 (6 decimals). Matches PAY_AMOUNT.
 const MIN_UNITS = BigInt(1_000_000)
-
-// Expected SIWE domain/origin for the free-scan message, from NEXT_PUBLIC_URL.
-const APP_ORIGIN = (process.env.NEXT_PUBLIC_URL || "https://app.cybercentry.co.uk").replace(/\/+$/, "")
-const APP_HOST = APP_ORIGIN.replace(/^https?:\/\//, "")
-const CHAIN_IDS: Record<string, number> = { base: 8453, "base-sepolia": 84532 }
-
-/**
- * Check the free-scan message is a SIWE message issued by THIS app, for THIS
- * wallet and chain, recently. Returns false for anything else.
- *
- * Without these bindings the message is a fixed string that reads the same on
- * every site and never expires, so another page could harvest a signature over
- * it and spend the visitor's free scan here.
- */
-function siweFieldsOk(message: string, wallet: string, chain: string): boolean {
-  let f: ReturnType<typeof parseSiweMessage>
-  try {
-    f = parseSiweMessage(message)
-  } catch {
-    return false
-  }
-  if (!f.address || f.address.toLowerCase() !== wallet.toLowerCase()) return false
-  if (f.domain !== APP_HOST) return false
-  if (!f.uri || f.uri.replace(/\/+$/, "") !== APP_ORIGIN) return false
-  if (f.chainId !== CHAIN_IDS[chain]) return false
-  if (f.statement !== FREE_SCAN_STATEMENT) return false
-  // issuedAt must exist and be recent. A small negative allowance absorbs clock
-  // skew between the signer's device and this server.
-  if (!f.issuedAt) return false
-  const age = Date.now() - new Date(f.issuedAt).getTime()
-  if (!Number.isFinite(age) || age > FREE_SCAN_MAX_AGE_MS || age < -60_000) return false
-  // Honour the optional SIWE validity window if the signer set one.
-  if (f.expirationTime && Date.now() > new Date(f.expirationTime).getTime()) return false
-  if (f.notBefore && Date.now() < new Date(f.notBefore).getTime()) return false
-  return true
-}
 
 // Verify a wallet signature over the free-scan message. Uses a public client so
 // it validates BOTH EOAs (ECDSA) and smart wallets (EIP-1271 / ERC-6492) — the

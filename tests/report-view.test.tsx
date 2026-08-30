@@ -1,0 +1,105 @@
+import { describe, expect, it } from "vitest"
+import { render, screen } from "@testing-library/react"
+import { ReportView } from "@/app/report-view"
+import type { CbtvReport, Detector } from "@/lib/cbtv"
+
+const d = (
+  check: string,
+  impact: Detector["impact"],
+  description: string,
+  category?: Detector["category"],
+): Detector => ({ check, impact, description, category })
+
+const report = (over: Partial<CbtvReport> = {}): CbtvReport =>
+  ({
+    job_id: "j1",
+    address: "0x1234567890abcdef1234567890abcdef12345678",
+    chain: "base",
+    overall_risk: "Informational",
+    token_info: { name: "Test", symbol: "TST" },
+    ...over,
+  }) as CbtvReport
+
+const noop = () => {}
+
+describe("ReportView", () => {
+  it("answers the sell question", () => {
+    render(<ReportView report={report()} onReset={noop} />)
+    expect(screen.getByText("Can you sell it?")).toBeTruthy()
+    expect(screen.getByText("Yes")).toBeTruthy()
+  })
+
+  it("says No when a honeypot detector is present", () => {
+    const r = report({ detectors: [d("honeypot", "High", "Sells revert at the pool.", "threat")] })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("No")).toBeTruthy()
+  })
+
+  // The regression that motivated the caveat: clean on-chain, still unredeemable.
+  it("qualifies the sell answer with what the scan cannot see", () => {
+    const r = report({
+      detectors: [
+        d("operational-controls-above-token", "Informational", "Redemption is restricted to KYC-onboarded APs.", "control"),
+      ],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("Yes")).toBeTruthy()
+    expect(screen.getByText(/Redemption is restricted to KYC-onboarded APs/)).toBeTruthy()
+  })
+
+  it("shows an incomplete check as neither pass nor fail", () => {
+    const r = report({
+      detectors: [d("pause-state", "Informational", "Could not determine (pause-state): log window truncated.", "control")],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("Could not be checked")).toBeTruthy()
+    expect(screen.getByText(/Could not determine \(pause-state\)/)).toBeTruthy()
+  })
+
+  // A High impersonation the service labelled "control" must appear as a threat,
+  // not buried among issuer controls or ecosystem cautions.
+  it("shows a mis-categorised stock impersonation as a threat", () => {
+    const r = report({
+      overall_risk: "High",
+      detectors: [
+        d("tokenized-stock-impersonation", "High", "IMPERSONATION OF A VERIFIED TOKENIZED STOCK: presents ticker NVDAc.", "control"),
+      ],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText(/IMPERSONATION OF A VERIFIED TOKENIZED STOCK/)).toBeTruthy()
+    expect(screen.queryByText("Before you buy")).toBeNull()
+  })
+
+  it("shows the verified tokenized stock line", () => {
+    const r = report({
+      detectors: [d("verified-tokenized-stock", "Informational", "Address matches the published list.", "info")],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText(/Verified tokenized stock/)).toBeTruthy()
+  })
+
+  // The catch-all: a check the app has never been taught about still renders.
+  it("renders an unfamiliar check rather than dropping it", () => {
+    const r = report({
+      detectors: [d("some-future-check", "Informational", "A brand new observation.", "control")],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("Also worth knowing")).toBeTruthy()
+    expect(screen.getByText("A brand new observation.")).toBeTruthy()
+  })
+
+  it("keeps a third-party copycat caution out of the token's own findings", () => {
+    const r = report({
+      detectors: [d("ticker-collision", "Informational", "Other tokens share this ticker; confirm the address.", "info")],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("Before you buy")).toBeTruthy()
+  })
+
+  it("renders the not-a-B20 case without the risk sections", () => {
+    const r = report({ is_b20: false, status: "not_b20", detectors: [d("b20-identity", "Informational", "Not an initialised B20.", "info")] })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("NOT A B20")).toBeTruthy()
+    expect(screen.queryByText("Can you sell it?")).toBeNull()
+  })
+})
