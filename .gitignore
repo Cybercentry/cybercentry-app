@@ -46,3 +46,7 @@ next-env.d.ts
 .agents/
 .claude/
 skills-lock.json
+
+# scratch from local API polling, never part of the app
+rep.json
+nv.json
