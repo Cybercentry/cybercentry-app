@@ -302,6 +302,7 @@
 }
 
 .reportNote {
+  overflow-wrap: anywhere;
   margin-top: 16px;
   font-size: 0.9rem;
   line-height: 1.55;
@@ -336,6 +337,7 @@
 }
 
 .answerWhy {
+  overflow-wrap: anywhere;
   margin-top: 8px;
   font-size: 0.9rem;
   line-height: 1.5;
@@ -408,7 +410,13 @@
 }
 
 .findingBody {
+  /* min-width:0 lets the flex child shrink; overflow-wrap lets the CONTENT
+     break. Both are needed: a detector description can carry an unbroken hex
+     string (a revert selector, an address) with no break opportunity, and
+     without this it renders straight out of the card. Inherited, so the impact
+     label, description and recommendation are all covered. */
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .findingImpact {
