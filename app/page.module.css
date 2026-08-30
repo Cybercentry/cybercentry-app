@@ -65,6 +65,24 @@
   color: var(--text-muted);
 }
 
+.stocks {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.stocks strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.tickers {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
 .lede strong {
   color: var(--text);
   font-weight: 600;

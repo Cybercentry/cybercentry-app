@@ -21,6 +21,14 @@ export default function Home() {
             <strong>pool</strong>, not the token. Paste an address and Cybercentry runs a real buy-and-sell round trip.
           </p>
 
+          <p className={styles.stocks}>
+            Covers <strong>Coinbase tokenized stocks</strong> on Base —{" "}
+            <span className={styles.tickers}>NVDAc, TSLAc, AAPLc</span> and ten more. Cybercentry settles
+            the address against the issuer&rsquo;s published list, so a copycat wearing the ticker
+            can&rsquo;t pass as the real security, and reports the controls that sit above the token —
+            redemption windows and price-feed state — which no on-chain check can see.
+          </p>
+
           <VerifyForm />
         </div>
       </main>
