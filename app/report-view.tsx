@@ -3,11 +3,8 @@ import type { CbtvReport, Detector, Finding, RiskLevel } from "@/lib/cbtv"
 import {
   RISK_COLOR,
   RISK_ORDER,
+  bucketDetectors,
   isAdvisoryFinding,
-  isAdvisoryDetector,
-  isThreatDetector,
-  isUndetermined,
-  isVerifiedTokenizedStock,
   toLevel,
   worst,
 } from "@/lib/cbtv"
@@ -55,11 +52,20 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
   const detectors = report.detectors ?? []
   const notB20 = report.is_b20 === false || report.status === "not_b20"
 
-  // Ecosystem/impersonation cautions (e.g. same-ticker copycats made by OTHERS)
-  // are separated out: they're a "check the address" caution for the buyer, not a
-  // fault of the scanned contract, so they never count toward its verdict, its
-  // findings, or its issuer controls. They arrive as either a finding or a
-  // control detector, so both are captured here into one "Before you buy" list.
+  // One pass, one bucket each — see classifyDetector. The `note` bucket is the
+  // catch-all that stops an unfamiliar check rendering nowhere.
+  const bucket = bucketDetectors(detectors)
+  const threats = bucket.threat
+  const controls = bucket.control
+  const undetermined = bucket.undetermined
+  const notes = bucket.note
+  const verifiedStock = bucket.verified[0]
+  const sellCaveat = bucket.caveat[0]
+
+  // Ecosystem cautions (same-ticker copycats made by OTHERS) are separated out:
+  // a "check the address" caution for the buyer, not a fault of the scanned
+  // contract, so they never count toward its verdict, findings, or its issuer
+  // controls. They arrive as either a finding or a detector; both land here.
   const allFindings = (report.findings ?? []).filter((f) => f.title)
 
   // The token's OWN findings, sorted worst-first.
@@ -69,9 +75,7 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
 
   const advisories: { key: string; title: string; text?: string }[] = [
     ...allFindings.filter(isAdvisoryFinding).map((f) => ({ key: f.id, title: f.title, text: f.why })),
-    ...(report.detectors ?? [])
-      .filter(isAdvisoryDetector)
-      .map((d, i) => ({ key: `ad${i}`, title: d.description, text: d.recommendation })),
+    ...bucket.advisory.map((d, i) => ({ key: `ad${i}`, title: d.description, text: d.recommendation })),
   ]
   // The "genuine token / copycats exist" reassurance only fits when same-ticker
   // copycats were actually found. The uniqueness-unknown caveat ("no same-ticker
@@ -79,22 +83,6 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
   const hasCopycats = advisories.some((a) =>
     /share|copycat|impersonation|dominance/i.test(`${a.title} ${a.text ?? ""}`),
   )
-
-  // Threats are taken by impact as well as category — see isThreatDetector.
-  const threats = detectors.filter(isThreatDetector)
-  // Controls exclude High so a High detector cannot appear in both sections.
-  const controls = detectors.filter(
-    (d) =>
-      d.category === "control" &&
-      d.impact !== "Informational" &&
-      d.impact !== "High" &&
-      !isAdvisoryDetector(d),
-  )
-  // Checks the service could not complete. Informational, so every severity
-  // filter above drops them — listed separately so an incomplete check is
-  // visibly not a passed one.
-  const undetermined = detectors.filter(isUndetermined)
-  const verifiedStock = detectors.find(isVerifiedTokenizedStock)
 
   // Count the findings by severity for the summary — "threats" (detector-only)
   // reads as 0 on a venue honeypot, which is misleading.
@@ -168,6 +156,10 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
               {cannotSell ? "No" : "Yes"}
             </span>
             <p className={styles.answerWhy}>{sellReason}</p>
+            {/* What this scan cannot see must qualify the answer, not sit in a
+                list under it — a tokenized stock can be perfectly clean on-chain
+                and still be unredeemable outside market hours. */}
+            {sellCaveat ? <p className={styles.answerWhy}>{sellCaveat.description}</p> : null}
           </div>
 
           <div className={styles.summaryRow}>
@@ -265,6 +257,20 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
               <ul className={styles.findings}>
                 {undetermined.map((d, i) => (
                   <DetectorRow key={`u${i}`} d={d} />
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* Catch-all. Anything the service emitted that no bucket above
+              claimed still renders here, so a check this app has not been
+              taught about can never be silently dropped. */}
+          {notes.length > 0 && (
+            <section className={styles.reportSection}>
+              <h3 className={styles.reportH3}>Also worth knowing</h3>
+              <ul className={styles.findings}>
+                {notes.map((d, i) => (
+                  <DetectorRow key={`n${i}`} d={d} />
                 ))}
               </ul>
             </section>

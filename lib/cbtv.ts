@@ -140,7 +140,24 @@ export function isAdvisoryDetector(d: Detector): boolean {
  * passed.
  */
 export function isUndetermined(d: Detector): boolean {
-  return /^could not determine\b/i.test(d.description)
+  // The service says "couldn't tell" two ways: _undetermined()'s prose, and a
+  // check named *-unknown / *-skipped (admin-structure-unknown,
+  // offchain-identifiers-unknown, ticker-impersonation-skipped, …). Both are an
+  // absent answer, not a passed check, and both are Informational — so every
+  // severity filter drops them unless they are caught here.
+  return /^could not determine\b/i.test(d.description) || /-(unknown|skipped)$/.test(d.check ?? "")
+}
+
+/**
+ * A caveat about what the scan itself cannot see, which must qualify the
+ * headline answer rather than sit in a list below it. `operational-controls-
+ * above-token` says redemption is gated by KYC'd Authorized Participants and
+ * price-feed behaviour outside market hours — neither enforced by B20, neither
+ * visible to this scan. Answering "Can you sell it? Yes" without it is exactly
+ * the false confidence the service added the check to prevent.
+ */
+export function isSellCaveat(d: Detector): boolean {
+  return d.check === "operational-controls-above-token"
 }
 
 /** The token's address matches the issuer's published tokenized-stock list. */
@@ -181,4 +198,38 @@ export function reportCannotSell(report: CbtvReport): boolean {
     findings.some((f) => /cannot be sold|sold back|honeypot/i.test(f.title)) ||
     detectors.some((d) => d.check === "honeypot" || d.check === "receive-restricted" || /honeypot/i.test(d.description))
   )
+}
+
+/** Where a detector belongs in the report. Exhaustive by construction. */
+export type DetectorBucket = "threat" | "control" | "advisory" | "undetermined" | "verified" | "caveat" | "note"
+
+/**
+ * Sort one detector into exactly one bucket.
+ *
+ * Every detector lands somewhere — the `note` fallback exists so that a check
+ * this app has never seen still renders. Twice now a new Informational check
+ * (verified-tokenized-stock, operational-controls-above-token) was silently
+ * dropped because every filter happened to exclude it; a catch-all makes that
+ * failure mode impossible rather than merely fixed.
+ *
+ * Order matters: "couldn't tell" is decided before severity, and the two
+ * special-cased identity/caveat checks before the generic buckets.
+ */
+export function classifyDetector(d: Detector): DetectorBucket {
+  if (isUndetermined(d)) return "undetermined"
+  if (isVerifiedTokenizedStock(d)) return "verified"
+  if (isSellCaveat(d)) return "caveat"
+  if (isAdvisoryDetector(d)) return "advisory"
+  if (isThreatDetector(d)) return "threat"
+  if (d.category === "control" && d.impact !== "Informational") return "control"
+  return "note"
+}
+
+/** Group a report's detectors by bucket, in one pass. */
+export function bucketDetectors(detectors: Detector[]): Record<DetectorBucket, Detector[]> {
+  const out: Record<DetectorBucket, Detector[]> = {
+    threat: [], control: [], advisory: [], undetermined: [], verified: [], caveat: [], note: [],
+  }
+  for (const d of detectors) out[classifyDetector(d)].push(d)
+  return out
 }
