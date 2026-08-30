@@ -65,23 +65,6 @@
   color: var(--text-muted);
 }
 
-.stocks {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: var(--text-muted);
-}
-.stocks strong {
-  color: var(--text);
-  font-weight: 600;
-}
-.tickers {
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-}
 
 .lede strong {
   color: var(--text);
@@ -479,4 +462,83 @@
   .title {
     font-size: 1.6rem;
   }
+}
+
+/* ── Capability showcase ─────────────────────────────────────────────────────
+   What the verifier actually does, below the form so the tool stays first.
+   Grouped by the question each group answers, because that is how someone
+   deciding whether to trust a scan reads it. */
+.caps {
+  margin-top: 34px;
+  padding-top: 26px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.capsHead {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-subtle);
+}
+.figures {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.figure {
+  background: var(--surface);
+  padding: 12px 14px;
+}
+.figureN {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--brand);
+  font-variant-numeric: tabular-nums;
+}
+.figureL {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+.cap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.capQ {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.capA {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+.capA strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.capRule {
+  margin-top: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--brand);
+  border-radius: 0.5rem;
+  background: var(--surface-muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text);
 }
