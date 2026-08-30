@@ -190,15 +190,55 @@ export function reportRiskLevel(report: CbtvReport): RiskLevel {
   return worst([report.overall_risk ?? "Informational", toLevel(report.grade), ...findings.map((f) => toLevel(f.severity))])
 }
 
+// The venue check answers the app's headline question, and the service gives
+// its findings stable VENUE- ids precisely so a consumer never has to guess from
+// prose. Matching on titles missed three of them — including the whitelisted-exit
+// trap this app advertises catching — so match on the ids.
+const CANNOT_SELL_IDS = new Set([
+  "VENUE-C-001", // token cannot be sold back at value
+  "VENUE-C-002", // pool exempts specific addresses from its sell penalty
+  "VENUE-H-003", // sells do not execute on this token's pools
+])
+/** No venue could be measured — exit liquidity is unknown, NOT proven fine. */
+const UNMEASURED_ID = "VENUE-M-002"
+
+const findingId = (f: Finding) => (f.id ?? "").toUpperCase()
+
 /** Whether the venue check found the token unsellable (honeypot). */
 export function reportCannotSell(report: CbtvReport): boolean {
   const findings = report.findings ?? []
   const detectors = report.detectors ?? []
   return (
-    findings.some((f) => /cannot be sold|sold back|honeypot/i.test(f.title)) ||
+    findings.some((f) => CANNOT_SELL_IDS.has(findingId(f))) ||
+    // Prose fallback, for a venue finding whose id this app has not been taught.
+    findings.some((f) => /cannot be sold|sold back|honeypot|sells do not execute/i.test(f.title)) ||
     detectors.some((d) => d.check === "honeypot" || d.check === "receive-restricted" || /honeypot/i.test(d.description))
   )
 }
+
+/**
+ * Whether the round trip could not be measured at all. Distinct from a clean
+ * result: the service is explicit that this "is not a finding that the token is
+ * unsellable, only that no venue could be measured". Rendering it as a plain
+ * "Yes" is the same false-clean the rest of this app refuses to make.
+ */
+export function reportSellUnmeasured(report: CbtvReport): boolean {
+  const findings = report.findings ?? []
+  return (
+    findings.some((f) => findingId(f) === UNMEASURED_ID) ||
+    findings.some((f) => /no usable venue|exit liquidity is unknown/i.test(`${f.title} ${f.why ?? ""}`))
+  )
+}
+
+/** The headline answer, with the third state the venue check can actually return. */
+export type SellVerdict = "no" | "unknown" | "yes"
+
+export function reportSellVerdict(report: CbtvReport): SellVerdict {
+  if (reportCannotSell(report)) return "no"
+  if (reportSellUnmeasured(report)) return "unknown"
+  return "yes"
+}
+
 
 /** Where a detector belongs in the report. Exhaustive by construction. */
 export type DetectorBucket = "threat" | "control" | "advisory" | "undetermined" | "verified" | "caveat" | "note"

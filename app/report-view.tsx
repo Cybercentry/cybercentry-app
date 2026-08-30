@@ -4,12 +4,16 @@ import {
   RISK_COLOR,
   RISK_ORDER,
   bucketDetectors,
+  reportSellVerdict,
   isAdvisoryFinding,
   toLevel,
   worst,
 } from "@/lib/cbtv"
 import { stockIdentity, TOKENIZED_STOCK_LIST_URL } from "@/lib/tokenized-stocks"
 import styles from "./page.module.css"
+
+// Venue findings carry stable VENUE- ids; fall back to prose for an unknown one.
+const VENUE_REASON_RE = /VENUE-C-001|VENUE-C-002|VENUE-H-003|cannot be sold|sold back|honeypot|sells do not execute/i
 
 function short(addr: string) {
   return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr
@@ -104,21 +108,26 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
   const medCount = findingLevels.filter((l) => l === "Medium").length
   const lowCount = findingLevels.filter((l) => l === "Low").length
 
-  // The app's whole promise is "Can you sell it?" — answer it directly and first.
-  // A sell-side result lives in the venue findings (cannot be sold / honeypot) or
-  // a honeypot detector.
-  const sellFinding = findings.find((f) => /cannot be sold|sold back|honeypot/i.test(f.title))
+  // The app's whole promise is "Can you sell it?" — answered directly and first,
+  // in the three states the venue check can actually return. "Unknown" is not a
+  // hedge: when no pool could quote a round trip the service says so explicitly,
+  // and rendering that as "Yes" would invent a result it refused to give.
+  const sellVerdict = reportSellVerdict(report)
+  const cannotSell = sellVerdict === "no"
+  const sellFinding = findings.find((f) => VENUE_REASON_RE.test(`${f.id} ${f.title}`))
   const honeypotDetector = detectors.find(
     (d) => d.check === "honeypot" || d.check === "receive-restricted" || /honeypot/i.test(d.description),
   )
-  const cannotSell = Boolean(sellFinding || honeypotDetector)
+  const sellAnswer = sellVerdict === "no" ? "No" : sellVerdict === "unknown" ? "Unknown" : "Yes"
   const sellReason =
-    sellFinding?.why ||
-    honeypotDetector?.description ||
-    (cannotSell
-      ? "The pool won't let you sell this token back at value."
-      : "No sell-side trap was found — this token looks sellable. Still weigh the risks below.")
-  const sellColor = cannotSell ? "#dc2626" : "#16a34a"
+    sellVerdict === "unknown"
+      ? "No pool could quote a buy-and-sell round trip, so exit liquidity could not be measured. That is not a finding that the token is unsellable — it means this check has no answer for you."
+      : sellFinding?.why ||
+        honeypotDetector?.description ||
+        (cannotSell
+          ? "The pool won't let you sell this token back at value."
+          : "No sell-side trap was found — this token looks sellable. Still weigh the risks below.")
+  const sellColor = cannotSell ? "#dc2626" : sellVerdict === "unknown" ? "#ca8a04" : "#16a34a"
 
   // The verdict is the WORST of overall_risk, the capped grade, and the findings —
   // never the mildest. Stops a Medium control surface hiding a High-risk honeypot.
@@ -183,7 +192,7 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
           <div className={styles.answer} style={{ borderColor: sellColor }}>
             <span className={styles.answerQ}>Can you sell it?</span>
             <span className={styles.answerA} style={{ color: sellColor }}>
-              {cannotSell ? "No" : "Yes"}
+              {sellAnswer}
             </span>
             <p className={styles.answerWhy}>{sellReason}</p>
             {/* What this scan cannot see must qualify the answer, not sit in a

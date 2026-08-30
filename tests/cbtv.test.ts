@@ -5,6 +5,7 @@ import {
   isAdvisoryFinding,
   reportCannotSell,
   reportRiskLevel,
+  reportSellVerdict,
   type CbtvReport,
   type Detector,
   type Finding,
@@ -132,5 +133,55 @@ describe("reportCannotSell", () => {
 
   it("is false on a clean token", () => {
     expect(reportCannotSell({ detectors: [d("pause-capability", "Informational")] } as CbtvReport)).toBe(false)
+  })
+})
+
+// The headline claim. The service namespaces venue findings VENUE-* precisely so
+// a consumer never has to read prose; matching titles missed three of them.
+describe("reportSellVerdict", () => {
+  const f = (id: string, severity: string, title: string, why?: string): Finding => ({ id, severity, title, why })
+  const r = (findings: Finding[], detectors: Detector[] = []): CbtvReport =>
+    ({ job_id: "j", address: "0x1", chain: "base", overall_risk: "Informational", findings, detectors }) as CbtvReport
+
+  it("says no when the token cannot be sold back at value", () => {
+    expect(reportSellVerdict(r([f("VENUE-C-001", "critical", "Token cannot be sold back at value")]))).toBe("no")
+  })
+
+  it("says no when sells do not execute", () => {
+    expect(reportSellVerdict(r([f("VENUE-H-003", "high", "Sells do not execute on this token's pools")]))).toBe("no")
+  })
+
+  it("says no when the pool exempts specific addresses from its sell penalty", () => {
+    expect(reportSellVerdict(r([f("VENUE-C-002", "critical", "Pool exempts specific addresses from its sell penalty")]))).toBe("no")
+  })
+
+  it("says unknown when no venue could be measured", () => {
+    const finding = f("VENUE-M-002", "medium", "No usable venue found", "Exit liquidity is UNKNOWN.")
+    expect(reportSellVerdict(r([finding]))).toBe("unknown")
+  })
+
+  it("does not turn an unmeasured round trip into a yes", () => {
+    expect(reportSellVerdict(r([f("VENUE-M-002", "medium", "No usable venue found")]))).not.toBe("yes")
+  })
+
+  it("says yes on a token with no venue finding at all", () => {
+    expect(reportSellVerdict(r([]))).toBe("yes")
+  })
+
+  it("still says yes when the round trip merely costs more than the stated fee", () => {
+    expect(reportSellVerdict(r([f("VENUE-M-001", "medium", "Round-trip cost above stated fee")]))).toBe("yes")
+  })
+
+  it("catches a honeypot detector even with no findings", () => {
+    expect(reportSellVerdict(r([], [d("honeypot", "High", "Sells revert at the pool.", "threat")]))).toBe("no")
+  })
+
+  it("falls back to prose for a venue finding whose id it has not been taught", () => {
+    expect(reportSellVerdict(r([f("VENUE-X-999", "high", "Sells do not execute here")]))).toBe("no")
+  })
+
+  it("prefers no over unknown when both are present", () => {
+    const both = [f("VENUE-M-002", "medium", "No usable venue found"), f("VENUE-C-001", "critical", "Token cannot be sold back at value")]
+    expect(reportSellVerdict(r(both))).toBe("no")
   })
 })

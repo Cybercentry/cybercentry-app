@@ -132,4 +132,23 @@ describe("ReportView", () => {
     render(<ReportView report={report({ token_info: { symbol: "WETH" } })} onReset={noop} />)
     expect(screen.queryByText(/published list/)).toBeNull()
   })
+
+  // NVDAc in production: no pool could quote a round trip, and the app said "Yes".
+  it("says Unknown when no venue could be measured, not Yes", () => {
+    const r = report({
+      findings: [{ id: "VENUE-M-002", severity: "medium", title: "No usable venue found", why: "Exit liquidity is UNKNOWN." }],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("Unknown")).toBeTruthy()
+    expect(screen.queryByText("Yes")).toBeNull()
+    expect(screen.getByText(/could not be measured/)).toBeTruthy()
+  })
+
+  it("says No when the pool exempts addresses from its sell penalty", () => {
+    const r = report({
+      findings: [{ id: "VENUE-C-002", severity: "critical", title: "Pool exempts specific addresses from its sell penalty" }],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("No")).toBeTruthy()
+  })
 })
