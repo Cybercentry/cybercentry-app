@@ -151,4 +151,51 @@ describe("ReportView", () => {
     render(<ReportView report={r} onReset={noop} />)
     expect(screen.getByText("No")).toBeTruthy()
   })
+
+  // A verified tokenized stock with no AMM pool is not the same as an unknown
+  // token with no AMM pool: the absence of a pool is expected, and the transfer
+  // policy is what actually governs this holder's exit.
+  const stockAddr = "0xb20000000000000000000078ee7ce2fE4908108C"
+  const noVenue = { id: "VENUE-M-002", severity: "medium", title: "No usable venue found", why: "Exit liquidity is UNKNOWN." }
+
+  it("says Depends on a verified stock whose transfers are policy-gated", () => {
+    const r = report({
+      address: stockAddr,
+      findings: [noVenue],
+      detectors: [d("transfer-restrictions-active", "Medium", "An allow/blocklist governs who can send or receive.", "control")],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("Depends")).toBeTruthy()
+    expect(screen.getByText(/depends on your address being authorised/)).toBeTruthy()
+  })
+
+  it("says Yes on a verified stock whose transfers are open", () => {
+    const r = report({
+      address: stockAddr,
+      findings: [noVenue],
+      detectors: [d("open-transfers", "Informational", "Transfers are open.", "info")],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("Yes")).toBeTruthy()
+    expect(screen.getByText(/normal for a tokenized stock/)).toBeTruthy()
+  })
+
+  it("does not claim open transfers on a stock when neither policy check ran", () => {
+    render(<ReportView report={report({ address: stockAddr, findings: [noVenue] })} onReset={noop} />)
+    expect(screen.getByText(/nothing here establishes your exit/)).toBeTruthy()
+  })
+
+  it("still says Unknown for an ordinary token with no venue", () => {
+    render(<ReportView report={report({ findings: [noVenue] })} onReset={noop} />)
+    expect(screen.getByText("Unknown")).toBeTruthy()
+  })
+
+  it("a honeypot still says No even on a listed address", () => {
+    const r = report({
+      address: stockAddr,
+      findings: [{ id: "VENUE-C-001", severity: "critical", title: "Token cannot be sold back at value" }],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("No")).toBeTruthy()
+  })
 })

@@ -118,16 +118,43 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
   const honeypotDetector = detectors.find(
     (d) => d.check === "honeypot" || d.check === "receive-restricted" || /honeypot/i.test(d.description),
   )
-  const sellAnswer = sellVerdict === "no" ? "No" : sellVerdict === "unknown" ? "Unknown" : "Yes"
+  // A verified tokenized stock with no quotable pool is not the same situation as
+  // an unknown token with no quotable pool. Base states secondary trading of
+  // these is permissionless and that KYC applies only to AP mint/redeem — so the
+  // absence of an AMM pool is expected, not a warning. What actually governs
+  // whether THIS holder can sell is the compliance policy on transfers, which
+  // the sweep reads directly. Answer from that rather than shrugging.
+  const isVerifiedStock = Boolean(verifiedStock || localVerified)
+  const transfersRestricted = detectors.some((x) => x.check === "transfer-restrictions-active")
+  const transfersOpen = detectors.some((x) => x.check === "open-transfers")
+  const stockNoPool = sellVerdict === "unknown" && isVerifiedStock
+
+  const sellAnswer =
+    sellVerdict === "no"
+      ? "No"
+      : stockNoPool && transfersRestricted
+        ? "Depends"
+        : stockNoPool && transfersOpen
+          ? "Yes"
+          : sellVerdict === "unknown"
+            ? "Unknown"
+            : "Yes"
   const sellReason =
-    sellVerdict === "unknown"
-      ? "No pool could quote a buy-and-sell round trip, so exit liquidity could not be measured. That is not a finding that the token is unsellable — it means this check has no answer for you."
-      : sellFinding?.why ||
+    stockNoPool && transfersRestricted
+      ? "This is the issuer's own contract, and secondary trading of it is permissionless by design — but transfers here are governed by a compliance policy, so whether YOU can sell depends on your address being authorised. No AMM pool quoted a round trip, which is normal for a tokenized stock. See the issuer controls below."
+      : stockNoPool && transfersOpen
+        ? "This is the issuer's own contract and transfers are not policy-restricted. No AMM pool quoted a round trip, which is normal for a tokenized stock — these trade on secondary markets rather than a token pool, and redemption runs through KYC-onboarded Authorized Participants."
+        : stockNoPool
+          ? "This is the issuer's own contract, so identity is settled. Whether you can sell it is not: no AMM pool quoted a round trip, and the transfer policy could not be read either way, so nothing here establishes your exit."
+        : sellVerdict === "unknown"
+          ? "No pool could quote a buy-and-sell round trip, so exit liquidity could not be measured. That is not a finding that the token is unsellable — it means this check has no answer for you."
+          : sellFinding?.why ||
         honeypotDetector?.description ||
         (cannotSell
           ? "The pool won't let you sell this token back at value."
           : "No sell-side trap was found — this token looks sellable. Still weigh the risks below.")
-  const sellColor = cannotSell ? "#dc2626" : sellVerdict === "unknown" ? "#ca8a04" : "#16a34a"
+  // Amber for a conditional answer, green when nothing stands in the way.
+  const sellColor = cannotSell ? "#dc2626" : sellAnswer === "Yes" ? "#16a34a" : "#ca8a04"
 
   // The verdict is the WORST of overall_risk, the capped grade, and the findings —
   // never the mildest. Stops a Medium control surface hiding a High-risk honeypot.
