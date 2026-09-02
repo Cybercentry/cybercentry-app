@@ -98,14 +98,25 @@ async function reachVia(connector: Connector): Promise<{ provider: EIP1193Provid
   const conn = getConnections(config).find((c) => c.connector?.uid === connector.uid) ?? getConnections(config)[0]
   let account = conn?.accounts?.[0]
   let provider: EIP1193Provider | undefined
-  try {
-    if (typeof conn?.connector?.getProvider === "function") {
-      provider = (await withTimeout(conn.connector.getProvider(), REACH_MS, "Wallet provider")) as EIP1193Provider
+  let usedInjected = false
+  // Ask the connector we actually connected through for its own provider, and
+  // give it a second attempt. On a first connect the provider can briefly not be
+  // ready, and the fallback below then sends through whatever extension owns
+  // window.ethereum — a different wallet from the one the user just approved in.
+  // That is the "first click is rejected, second works" failure: by the second
+  // click a live connection exists and this path succeeds.
+  for (let attempt = 0; attempt < 2 && !provider?.request; attempt++) {
+    if (attempt) await new Promise((r) => setTimeout(r, 250))
+    try {
+      if (typeof conn?.connector?.getProvider === "function") {
+        provider = (await withTimeout(conn.connector.getProvider(), REACH_MS, "Wallet provider")) as EIP1193Provider
+      }
+    } catch {
+      /* not ready yet — retried once, then fall back below */
     }
-  } catch {
-    /* connector provider unavailable — fall back to injected window.ethereum */
   }
   if (!provider?.request) {
+    usedInjected = true
     provider = injectedProvider()
     if (provider) {
       // Authorize this provider and use ITS account — mixing a wagmi account with
@@ -133,6 +144,16 @@ async function reachVia(connector: Connector): Promise<{ provider: EIP1193Provid
   } catch (e) {
     if (isRejection(e)) throw e
     return null
+  }
+  if (typeof console !== "undefined") {
+    const f = provider as unknown as Record<string, unknown>
+    const flags = ["isCoinbaseWallet", "isMetaMask", "isRabby", "isBraveWallet", "isTrust", "isPhantom"]
+      .filter((k) => f?.[k] === true)
+    console.info(
+      `[pay] using connector "${connector.name ?? connector.id}" via ` +
+        `${usedInjected ? "window.ethereum" : "the connector's own provider"}` +
+        `${flags.length ? ` (${flags.join(", ")})` : ""} account ${account}`,
+    )
   }
   return { provider, account }
 }
