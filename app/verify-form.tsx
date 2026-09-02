@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react"
 // Wallet payment via wagmi/viem (see lib/pay-usdc.ts): connects the Base wallet
 // and sends USDC directly — no Base Pay sheet (no flash), builder code auto-appended.
-import { payUsdc, signFreeScan } from "@/lib/pay-usdc"
+import { payUsdc, signFreeScan, isUserRejection } from "@/lib/pay-usdc"
 import type { CbtvReport, Chain, VerifyStatus } from "@/lib/cbtv"
 import { PAY_AMOUNT, TREASURY, PAY_TESTNET } from "@/lib/payments"
 import { ReportView } from "./report-view"
@@ -131,7 +131,12 @@ export function VerifyForm() {
         setPhase("timeout")
         return
       }
-      setError(/cancel|reject|denied/i.test(msg) ? "Payment cancelled." : msg)
+      // Keep the real cause. Only a genuine EIP-1193 user rejection is reported as
+      // a cancellation; anything else keeps its own message, because telling
+      // someone they cancelled a payment they did not cancel sends them looking
+      // in the wrong place — and discards the only evidence of what failed.
+      console.error("[verify] scan failed:", err)
+      setError(isUserRejection(err) ? "Payment cancelled." : msg)
       setPhase("error")
     }
   }
@@ -153,7 +158,7 @@ export function VerifyForm() {
       } catch (e) {
         // A cancelled signature is a real cancel; any other sign failure just
         // falls back to paying.
-        if (/reject|denied|cancel/i.test(e instanceof Error ? e.message : String(e))) throw e
+        if (isUserRejection(e)) throw e
       }
       if (freeSig) {
         const res = await fetch("/api/verify", {

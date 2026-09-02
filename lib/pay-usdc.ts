@@ -25,7 +25,27 @@ const USDC: Record<Chain, `0x${string}`> = {
   "base-sepolia": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
 }
 
-const isRejection = (e: unknown) => /reject|denied|cancel/i.test(e instanceof Error ? e.message : String(e))
+/**
+ * A USER rejection, not merely an error whose text contains "cancel".
+ *
+ * EIP-1193 defines 4001 for "user rejected request" and viem surfaces it as
+ * UserRejectedRequestError; both are checked before any prose. The old test was
+ * a bare /reject|denied|cancel/ substring, which also matched an AbortError
+ * ("the operation was canceled") from a timeout and a wallet reporting an
+ * internally cancelled bundle — so a real failure was reported to the user as
+ * if they had clicked reject, and its cause was thrown away.
+ */
+export function isUserRejection(e: unknown): boolean {
+  const err = e as { code?: unknown; name?: unknown; cause?: unknown; message?: unknown } | null
+  if (!err || typeof err !== "object") return false
+  if (err.code === 4001 || (err.cause as { code?: unknown } | undefined)?.code === 4001) return true
+  if (err.name === "UserRejectedRequestError") return true
+  const msg = typeof err.message === "string" ? err.message : String(e)
+  // Require the user to be the subject — "user rejected", not any stray "cancel".
+  return /\buser (rejected|denied|cancell?ed)\b|\brejected by (the )?user\b|\bdenied by (the )?user\b/i.test(msg)
+}
+
+const isRejection = isUserRejection
 
 // Time bounds so an unresponsive wallet can't hang the flow forever. A plain
 // Chrome tab with an injected wallet whose confirmation UI never appears (e.g.
