@@ -5,6 +5,7 @@ import {
   RISK_ORDER,
   bucketDetectors,
   reportSellVerdict,
+  reportCounterfeitPair,
   isAdvisoryFinding,
   toLevel,
   worst,
@@ -13,7 +14,8 @@ import { stockIdentity, TOKENIZED_STOCK_LIST_URL } from "@/lib/tokenized-stocks"
 import styles from "./page.module.css"
 
 // Venue findings carry stable VENUE- ids; fall back to prose for an unknown one.
-const VENUE_REASON_RE = /VENUE-C-001|VENUE-C-002|VENUE-H-003|cannot be sold|sold back|honeypot|sells do not execute/i
+const VENUE_REASON_RE =
+  /VENUE-C-001|VENUE-C-002|VENUE-C-003|VENUE-H-003|cannot be sold|sold back|honeypot|sells do not execute|counterfeit/i
 
 function short(addr: string) {
   return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr
@@ -153,8 +155,18 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
         (cannotSell
           ? "The pool won't let you sell this token back at value."
           : "No sell-side trap was found — this token looks sellable. Still weigh the risks below.")
-  // Amber for a conditional answer, green when nothing stands in the way.
-  const sellColor = cannotSell ? "#dc2626" : sellAnswer === "Yes" ? "#16a34a" : "#ca8a04"
+  // A real exit exists, but some pool pays in a counterfeit tokenized stock.
+  // Shown beside the answer rather than in the list below it: a holder who
+  // reads "Yes" and goes to trade is exactly the person this catches.
+  const counterfeitPair = reportCounterfeitPair(report)
+  const counterfeitNote =
+    counterfeitPair && !cannotSell
+      ? "One or more pools price this token against a contract wearing a tokenized stock\u2019s ticker at an address the issuer never published \u2014 backed by no share. A sell there executes and pays out that counterfeit, and the round-trip figure above was measured elsewhere. Check the other side of the pool by ADDRESS, never by ticker."
+      : null
+
+  // Amber for a conditional answer, green when nothing stands in the way. A
+  // counterfeit pair is never "nothing in the way", even when a real exit exists.
+  const sellColor = cannotSell ? "#dc2626" : sellAnswer === "Yes" && !counterfeitPair ? "#16a34a" : "#ca8a04"
 
   // The verdict is the WORST of overall_risk, the capped grade, and the findings —
   // never the mildest. Stops a Medium control surface hiding a High-risk honeypot.
@@ -226,6 +238,7 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
                 list under it — a tokenized stock can be perfectly clean on-chain
                 and still be unredeemable outside market hours. */}
             {sellCaveat ? <p className={styles.answerWhy}>{sellCaveat.description}</p> : null}
+            {counterfeitNote ? <p className={styles.answerWhy}>{counterfeitNote}</p> : null}
           </div>
 
           <div className={styles.summaryRow}>

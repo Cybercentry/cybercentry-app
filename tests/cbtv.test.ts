@@ -4,6 +4,7 @@ import {
   classifyDetector,
   isAdvisoryFinding,
   reportCannotSell,
+  reportCounterfeitPair,
   reportRiskLevel,
   reportSellVerdict,
   type CbtvReport,
@@ -183,5 +184,40 @@ describe("reportSellVerdict", () => {
   it("prefers no over unknown when both are present", () => {
     const both = [f("VENUE-M-002", "medium", "No usable venue found"), f("VENUE-C-001", "critical", "Token cannot be sold back at value")]
     expect(reportSellVerdict(r(both))).toBe("no")
+  })
+
+  // The counterfeit-quote-asset case. The sell SUCCEEDS here, and the pool's
+  // round trip reads ~100% — it divides a buy by the matching sell, so the fake
+  // quote asset cancels out of the ratio. Everything this app normally keys on
+  // says "fine". Only the id says otherwise.
+  it("says no when every measurable venue prices against a counterfeit stock", () => {
+    const finding = f(
+      "VENUE-C-003",
+      "critical",
+      "Every measurable venue prices this token against a counterfeit tokenized stock",
+    )
+    expect(reportSellVerdict(r([finding]))).toBe("no")
+  })
+
+  it("still says yes when a counterfeit pair sits beside a genuine venue", () => {
+    // VENUE-H-004 is not charged to the token: anyone can open a v4 pool
+    // against any token. A real exit exists, so the answer stays yes — the
+    // warning rides alongside it rather than overriding it.
+    const finding = f("VENUE-H-004", "high", "A pool prices this token against a counterfeit tokenized stock")
+    expect(reportSellVerdict(r([finding]))).toBe("yes")
+    expect(reportCounterfeitPair(r([finding]))).toBe(true)
+  })
+
+  it("does not claim a counterfeit pair on a token that has none", () => {
+    expect(reportCounterfeitPair(r([f("VENUE-M-001", "medium", "Round-trip cost above stated fee")]))).toBe(false)
+    expect(reportCounterfeitPair(r([]))).toBe(false)
+  })
+
+  it("rates a counterfeit pair High even though it is not the token's fault", () => {
+    // It must not be swept into the ecosystem-advisory bucket the way
+    // same-ticker collisions are: a holder routed to that pool is harmed.
+    const finding = f("VENUE-H-004", "high", "A pool prices this token against a counterfeit tokenized stock")
+    expect(isAdvisoryFinding(finding)).toBe(false)
+    expect(reportRiskLevel(r([finding]))).toBe("High")
   })
 })

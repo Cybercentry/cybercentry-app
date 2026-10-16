@@ -35,6 +35,45 @@ describe("ReportView", () => {
     expect(screen.getByText("No")).toBeTruthy()
   })
 
+  // The counterfeit quote asset. Nothing else in the report objects: the sell
+  // executes, and the round trip reads ~100% because it divides a buy by the
+  // matching sell, so the fake quote asset cancels out of the ratio.
+  it("says No when every measurable venue pays in a counterfeit stock", () => {
+    const r = report({
+      findings: [
+        {
+          id: "VENUE-C-003",
+          severity: "critical",
+          title: "Every measurable venue prices this token against a counterfeit tokenized stock",
+          why: "No pool that could be quoted for this token trades against money.",
+        },
+      ],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("No")).toBeTruthy()
+    // The reason renders twice by design: once as the headline answer, once in
+    // the findings list below it.
+    expect(screen.getAllByText(/trades against money/).length).toBeGreaterThan(0)
+  })
+
+  // A real exit exists, so the answer stays Yes — but an unqualified Yes is
+  // what routes a holder into the fake pool, so the note rides alongside it.
+  it("qualifies a Yes when a counterfeit pair sits beside a genuine venue", () => {
+    const r = report({
+      findings: [
+        {
+          id: "VENUE-H-004",
+          severity: "high",
+          title: "A pool prices this token against a counterfeit tokenized stock",
+          why: "One or more pools pair this token with a contract presenting a ticker the issuer did not publish.",
+        },
+      ],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("Yes")).toBeTruthy()
+    expect(screen.getByText(/never by ticker/)).toBeTruthy()
+  })
+
   // The regression that motivated the caveat: clean on-chain, still unredeemable.
   it("qualifies the sell answer with what the scan cannot see", () => {
     const r = report({
