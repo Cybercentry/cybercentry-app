@@ -208,6 +208,21 @@ describe("reportSellVerdict", () => {
     expect(reportCounterfeitPair(r([finding]))).toBe(true)
   })
 
+  // Both new mediums mean the same thing to a holder: we could not establish
+  // what a sell would pay you. Rendering either as "Yes" is the false clean.
+  it("says unknown when every measurable venue pays in a counterfeit", () => {
+    const finding = f("VENUE-M-004", "medium", "No venue prices this token against a real asset")
+    expect(reportSellVerdict(r([finding]))).toBe("unknown")
+  })
+
+  it("says unknown when the measured pool's counter asset could not be read", () => {
+    // The cheapest evasion: a counterfeit whose symbol() reverts. The round
+    // trip still reads ~100%, so only this id stands between the holder and
+    // a confident "Yes".
+    const finding = f("VENUE-M-003", "medium", "Counter asset of the measured venue could not be identified")
+    expect(reportSellVerdict(r([finding]))).toBe("unknown")
+  })
+
   it("does not claim a counterfeit pair on a token that has none", () => {
     expect(reportCounterfeitPair(r([f("VENUE-M-001", "medium", "Round-trip cost above stated fee")]))).toBe(false)
     expect(reportCounterfeitPair(r([]))).toBe(false)

@@ -207,8 +207,20 @@ const CANNOT_SELL_IDS = new Set([
   // cannot sell this for anything of value.
   "VENUE-C-003",
 ])
-/** No venue could be measured — exit liquidity is unknown, NOT proven fine. */
-const UNMEASURED_ID = "VENUE-M-002"
+// Exit liquidity is unknown, NOT proven fine. Three ways the service can say
+// it, and all three must land on "Unknown" rather than "Yes": a check that
+// renders as a pass when it had no answer is the false clean this whole app
+// exists to refuse.
+const UNMEASURED_IDS = new Set([
+  "VENUE-M-002", // no pool could quote a round trip at all
+  // Pools quote, but every measurable one pays in a counterfeit tokenized
+  // stock. The ratio divides a buy by the matching sell, so the fake cancels
+  // out and the pool reads ~100% whatever it pays.
+  "VENUE-M-004",
+  // The measured pool's counter asset could not be read — its symbol() did not
+  // return — so what a sell would pay out was never established.
+  "VENUE-M-003",
+])
 
 const findingId = (f: Finding) => (f.id ?? "").toUpperCase()
 
@@ -233,7 +245,7 @@ export function reportCannotSell(report: CbtvReport): boolean {
 export function reportSellUnmeasured(report: CbtvReport): boolean {
   const findings = report.findings ?? []
   return (
-    findings.some((f) => findingId(f) === UNMEASURED_ID) ||
+    findings.some((f) => UNMEASURED_IDS.has(findingId(f))) ||
     findings.some((f) => /no usable venue|exit liquidity is unknown/i.test(`${f.title} ${f.why ?? ""}`))
   )
 }
