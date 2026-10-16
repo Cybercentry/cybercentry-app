@@ -237,6 +237,16 @@ describe("reportSellVerdict", () => {
     expect(reportSellVerdict(r([finding]))).toBe("unknown")
   })
 
+  // The production false-clean. The service could not query its log source, so
+  // pool discovery found nothing and the venue check emitted no finding at all
+  // — and this app answered "Yes, no sell-side trap was found" on a check that
+  // had never run. Silence must never reach the headline as reassurance.
+  it("says unknown when the venue check could not run at all", () => {
+    const finding = f("VENUE-M-005", "medium", "Exit liquidity could not be assessed")
+    expect(reportSellVerdict(r([finding]))).toBe("unknown")
+    expect(reportCannotSell(r([finding]))).toBe(false)
+  })
+
   it("does not claim a counterfeit pair on a token that has none", () => {
     expect(reportCounterfeitPair(r([f("VENUE-M-001", "medium", "Round-trip cost above stated fee")]))).toBe(false)
     expect(reportCounterfeitPair(r([]))).toBe(false)
