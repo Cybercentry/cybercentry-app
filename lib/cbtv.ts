@@ -198,15 +198,21 @@ const CANNOT_SELL_IDS = new Set([
   "VENUE-C-001", // token cannot be sold back at value
   "VENUE-C-002", // pool exempts specific addresses from its sell penalty
   "VENUE-H-003", // sells do not execute on this token's pools
-  // Every measurable venue quotes against a counterfeit tokenized stock. The
-  // sell SUCCEEDS, which is why this cannot be left to read as "yes": what
-  // comes back is a contract wearing a stock's ticker at an address the issuer
-  // never published, backed by no share. The round-trip number is no help —
-  // it divides a buy by the matching sell, so the fake quote asset cancels out
-  // of the ratio and the pool measures ~100%. "No" is the honest answer: you
-  // cannot sell this for anything of value.
-  "VENUE-C-003",
 ])
+
+// VENUE-C-003 is deliberately NOT in that set. It used to mean "every
+// measurable venue pays in a counterfeit", which was an answer about
+// liquidity. It now means "the token's own deployer pooled it against a
+// counterfeit" — critical on any pool, because intent is what it measures —
+// and it can fire while a genuine venue still offers a real exit. Treating it
+// as "cannot sell" would answer No for a token that is in fact sellable.
+//
+// Liquidity is answered by the mediums instead: VENUE-M-004 when no pool
+// prices the token against anything identified, M-003 when the measured pool's
+// counter asset could not be read, M-002 when nothing quoted at all. The
+// service emits the relevant one alongside C-003, so nothing is lost. C-003's
+// own weight arrives through its critical severity, which reportRiskLevel
+// already maps to High, and through the counterfeit note.
 // Exit liquidity is unknown, NOT proven fine. Three ways the service can say
 // it, and all three must land on "Unknown" rather than "Yes": a check that
 // renders as a pass when it had no answer is the false clean this whole app
@@ -257,8 +263,13 @@ export function reportSellUnmeasured(report: CbtvReport): boolean {
  * for a pool anyone could have opened against it. But "Yes" unqualified routes
  * a holder straight into the fake pool, so the answer carries a note.
  */
+const COUNTERFEIT_PAIR_IDS = new Set([
+  "VENUE-H-004", // a stranger's pool pairs this token against a counterfeit
+  "VENUE-C-003", // the token's own deployer built such a pool
+])
+
 export function reportCounterfeitPair(report: CbtvReport): boolean {
-  return (report.findings ?? []).some((f) => findingId(f) === "VENUE-H-004")
+  return (report.findings ?? []).some((f) => COUNTERFEIT_PAIR_IDS.has(findingId(f)))
 }
 
 /** The headline answer, with the third state the venue check can actually return. */

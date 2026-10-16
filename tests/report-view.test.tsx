@@ -38,22 +38,39 @@ describe("ReportView", () => {
   // The counterfeit quote asset. Nothing else in the report objects: the sell
   // executes, and the round trip reads ~100% because it divides a buy by the
   // matching sell, so the fake quote asset cancels out of the ratio.
-  it("says No when every measurable venue pays in a counterfeit stock", () => {
+  //
+  // C-003 answers WHOSE DOING it was, not whether you can sell. It is critical
+  // on any pool, and can fire while a genuine venue still offers a real exit —
+  // so on its own it must not turn the headline into "No".
+  const attributedCounterfeit = {
+    id: "VENUE-C-003",
+    severity: "critical",
+    title: "The token's own deployer pooled it against a counterfeit tokenized stock",
+    why: "The token's OWN deployer either opened that pool or deployed the counterfeit itself.",
+  }
+
+  it("does not answer No from an attributed counterfeit alone", () => {
+    render(<ReportView report={report({ findings: [attributedCounterfeit] })} onReset={noop} />)
+    expect(screen.getByText("Yes")).toBeTruthy()
+    // ...but never an unqualified Yes.
+    expect(screen.getByText(/never by ticker/)).toBeTruthy()
+  })
+
+  it("says Unknown when the service also reports no venue priced it", () => {
     const r = report({
       findings: [
+        attributedCounterfeit,
         {
-          id: "VENUE-C-003",
-          severity: "critical",
-          title: "Every measurable venue prices this token against a counterfeit tokenized stock",
-          why: "No pool that could be quoted for this token trades against money.",
+          id: "VENUE-M-004",
+          severity: "medium",
+          title: "No venue prices this token against a real asset",
+          why: "Exit liquidity is therefore UNKNOWN.",
         },
       ],
     })
     render(<ReportView report={r} onReset={noop} />)
-    expect(screen.getByText("No")).toBeTruthy()
-    // The reason renders twice by design: once as the headline answer, once in
-    // the findings list below it.
-    expect(screen.getAllByText(/trades against money/).length).toBeGreaterThan(0)
+    expect(screen.getByText("Unknown")).toBeTruthy()
+    expect(screen.getAllByText(/UNKNOWN/).length).toBeGreaterThan(0)
   })
 
   // A real exit exists, so the answer stays Yes — but an unqualified Yes is

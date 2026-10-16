@@ -186,17 +186,31 @@ describe("reportSellVerdict", () => {
     expect(reportSellVerdict(r(both))).toBe("no")
   })
 
-  // The counterfeit-quote-asset case. The sell SUCCEEDS here, and the pool's
-  // round trip reads ~100% — it divides a buy by the matching sell, so the fake
-  // quote asset cancels out of the ratio. Everything this app normally keys on
-  // says "fine". Only the id says otherwise.
-  it("says no when every measurable venue prices against a counterfeit stock", () => {
-    const finding = f(
-      "VENUE-C-003",
-      "critical",
-      "Every measurable venue prices this token against a counterfeit tokenized stock",
-    )
-    expect(reportSellVerdict(r([finding]))).toBe("no")
+  // VENUE-C-003 changed meaning service-side. It is now "the token's own
+  // deployer pooled it against a counterfeit" — critical on any pool, because
+  // intent is what it measures — and it can fire while a genuine venue still
+  // offers a real exit. So it must NOT answer the liquidity question: doing so
+  // would say No for a token that is in fact sellable.
+  const C003 = f(
+    "VENUE-C-003",
+    "critical",
+    "The token's own deployer pooled it against a counterfeit tokenized stock",
+  )
+
+  it("does not answer the sell question from an attributed counterfeit alone", () => {
+    expect(reportSellVerdict(r([C003]))).toBe("yes")
+  })
+
+  it("says no sellable exit when the service also says no venue priced it", () => {
+    // The service emits the liquidity finding alongside, so nothing is lost by
+    // C-003 staying out of the cannot-sell set.
+    const m4 = f("VENUE-M-004", "medium", "No venue prices this token against a real asset")
+    expect(reportSellVerdict(r([C003, m4]))).toBe("unknown")
+  })
+
+  it("still carries an attributed counterfeit at High risk and flags the pair", () => {
+    expect(reportRiskLevel(r([C003]))).toBe("High")
+    expect(reportCounterfeitPair(r([C003]))).toBe(true)
   })
 
   it("still says yes when a counterfeit pair sits beside a genuine venue", () => {
