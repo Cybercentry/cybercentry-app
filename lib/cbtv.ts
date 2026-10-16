@@ -227,6 +227,11 @@ const UNMEASURED_IDS = new Set([
   // The measured pool's counter asset could not be read — its symbol() did not
   // return — so what a sell would pay out was never established.
   "VENUE-M-003",
+  // The venue check could not run at all: pool discovery failed, the scan
+  // budget ran out, or the check crashed. Until the service gained this
+  // finding it emitted NOTHING in that case, and this app read the absence as
+  // "no venue problem" and answered Yes — on a check that had never run.
+  "VENUE-M-005",
 ])
 
 const findingId = (f: Finding) => (f.id ?? "").toUpperCase()
