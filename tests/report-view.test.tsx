@@ -43,8 +43,8 @@ describe("ReportView", () => {
   // on any pool, and can fire while a genuine venue still offers a real exit —
   // so on its own it must not turn the headline into "No".
   const attributedCounterfeit = {
-    id: "VENUE-C-003",
-    severity: "critical",
+    id: "VENUE-H-005",
+    severity: "high",
     title: "The token's own deployer pooled it against a counterfeit tokenized stock",
     why: "The token's OWN deployer either opened that pool or deployed the counterfeit itself.",
   }

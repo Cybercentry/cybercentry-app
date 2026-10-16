@@ -15,7 +15,7 @@ import styles from "./page.module.css"
 
 // Venue findings carry stable VENUE- ids; fall back to prose for an unknown one.
 const VENUE_REASON_RE =
-  /VENUE-C-001|VENUE-C-002|VENUE-C-003|VENUE-H-003|cannot be sold|sold back|honeypot|sells do not execute|counterfeit/i
+  /VENUE-C-001|VENUE-C-002|VENUE-H-003|VENUE-H-005|cannot be sold|sold back|honeypot|sells do not execute|counterfeit/i
 
 function short(addr: string) {
   return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr

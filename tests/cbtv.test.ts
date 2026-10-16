@@ -186,14 +186,14 @@ describe("reportSellVerdict", () => {
     expect(reportSellVerdict(r(both))).toBe("no")
   })
 
-  // VENUE-C-003 changed meaning service-side. It is now "the token's own
-  // deployer pooled it against a counterfeit" — critical on any pool, because
-  // intent is what it measures — and it can fire while a genuine venue still
-  // offers a real exit. So it must NOT answer the liquidity question: doing so
-  // would say No for a token that is in fact sellable.
+  // VENUE-H-005 (VENUE-C-003 before the service capped attribution-based
+  // severity) means "the token's own deployer pooled it against a counterfeit".
+  // Reported on any pool, and able to fire while a genuine venue still offers a
+  // real exit — so it must NOT answer the liquidity question: doing so would
+  // say No for a token that is in fact sellable.
   const C003 = f(
-    "VENUE-C-003",
-    "critical",
+    "VENUE-H-005",
+    "high",
     "The token's own deployer pooled it against a counterfeit tokenized stock",
   )
 

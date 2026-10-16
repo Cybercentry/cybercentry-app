@@ -200,19 +200,20 @@ const CANNOT_SELL_IDS = new Set([
   "VENUE-H-003", // sells do not execute on this token's pools
 ])
 
-// VENUE-C-003 is deliberately NOT in that set. It used to mean "every
-// measurable venue pays in a counterfeit", which was an answer about
-// liquidity. It now means "the token's own deployer pooled it against a
-// counterfeit" — critical on any pool, because intent is what it measures —
-// and it can fire while a genuine venue still offers a real exit. Treating it
-// as "cannot sell" would answer No for a token that is in fact sellable.
+// VENUE-H-005 is deliberately NOT in that set. It means "the token's own
+// deployer pooled it against a counterfeit" — reported on any pool, because
+// what it measures is who built the thing — and it can fire while a genuine
+// venue still offers a real exit. Treating it as "cannot sell" would answer No
+// for a token that is in fact sellable. (It was VENUE-C-003 and critical until
+// the service capped the severity of everything resting on attribution, which
+// has a residual that must not cost a clean token its grade.)
 //
 // Liquidity is answered by the mediums instead: VENUE-M-004 when no pool
 // prices the token against anything identified, M-003 when the measured pool's
 // counter asset could not be read, M-002 when nothing quoted at all. The
-// service emits the relevant one alongside C-003, so nothing is lost. C-003's
-// own weight arrives through its critical severity, which reportRiskLevel
-// already maps to High, and through the counterfeit note.
+// service emits the relevant one alongside H-005, so nothing is lost. H-005's
+// own weight arrives through its high severity, which reportRiskLevel maps to
+// High, and through the counterfeit note.
 // Exit liquidity is unknown, NOT proven fine. Three ways the service can say
 // it, and all three must land on "Unknown" rather than "Yes": a check that
 // renders as a pass when it had no answer is the false clean this whole app
@@ -265,7 +266,7 @@ export function reportSellUnmeasured(report: CbtvReport): boolean {
  */
 const COUNTERFEIT_PAIR_IDS = new Set([
   "VENUE-H-004", // a stranger's pool pairs this token against a counterfeit
-  "VENUE-C-003", // the token's own deployer built such a pool
+  "VENUE-H-005", // the token's own deployer built such a pool
 ])
 
 export function reportCounterfeitPair(report: CbtvReport): boolean {
