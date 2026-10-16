@@ -4,6 +4,7 @@ import {
   classifyDetector,
   isAdvisoryFinding,
   reportCannotSell,
+  reportCounterfeitPair,
   reportRiskLevel,
   reportSellVerdict,
   type CbtvReport,
@@ -183,5 +184,69 @@ describe("reportSellVerdict", () => {
   it("prefers no over unknown when both are present", () => {
     const both = [f("VENUE-M-002", "medium", "No usable venue found"), f("VENUE-C-001", "critical", "Token cannot be sold back at value")]
     expect(reportSellVerdict(r(both))).toBe("no")
+  })
+
+  // VENUE-H-005 (VENUE-C-003 before the service capped attribution-based
+  // severity) means "the token's own deployer pooled it against a counterfeit".
+  // Reported on any pool, and able to fire while a genuine venue still offers a
+  // real exit — so it must NOT answer the liquidity question: doing so would
+  // say No for a token that is in fact sellable.
+  const C003 = f(
+    "VENUE-H-005",
+    "high",
+    "The token's own deployer pooled it against a counterfeit tokenized stock",
+  )
+
+  it("does not answer the sell question from an attributed counterfeit alone", () => {
+    expect(reportSellVerdict(r([C003]))).toBe("yes")
+  })
+
+  it("says no sellable exit when the service also says no venue priced it", () => {
+    // The service emits the liquidity finding alongside, so nothing is lost by
+    // C-003 staying out of the cannot-sell set.
+    const m4 = f("VENUE-M-004", "medium", "No venue prices this token against a real asset")
+    expect(reportSellVerdict(r([C003, m4]))).toBe("unknown")
+  })
+
+  it("still carries an attributed counterfeit at High risk and flags the pair", () => {
+    expect(reportRiskLevel(r([C003]))).toBe("High")
+    expect(reportCounterfeitPair(r([C003]))).toBe(true)
+  })
+
+  it("still says yes when a counterfeit pair sits beside a genuine venue", () => {
+    // VENUE-H-004 is not charged to the token: anyone can open a v4 pool
+    // against any token. A real exit exists, so the answer stays yes — the
+    // warning rides alongside it rather than overriding it.
+    const finding = f("VENUE-H-004", "high", "A pool prices this token against a counterfeit tokenized stock")
+    expect(reportSellVerdict(r([finding]))).toBe("yes")
+    expect(reportCounterfeitPair(r([finding]))).toBe(true)
+  })
+
+  // Both new mediums mean the same thing to a holder: we could not establish
+  // what a sell would pay you. Rendering either as "Yes" is the false clean.
+  it("says unknown when every measurable venue pays in a counterfeit", () => {
+    const finding = f("VENUE-M-004", "medium", "No venue prices this token against a real asset")
+    expect(reportSellVerdict(r([finding]))).toBe("unknown")
+  })
+
+  it("says unknown when the measured pool's counter asset could not be read", () => {
+    // The cheapest evasion: a counterfeit whose symbol() reverts. The round
+    // trip still reads ~100%, so only this id stands between the holder and
+    // a confident "Yes".
+    const finding = f("VENUE-M-003", "medium", "Counter asset of the measured venue could not be identified")
+    expect(reportSellVerdict(r([finding]))).toBe("unknown")
+  })
+
+  it("does not claim a counterfeit pair on a token that has none", () => {
+    expect(reportCounterfeitPair(r([f("VENUE-M-001", "medium", "Round-trip cost above stated fee")]))).toBe(false)
+    expect(reportCounterfeitPair(r([]))).toBe(false)
+  })
+
+  it("rates a counterfeit pair High even though it is not the token's fault", () => {
+    // It must not be swept into the ecosystem-advisory bucket the way
+    // same-ticker collisions are: a holder routed to that pool is harmed.
+    const finding = f("VENUE-H-004", "high", "A pool prices this token against a counterfeit tokenized stock")
+    expect(isAdvisoryFinding(finding)).toBe(false)
+    expect(reportRiskLevel(r([finding]))).toBe("High")
   })
 })

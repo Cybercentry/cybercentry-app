@@ -199,8 +199,35 @@ const CANNOT_SELL_IDS = new Set([
   "VENUE-C-002", // pool exempts specific addresses from its sell penalty
   "VENUE-H-003", // sells do not execute on this token's pools
 ])
-/** No venue could be measured — exit liquidity is unknown, NOT proven fine. */
-const UNMEASURED_ID = "VENUE-M-002"
+
+// VENUE-H-005 is deliberately NOT in that set. It means "the token's own
+// deployer pooled it against a counterfeit" — reported on any pool, because
+// what it measures is who built the thing — and it can fire while a genuine
+// venue still offers a real exit. Treating it as "cannot sell" would answer No
+// for a token that is in fact sellable. (It was VENUE-C-003 and critical until
+// the service capped the severity of everything resting on attribution, which
+// has a residual that must not cost a clean token its grade.)
+//
+// Liquidity is answered by the mediums instead: VENUE-M-004 when no pool
+// prices the token against anything identified, M-003 when the measured pool's
+// counter asset could not be read, M-002 when nothing quoted at all. The
+// service emits the relevant one alongside H-005, so nothing is lost. H-005's
+// own weight arrives through its high severity, which reportRiskLevel maps to
+// High, and through the counterfeit note.
+// Exit liquidity is unknown, NOT proven fine. Three ways the service can say
+// it, and all three must land on "Unknown" rather than "Yes": a check that
+// renders as a pass when it had no answer is the false clean this whole app
+// exists to refuse.
+const UNMEASURED_IDS = new Set([
+  "VENUE-M-002", // no pool could quote a round trip at all
+  // Pools quote, but every measurable one pays in a counterfeit tokenized
+  // stock. The ratio divides a buy by the matching sell, so the fake cancels
+  // out and the pool reads ~100% whatever it pays.
+  "VENUE-M-004",
+  // The measured pool's counter asset could not be read — its symbol() did not
+  // return — so what a sell would pay out was never established.
+  "VENUE-M-003",
+])
 
 const findingId = (f: Finding) => (f.id ?? "").toUpperCase()
 
@@ -225,9 +252,25 @@ export function reportCannotSell(report: CbtvReport): boolean {
 export function reportSellUnmeasured(report: CbtvReport): boolean {
   const findings = report.findings ?? []
   return (
-    findings.some((f) => findingId(f) === UNMEASURED_ID) ||
+    findings.some((f) => UNMEASURED_IDS.has(findingId(f))) ||
     findings.some((f) => /no usable venue|exit liquidity is unknown/i.test(`${f.title} ${f.why ?? ""}`))
   )
+}
+
+/**
+ * Some pool prices this token against a counterfeit tokenized stock, while a
+ * genuine venue also exists (`VENUE-H-004`). The headline answer stays "yes" —
+ * there IS a real exit, and the service deliberately does not charge the token
+ * for a pool anyone could have opened against it. But "Yes" unqualified routes
+ * a holder straight into the fake pool, so the answer carries a note.
+ */
+const COUNTERFEIT_PAIR_IDS = new Set([
+  "VENUE-H-004", // a stranger's pool pairs this token against a counterfeit
+  "VENUE-H-005", // the token's own deployer built such a pool
+])
+
+export function reportCounterfeitPair(report: CbtvReport): boolean {
+  return (report.findings ?? []).some((f) => COUNTERFEIT_PAIR_IDS.has(findingId(f)))
 }
 
 /** The headline answer, with the third state the venue check can actually return. */
