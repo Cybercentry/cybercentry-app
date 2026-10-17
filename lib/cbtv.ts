@@ -57,7 +57,77 @@ export interface CbtvReport {
   provisional?: boolean
   capability_summary?: Record<string, unknown> | null
   findings?: Finding[]
-  full_report?: unknown
+  full_report?: { venue?: VenueSection } & Record<string, unknown>
+}
+
+/** How the service settled one address against the published stock list. */
+export type StockVerdict =
+  | "verified"       // IS the published tokenized stock
+  | "impersonation"  // wears a published ticker at another address
+  | "unlisted"       // not a ticker the issuer publishes - the ordinary case
+  | "unknown"        // symbol unreadable, so this check has no answer
+  | "native"         // ETH; there is no contract to read
+
+/** One component of a composite quote asset. */
+export interface Component {
+  address?: string
+  symbol?: string | null
+  verdict?: StockVerdict
+  ticker?: string
+  official?: string
+  matchedOn?: string
+  matchKind?: "exact" | "bare" | "address"
+}
+
+/** What a composite quote asset is a claim on, one level down. */
+export interface Composite {
+  /** The view it was read through: getComponents, token0/token1, asset, … */
+  interface?: string
+  declared?: number
+  truncated?: boolean
+  components?: string[]
+  settled?: Component[]
+}
+
+/** The thing on the other side of a pool - what a sell would pay you in. */
+export interface CounterAsset {
+  address?: string
+  symbol?: string | null
+  verdict?: StockVerdict
+  ticker?: string
+  official?: string
+  matchedOn?: string
+  /** Present only when this asset was examined for composition. */
+  compositeProbed?: boolean
+  composite?: Composite
+}
+
+export interface VenueSection {
+  status?: string
+  poolCount?: number
+  assessed?: number
+  bestRoundTripKept?: number | null
+  counterAssets?: CounterAsset[]
+}
+
+/**
+ * The quote assets a token is priced against, newest-first by nothing in
+ * particular - the service returns them in discovery order.
+ *
+ * Surfaced because the composition of a quote asset is the thing a holder
+ * cannot otherwise see, and the findings only speak up when something is
+ * WRONG. A pool priced against a basket of genuine stocks produces no finding
+ * at all, and a holder still deserves to know that is what they are trading
+ * against.
+ */
+export function reportCounterAssets(report: CbtvReport): CounterAsset[] {
+  const v = (report.full_report as { venue?: VenueSection } | undefined)?.venue
+  return (v?.counterAssets ?? []).filter((c) => c && (c.address || c.symbol))
+}
+
+/** The composite quote assets among them, with their components settled. */
+export function reportBaskets(report: CbtvReport): CounterAsset[] {
+  return reportCounterAssets(report).filter((c) => c.composite?.settled?.length)
 }
 
 // Same risk palette the service's HTML report uses (report_html.py _IMPACT_COLOR).

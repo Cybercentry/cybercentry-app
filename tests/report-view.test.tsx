@@ -273,4 +273,82 @@ describe("ReportView", () => {
     expect(screen.getByText(/basket with such a contract among its components/)).toBeTruthy()
   })
 
+
+  // The visible basket feature. The findings only speak when something is
+  // WRONG - a basket of genuine stocks produces no finding at all - so without
+  // this panel a holder can never see what they would actually be paid in,
+  // which is the data gap the whole basket threat relies on.
+  const basketReport = (components: object[], over: object = {}) =>
+    report({
+      full_report: {
+        venue: {
+          status: "complete",
+          counterAssets: [
+            {
+              address: "0xBaa5000000000000000000000000000000000001",
+              symbol: "STOCKS",
+              verdict: "unlisted",
+              compositeProbed: true,
+              composite: {
+                interface: "getComponents",
+                declared: components.length,
+                truncated: false,
+                settled: components,
+                ...over,
+              },
+            },
+          ],
+        },
+      },
+    })
+
+  it("shows what a sell would pay out, and what is inside it", () => {
+    const r = basketReport([
+      { address: "0xb20000000000000000000078ee7ce2fE4908108C", symbol: "NVDAC", verdict: "verified" },
+      { address: "0xb200000000000000000000C2e324d24d7eEcd1fb", symbol: "AAPLC", verdict: "verified" },
+    ])
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText(/What you.{0,3}d be paid in/)).toBeTruthy()
+    expect(screen.getByText(/a claim on 2 assets/)).toBeTruthy()
+    expect(screen.getByText(/2 of 2 components verified/)).toBeTruthy()
+    expect(screen.getAllByText("Verified tokenized stock").length).toBe(2)
+  })
+
+  it("names a counterfeit component and the address it should have been", () => {
+    const r = basketReport([
+      { address: "0xb20000000000000000000078ee7ce2fE4908108C", symbol: "NVDAC", verdict: "verified" },
+      {
+        address: "0xFEAeD1129be9f90AEcD1BF2c0d7ef5ec0d819bA3",
+        symbol: "TSLA",
+        verdict: "impersonation",
+        matchedOn: "TSLA",
+        official: "0xb2000000000000000000001e800a7f5189430cD0",
+      },
+    ])
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText(/Counterfeit/)).toBeTruthy()
+    expect(screen.getByText(/1 of 2 components verified, 1 not settled/)).toBeTruthy()
+    expect(screen.getByText(/the issued contract is/)).toBeTruthy()
+  })
+
+  it("says so when a component could not be identified", () => {
+    const r = basketReport([
+      { address: "0xb20000000000000000000078ee7ce2fE4908108C", symbol: "NVDAC", verdict: "verified" },
+      { address: "0x1111111111111111111111111111111111111111", symbol: null, verdict: "unknown" },
+    ])
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("Could not be identified")).toBeTruthy()
+  })
+
+  it("does not render the panel when there is nothing to show", () => {
+    // A plain USDC or ETH quote asset is not worth a panel.
+    const r = report({
+      full_report: {
+        venue: { status: "complete", counterAssets: [{ address: "0xabc", symbol: "USDC", verdict: "unlisted" }] },
+      },
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.queryByText(/What you.{0,3}d be paid in/)).toBeNull()
+  })
+
 })
