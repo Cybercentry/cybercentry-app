@@ -19,27 +19,31 @@ import styles from "./page.module.css"
 const VENUE_REASON_RE =
   /VENUE-C-001|VENUE-C-002|VENUE-H-003|VENUE-H-005|VENUE-H-006|cannot be sold|sold back|honeypot|sells do not execute|counterfeit/i
 
-function VerdictChip({ verdict }: { verdict?: string }) {
-  return (
-    <span className={styles.findingImpact} style={{ color: verdictColor(verdict) }}>
-      {verdictLabel(verdict)}
-    </span>
-  )
+// Muted border for a neutral pill - the count of components is a fact, not a
+// verdict, so it must not borrow a verdict colour.
+const muted = "#6b7280"
+
+/** The worst verdict among a basket's components, which is what the box says. */
+function worstComponent(settled: Component[]): string {
+  if (settled.some((s) => s.verdict === "impersonation")) return "impersonation"
+  if (settled.some((s) => s.verdict !== "verified")) return "unknown"
+  return "verified"
 }
 
 function ComponentRow({ c }: { c: Component }) {
+  const colour = verdictColor(c.verdict)
   return (
-    <li className={styles.finding}>
-      <span
-        className={styles.findingBar}
-        style={{ background: verdictColor(c.verdict) }}
-        aria-hidden="true"
-      />
-      <div className={styles.findingBody}>
-        <VerdictChip verdict={c.verdict} />
-        <span className={styles.findingTitle}> {c.symbol || short(c.address)}</span>
-        <p className={styles.findingText}>
-          {short(c.address)}
+    <li className={styles.qaRow}>
+      <span className={styles.qaRowBar} style={{ background: colour }} aria-hidden="true" />
+      <div className={styles.qaRowBody}>
+        <span className={styles.qaRowHead}>
+          <span className={styles.qaRowSym}>{c.symbol || short(c.address)}</span>
+          <span className={styles.qaRowVerdict} style={{ color: colour }}>
+            {verdictLabel(c.verdict)}
+          </span>
+        </span>
+        <p className={styles.qaRowAddr}>
+          {c.address}
           {c.verdict === "impersonation" && c.official
             ? ` — presents “${c.matchedOn}”; the issued contract is ${short(c.official)}`
             : ""}
@@ -75,17 +79,24 @@ function PaidInSection({ assets }: { assets: CounterAsset[] }) {
         const settled = comp.settled ?? []
         const unsettled = settled.filter((s) => s.verdict !== "verified").length
         return (
-          <div key={a.address ?? a.symbol} className={styles.card}>
-            <p className={styles.findingTitle}>
-              {a.symbol || short(a.address)} — a claim on {comp.declared ?? settled.length} assets
-              {comp.interface ? ` (read through ${comp.interface}())` : ""}
-            </p>
-            <p className={styles.findingText}>
+          <div
+            key={a.address ?? a.symbol}
+            className={styles.qaResult}
+            style={{ borderLeftColor: verdictColor(worstComponent(settled)) }}
+          >
+            <span className={styles.qaHead}>
+              <span className={styles.qaSym}>{a.symbol || short(a.address)}</span>
+              <span className={styles.qaPill} style={{ color: muted, borderColor: muted }}>
+                {comp.declared ?? settled.length} assets via {comp.interface ?? "?"}()
+              </span>
+            </span>
+            <span className={styles.qaAddr}>{a.address}</span>
+            <p className={styles.qaNote}>
               {settled.length - unsettled} of {settled.length} components verified
               {unsettled ? `, ${unsettled} not settled` : ""}
               {comp.truncated ? ", list truncated" : ""}
             </p>
-            <ul className={styles.findings}>
+            <ul className={styles.qaList}>
               {settled.map((s, i) => (
                 <ComponentRow key={s.address ?? i} c={s} />
               ))}
@@ -94,7 +105,7 @@ function PaidInSection({ assets }: { assets: CounterAsset[] }) {
         )
       })}
       {notable.length > 0 && (
-        <ul className={styles.findings}>
+        <ul className={styles.qaList}>
           {notable.map((a, i) => (
             <ComponentRow key={a.address ?? i} c={a} />
           ))}

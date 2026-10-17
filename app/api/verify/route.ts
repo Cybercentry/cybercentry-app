@@ -178,6 +178,13 @@ export async function POST(request: Request) {
     paymentId?: string
     txHash?: string
     freeSig?: { wallet?: string; message?: string; signature?: string }
+    // "scan" (default) kicks off a full B20 verification. "quote-asset" settles
+    // ONE address - a quote asset, a basket, a wrapper - and returns it
+    // synchronously. Handled here rather than in its own route so it goes
+    // through this exact payment gate: the alternative was extracting ~150
+    // lines of payment verification into a shared lib, and money-handling code
+    // is the last thing that should be moved for convenience.
+    mode?: "scan" | "quote-asset"
   }
   try {
     body = await request.json()
@@ -190,6 +197,7 @@ export async function POST(request: Request) {
   const paymentId = (body.paymentId ?? "").trim()
   const txHash = (body.txHash ?? "").trim()
   const freeSig = body.freeSig
+  const mode = body.mode === "quote-asset" ? "quote-asset" : "scan"
 
   if (!ADDRESS_RE.test(address)) return bad(400, "Enter a valid 0x… token address")
   if (!CHAINS.has(chain)) return bad(400, "Unsupported chain")
@@ -235,6 +243,35 @@ export async function POST(request: Request) {
   // → reject. Consumed before the CBTV kickoff so a failed kickoff can't re-use it.
   // Free scans skip this — they're already guarded per-wallet above.
   if (claimId && !(await claimPayment(claimId))) return bad(409, "This payment has already been used")
+
+  // A quote-asset lookup is synchronous: a handful of eth_calls upstream, no
+  // pool discovery and no round trips, so there is no job to poll. It is
+  // charged the same as a scan because it passes the same gate; price it
+  // separately here if that ever stops being the right call.
+  if (mode === "quote-asset") {
+    try {
+      const res = await fetch(`${CBTV_API_URL}/verify-quote-asset`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": CBTV_API_KEY },
+        body: JSON.stringify({ address, chain }),
+        signal: AbortSignal.timeout(30_000),
+      })
+      const text = await res.text()
+      if (!res.ok) {
+        let detail = "Could not read that contract"
+        try {
+          const j = JSON.parse(text) as { detail?: string; error?: string }
+          detail = j.detail ?? j.error ?? detail
+        } catch {
+          /* non-JSON upstream error; keep the generic message */
+        }
+        return bad(502, detail)
+      }
+      return NextResponse.json(JSON.parse(text))
+    } catch {
+      return bad(502, "Verification service is unreachable")
+    }
+  }
 
   // Kick off the async scan — no client waits on the connection, so it runs to
   // completion instead of shedding sections under the sync 60s limit.

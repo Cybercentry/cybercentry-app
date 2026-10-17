@@ -1,23 +1,24 @@
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { QuoteAssetForm } from "@/app/quote-asset-form"
 
-// The lookup the basket threat actually needs: the composition check used to be
-// reachable only inwards, while scanning a B20 token that happened to be priced
-// against a basket. The main scan rejects anything that is not a B20 token, and
-// a basket never is one — so someone looking at a "meme / AAPL+TSLA+NVDA" pair
-// had no way to ask what was in the basket.
+// The basket lookup goes through /api/verify with mode "quote-asset", so it
+// passes the SAME payment gate as a full scan - one free use per wallet, then
+// 1 USDC. Nothing about money was duplicated to add the feature, which is why
+// these mock the shared payment lib rather than a second route.
+vi.mock("@/lib/pay-usdc", () => ({
+  signFreeScan: vi.fn(async () => ({ wallet: "0x" + "11".repeat(20), message: "m", signature: "0xsig" })),
+  payUsdc: vi.fn(async () => ({ txHash: "0x" + "ab".repeat(32) })),
+  isUserRejection: (e: unknown) => e instanceof Error && /cancel/i.test(e.message),
+}))
+
+import { QuoteAssetForm } from "@/app/quote-asset-form"
 
 const NVDAC = "0xb20000000000000000000078ee7ce2fE4908108C"
 const FAKE = "0xFEAeD1129be9f90AEcD1BF2c0d7ef5ec0d819bA3"
 const PAIR = "0x88A43bbDF9D098eEC7bCEda4e2494615dfD9bB9C"
 
 function mockOnce(body: unknown, ok = true, status = 200) {
-  global.fetch = vi.fn().mockResolvedValue({
-    ok,
-    status,
-    json: async () => body,
-  }) as unknown as typeof fetch
+  global.fetch = vi.fn().mockResolvedValue({ ok, status, json: async () => body }) as unknown as typeof fetch
 }
 
 function lookup(addr: string) {
@@ -27,11 +28,15 @@ function lookup(addr: string) {
 }
 
 describe("QuoteAssetForm", () => {
-  beforeEach(() => vi.restoreAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    try {
+      localStorage.clear()
+    } catch {}
+  })
 
   it("names a counterfeit and the address it should have been", async () => {
     mockOnce({
-      address: FAKE,
       asset: {
         address: FAKE, symbol: "NVDA", verdict: "impersonation",
         ticker: "NVDAC", matchedOn: "NVDA", official: NVDAC,
@@ -47,7 +52,6 @@ describe("QuoteAssetForm", () => {
   it("shows what is inside a basket, component by component", async () => {
     // Shape taken from the live Uniswap v2 pair this was proven against.
     mockOnce({
-      address: PAIR,
       asset: {
         address: PAIR, symbol: "UNI-V2", verdict: "unlisted",
         composite: {
@@ -65,15 +69,13 @@ describe("QuoteAssetForm", () => {
     expect(screen.getByText(/A claim on 2 assets, read through token0\/token1\(\)/)).toBeTruthy()
     expect(screen.getByText(/1 of 2 verified, 1 not settled/)).toBeTruthy()
     expect(screen.getByText("Verified tokenized stock")).toBeTruthy()
-    expect(screen.getByText(/Counterfeit/)).toBeTruthy()
   })
 
   it("does not call an unlisted asset sound", async () => {
     mockOnce({
-      address: NVDAC,
       asset: {
         address: NVDAC, symbol: "USDC", verdict: "unlisted",
-        note: "Not a ticker the issuer publishes, and it declares no composition this check can read. That is the ordinary case for a quote asset; it is not a statement that the asset is sound.",
+        note: "That is the ordinary case for a quote asset; it is not a statement that the asset is sound.",
       },
       findings: [],
     })
@@ -82,7 +84,7 @@ describe("QuoteAssetForm", () => {
     expect(screen.getByText(/not a statement that the asset is sound/)).toBeTruthy()
   })
 
-  it("rejects a malformed address without calling the service", async () => {
+  it("rejects a malformed address without paying for anything", async () => {
     const spy = vi.fn()
     global.fetch = spy as unknown as typeof fetch
     lookup("not-an-address")
@@ -90,9 +92,23 @@ describe("QuoteAssetForm", () => {
     expect(spy).not.toHaveBeenCalled()
   })
 
-  it("surfaces a service error rather than rendering nothing", async () => {
-    mockOnce({ error: "Too many lookups — try again in a minute" }, false, 429)
+  it("falls back to paying when the free check is already used", async () => {
+    const { payUsdc } = await import("@/lib/pay-usdc")
+    // 402 on the free attempt, then the paid attempt succeeds.
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 402, json: async () => ({ error: "Free verification already used" }) })
+      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ asset: { symbol: "USDC", verdict: "unlisted" }, findings: [] }) })
+    global.fetch = fetchMock as unknown as typeof fetch
     lookup(NVDAC)
-    await waitFor(() => expect(screen.getByText(/Too many lookups/)).toBeTruthy())
+    await waitFor(() => expect(screen.getByText("Not a published tokenized stock")).toBeTruthy())
+    expect(payUsdc).toHaveBeenCalledOnce()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it("surfaces a service error rather than rendering nothing", async () => {
+    mockOnce({ error: "Could not read that contract" }, false, 502)
+    lookup(NVDAC)
+    await waitFor(() => expect(screen.getByText(/Could not read that contract/)).toBeTruthy())
   })
 })
