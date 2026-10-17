@@ -6,6 +6,7 @@ import { payUsdc, signFreeScan, isUserRejection } from "@/lib/pay-usdc"
 import type { CbtvReport, Chain, VerifyStatus } from "@/lib/cbtv"
 import { PAY_AMOUNT, TREASURY, PAY_TESTNET } from "@/lib/payments"
 import { ReportView } from "./report-view"
+import { QuoteAssetResultView, type QuoteAssetResult } from "./quote-asset-result"
 import styles from "./page.module.css"
 
 // One field: the contract address. The network is not a user decision — a
@@ -30,12 +31,33 @@ const CHECKS = [
   "Fake B20s & copycats",
 ]
 
+// The second question a holder has, and it used to live in a second form on the
+// same page - two input boxes competing, and the page's narrative cut in half.
+// One field with a mode is the same capability without asking the reader to
+// work out which box applies to them.
+const QUOTE_CHECKS = [
+  "Counterfeit tokenized stocks",
+  "Bare-ticker fakes (NVDA for NVDAc)",
+  "What a basket actually holds",
+  "Components settled one by one",
+  "Wrappers and LP tokens",
+]
+
+type Mode = "scan" | "quote"
+
+const MODES: { id: Mode; label: string }[] = [
+  { id: "scan", label: "Token" },
+  { id: "quote", label: "Quote asset or basket" },
+]
+
 type Phase = "idle" | "paying" | "scanning" | "done" | "error" | "timeout"
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 export function VerifyForm() {
   const [address, setAddress] = useState("")
+  const [mode, setMode] = useState<Mode>("scan")
+  const [asset, setAsset] = useState<QuoteAssetResult | null>(null)
   const [phase, setPhase] = useState<Phase>("idle")
   const [error, setError] = useState("")
   const [report, setReport] = useState<CbtvReport | null>(null)
@@ -72,6 +94,7 @@ export function VerifyForm() {
   const reset = () => {
     cancelled.current = true
     setReport(null)
+    setAsset(null)
     setError("")
     setPhase("idle")
   }
@@ -109,6 +132,24 @@ export function VerifyForm() {
     }
 
     cancelled.current = false
+
+    if (mode === "quote") {
+      try {
+        setPhase("paying")
+        const got = await beginQuoteAsset(addr)
+        if (cancelled.current) return
+        setAsset(got)
+        setPhase("done")
+      } catch (err) {
+        if (cancelled.current) return
+        console.error("[verify] quote-asset lookup failed:", err)
+        const msg = err instanceof Error ? err.message : "Something went wrong."
+        setError(isUserRejection(err) ? "Payment cancelled." : msg)
+        setPhase("error")
+      }
+      return
+    }
+
     try {
       // 1) Authorize + kick off the scan — free first verification if available,
       // otherwise the $1 USDC payment. Throws if the user cancels.
@@ -139,6 +180,59 @@ export function VerifyForm() {
       setError(isUserRejection(err) ? "Payment cancelled." : msg)
       setPhase("error")
     }
+  }
+
+  /**
+   * Settle one address — a quote asset, a basket, a wrapper — through the same
+   * gate as a scan: free first use if the device still has it, otherwise $1
+   * USDC. Synchronous upstream, so it returns the answer rather than a jobId.
+   */
+  async function beginQuoteAsset(addr: string): Promise<QuoteAssetResult> {
+    const post = (extra: Record<string, unknown>) =>
+      fetch("/api/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: addr, chain: CHAIN, mode: "quote-asset", ...extra }),
+      })
+
+    let freeUsedHere = false
+    try {
+      freeUsedHere = localStorage.getItem(FREE_KEY) === "1"
+    } catch {
+      /* storage blocked — just try the free path */
+    }
+
+    if (!freeUsedHere) {
+      let freeSig: Awaited<ReturnType<typeof signFreeScan>> | null = null
+      try {
+        freeSig = await signFreeScan(CHAIN)
+      } catch (e) {
+        if (isUserRejection(e)) throw e
+      }
+      if (freeSig) {
+        const res = await post({ freeSig })
+        // 402 = this wallet already used its free one → fall through to paying.
+        if (res.status !== 402) {
+          const json = await res.json()
+          if (!res.ok) throw new Error(json.error || "Could not read that contract.")
+          try {
+            localStorage.setItem(FREE_KEY, "1")
+          } catch {}
+          setFreeAvailable(false)
+          return json as QuoteAssetResult
+        }
+        try {
+          localStorage.setItem(FREE_KEY, "1")
+        } catch {}
+        setFreeAvailable(false)
+      }
+    }
+
+    const { txHash } = await payUsdc({ amount: PAY_AMOUNT, to: TREASURY as `0x${string}`, chain: CHAIN })
+    const res = await post({ txHash })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.error || "Could not read that contract.")
+    return json as QuoteAssetResult
   }
 
   // Start a scan: free first-verification (a gasless signature, once per wallet)
@@ -219,6 +313,10 @@ export function VerifyForm() {
     }
   }
 
+  if (phase === "done" && asset) {
+    return <QuoteAssetResultView result={asset} onReset={reset} />
+  }
+
   if (phase === "done" && report) {
     return <ReportView report={report} onReset={reset} />
   }
@@ -240,14 +338,36 @@ export function VerifyForm() {
     )
   }
 
-  let ctaLabel = freeAvailable ? "Verify — first one free" : "Verify"
+  const verb = mode === "scan" ? "Verify" : "Check"
+  let ctaLabel = freeAvailable ? `${verb} — first one free` : verb
   if (phase === "paying") ctaLabel = "Confirm in wallet…"
   else if (phase === "scanning") ctaLabel = `Scanning… ${elapsed}s`
 
   return (
     <form className={styles.verify} onSubmit={onSubmit}>
+      {/* One field, two questions. This was two separate forms on the page,
+          which meant two input boxes competing for the same paste and the
+          page's narrative cut in half. */}
+      <div className={styles.modes} role="group" aria-label="What are you checking?">
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            className={mode === m.id ? styles.modeOn : styles.mode}
+            aria-pressed={mode === m.id}
+            disabled={busy}
+            onClick={() => {
+              setMode(m.id)
+              setError("")
+            }}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+
       <label className={styles.label} htmlFor="token">
-        B20 token contract address
+        {mode === "scan" ? "B20 token contract address" : "Quote asset, basket or wrapper address"}
       </label>
       <div className={styles.inputRow}>
         <input
@@ -292,7 +412,7 @@ export function VerifyForm() {
         </p>
       ) : (
         <ul className={styles.miniChecks}>
-          {CHECKS.map((c) => (
+          {(mode === "scan" ? CHECKS : QUOTE_CHECKS).map((c) => (
             <li key={c} className={styles.miniCheck}>
               <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <path d="M10 2.5 3 5.5v4c0 3.6 2.7 6.6 7 8 4.3-1.4 7-4.4 7-8v-4L10 2.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />

@@ -1,5 +1,4 @@
 import { VerifyForm } from "./verify-form"
-import { QuoteAssetForm } from "./quote-asset-form"
 import { appConfig } from "../app.config"
 import styles from "./page.module.css"
 
@@ -63,11 +62,6 @@ export default function Home() {
           </p>
 
           <VerifyForm />
-
-          {/* A different question, and a free one: what would a pool pay you
-              IN? The main scan is B20-only, so a basket or an LP token is
-              rejected by it — which left no way to ask what a basket holds. */}
-          <QuoteAssetForm />
 
           {/* The showcase sits below the form: someone who already knows what they
               want scans immediately, and someone deciding whether to trust the
