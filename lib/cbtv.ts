@@ -232,6 +232,11 @@ const UNMEASURED_IDS = new Set([
   // finding it emitted NOTHING in that case, and this app read the absence as
   // "no venue problem" and answered Yes — on a check that had never run.
   "VENUE-M-005",
+  // The quote asset is a BASKET and not all of its components were settled.
+  // The round trip may be a real measurement, but part of what a sell would
+  // pay out was never identified — the same reason M-003 lands here. An
+  // unidentified component is not a cleared one.
+  "VENUE-M-006",
 ])
 
 const findingId = (f: Finding) => (f.id ?? "").toUpperCase()
@@ -272,6 +277,11 @@ export function reportSellUnmeasured(report: CbtvReport): boolean {
 const COUNTERFEIT_PAIR_IDS = new Set([
   "VENUE-H-004", // a stranger's pool pairs this token against a counterfeit
   "VENUE-H-005", // the token's own deployer built such a pool
+  // The quote asset is a basket and one of its COMPONENTS is a counterfeit.
+  // Same harm, one level down: a sell executes and pays out a basket, part of
+  // which is backed by no share. The basket threat the service was extended
+  // for — a buyer checks the ticker list, not every issuer.
+  "VENUE-H-006",
 ])
 
 export function reportCounterfeitPair(report: CbtvReport): boolean {

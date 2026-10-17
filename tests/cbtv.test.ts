@@ -247,6 +247,35 @@ describe("reportSellVerdict", () => {
     expect(reportCannotSell(r([finding]))).toBe(false)
   })
 
+  // The basket case. The counterfeit is one level down, inside the quote
+  // asset, which is the whole point: a buyer checks the ticker list, not every
+  // issuer behind it.
+  it("treats a counterfeit inside a basket as a counterfeit pair", () => {
+    const finding = f("VENUE-H-006", "high",
+      "Quote asset is a basket containing a counterfeit tokenized stock")
+    expect(reportCounterfeitPair(r([finding]))).toBe(true)
+    expect(reportRiskLevel(r([finding]))).toBe("High")
+    // A real exit may still exist, so this does not by itself answer "no".
+    expect(reportSellVerdict(r([finding]))).toBe("yes")
+  })
+
+  it("says unknown when a basket's components were not all settled", () => {
+    // An unidentified component is not a cleared one: part of what a sell
+    // would pay out was never established.
+    const finding = f("VENUE-M-006", "medium",
+      "Quote asset is a basket whose composition could not be fully read")
+    expect(reportSellVerdict(r([finding]))).toBe("unknown")
+  })
+
+  it("does not let a disclosed clean basket change the verdict", () => {
+    // VENUE-I-001 is a disclosure, not a problem: every component verified.
+    const finding = f("VENUE-I-001", "informational",
+      "Quote asset is a basket of verified tokenized stocks")
+    expect(reportSellVerdict(r([finding]))).toBe("yes")
+    expect(reportCounterfeitPair(r([finding]))).toBe(false)
+    expect(reportRiskLevel(r([finding]))).toBe("Informational")
+  })
+
   it("does not claim a counterfeit pair on a token that has none", () => {
     expect(reportCounterfeitPair(r([f("VENUE-M-001", "medium", "Round-trip cost above stated fee")]))).toBe(false)
     expect(reportCounterfeitPair(r([]))).toBe(false)
