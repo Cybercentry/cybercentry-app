@@ -1,10 +1,11 @@
 "use client"
-import type { CbtvReport, Detector, Finding, RiskLevel } from "@/lib/cbtv"
+import type { CbtvReport, Component, CounterAsset, Detector, Finding, RiskLevel } from "@/lib/cbtv"
 import {
   RISK_COLOR,
   RISK_ORDER,
   bucketDetectors,
   reportSellVerdict,
+  reportCounterAssets,
   reportCounterfeitPair,
   isAdvisoryFinding,
   toLevel,
@@ -17,8 +18,112 @@ import styles from "./page.module.css"
 const VENUE_REASON_RE =
   /VENUE-C-001|VENUE-C-002|VENUE-H-003|VENUE-H-005|VENUE-H-006|cannot be sold|sold back|honeypot|sells do not execute|counterfeit/i
 
-function short(addr: string) {
-  return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr
+// What settling one address against the issuer's published list concluded.
+// `unlisted` is deliberately NOT green: it is the ordinary case, not a pass.
+const VERDICT_COLOR: Record<string, string> = {
+  verified: "#16a34a",
+  impersonation: "#dc2626",
+  unknown: "#ca8a04",
+  unlisted: "#6b7280",
+  native: "#6b7280",
+}
+
+const VERDICT_LABEL: Record<string, string> = {
+  verified: "Verified tokenized stock",
+  impersonation: "Counterfeit — wears a published ticker at another address",
+  unknown: "Could not be identified",
+  unlisted: "Not a published tokenized stock",
+  native: "Native ETH",
+}
+
+function short(addr?: string) {
+  return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr ?? ""
+}
+
+function VerdictChip({ verdict }: { verdict?: string }) {
+  const v = verdict ?? "unknown"
+  return (
+    <span className={styles.findingImpact} style={{ color: VERDICT_COLOR[v] ?? "#6b7280" }}>
+      {VERDICT_LABEL[v] ?? v}
+    </span>
+  )
+}
+
+function ComponentRow({ c }: { c: Component }) {
+  return (
+    <li className={styles.finding}>
+      <span
+        className={styles.findingBar}
+        style={{ background: VERDICT_COLOR[c.verdict ?? "unknown"] ?? "#6b7280" }}
+        aria-hidden="true"
+      />
+      <div className={styles.findingBody}>
+        <VerdictChip verdict={c.verdict} />
+        <span className={styles.findingTitle}> {c.symbol || short(c.address)}</span>
+        <p className={styles.findingText}>
+          {short(c.address)}
+          {c.verdict === "impersonation" && c.official
+            ? ` — presents “${c.matchedOn}”; the issued contract is ${short(c.official)}`
+            : ""}
+        </p>
+      </div>
+    </li>
+  )
+}
+
+/**
+ * What a sell would pay you in, and what is inside it.
+ *
+ * The findings only speak when something is wrong: a basket of genuine stocks
+ * produces no finding at all. This renders the composition regardless, because
+ * it is the thing a holder cannot otherwise see and the reason a counterfeit
+ * can hide behind a familiar ticker list.
+ */
+function PaidInSection({ assets }: { assets: CounterAsset[] }) {
+  const baskets = assets.filter((a) => a.composite?.settled?.length)
+  const plain = assets.filter((a) => !a.composite?.settled?.length)
+  const notable = plain.filter((a) => a.verdict === "impersonation" || a.verdict === "unknown")
+  if (!baskets.length && !notable.length) return null
+  return (
+    <section className={styles.reportSection}>
+      <h3 className={styles.reportH3}>What you&rsquo;d be paid in</h3>
+      <p className={styles.reportNote}>
+        A pool pays out in whatever is on its other side. Where that is itself a claim on several
+        assets, every component is settled against the issuer&rsquo;s published list — a familiar
+        ticker list is not a composition check.
+      </p>
+      {baskets.map((a) => {
+        const comp = a.composite!
+        const settled = comp.settled ?? []
+        const unsettled = settled.filter((s) => s.verdict !== "verified").length
+        return (
+          <div key={a.address ?? a.symbol} className={styles.card}>
+            <p className={styles.findingTitle}>
+              {a.symbol || short(a.address)} — a claim on {comp.declared ?? settled.length} assets
+              {comp.interface ? ` (read through ${comp.interface}())` : ""}
+            </p>
+            <p className={styles.findingText}>
+              {settled.length - unsettled} of {settled.length} components verified
+              {unsettled ? `, ${unsettled} not settled` : ""}
+              {comp.truncated ? ", list truncated" : ""}
+            </p>
+            <ul className={styles.findings}>
+              {settled.map((s, i) => (
+                <ComponentRow key={s.address ?? i} c={s} />
+              ))}
+            </ul>
+          </div>
+        )
+      })}
+      {notable.length > 0 && (
+        <ul className={styles.findings}>
+          {notable.map((a, i) => (
+            <ComponentRow key={a.address ?? i} c={a} />
+          ))}
+        </ul>
+      )}
+    </section>
+  )
 }
 
 function DetectorRow({ d }: { d: Detector }) {
@@ -158,6 +263,7 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
   // A real exit exists, but some pool pays in a counterfeit tokenized stock.
   // Shown beside the answer rather than in the list below it: a holder who
   // reads "Yes" and goes to trade is exactly the person this catches.
+  const counterAssets = reportCounterAssets(report)
   const counterfeitPair = reportCounterfeitPair(report)
   const counterfeitNote =
     counterfeitPair && !cannotSell
@@ -269,6 +375,8 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
               </span>
             ) : null}
           </div>
+
+          <PaidInSection assets={counterAssets} />
 
           {threats.length > 0 && (
             <section className={styles.reportSection}>
