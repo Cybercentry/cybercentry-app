@@ -12,39 +12,17 @@ import {
   worst,
 } from "@/lib/cbtv"
 import { stockIdentity, TOKENIZED_STOCK_LIST_URL } from "@/lib/tokenized-stocks"
+import { short, verdictColor, verdictLabel } from "@/lib/verdicts"
 import styles from "./page.module.css"
 
 // Venue findings carry stable VENUE- ids; fall back to prose for an unknown one.
 const VENUE_REASON_RE =
   /VENUE-C-001|VENUE-C-002|VENUE-H-003|VENUE-H-005|VENUE-H-006|cannot be sold|sold back|honeypot|sells do not execute|counterfeit/i
 
-// What settling one address against the issuer's published list concluded.
-// `unlisted` is deliberately NOT green: it is the ordinary case, not a pass.
-const VERDICT_COLOR: Record<string, string> = {
-  verified: "#16a34a",
-  impersonation: "#dc2626",
-  unknown: "#ca8a04",
-  unlisted: "#6b7280",
-  native: "#6b7280",
-}
-
-const VERDICT_LABEL: Record<string, string> = {
-  verified: "Verified tokenized stock",
-  impersonation: "Counterfeit — wears a published ticker at another address",
-  unknown: "Could not be identified",
-  unlisted: "Not a published tokenized stock",
-  native: "Native ETH",
-}
-
-function short(addr?: string) {
-  return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr ?? ""
-}
-
 function VerdictChip({ verdict }: { verdict?: string }) {
-  const v = verdict ?? "unknown"
   return (
-    <span className={styles.findingImpact} style={{ color: VERDICT_COLOR[v] ?? "#6b7280" }}>
-      {VERDICT_LABEL[v] ?? v}
+    <span className={styles.findingImpact} style={{ color: verdictColor(verdict) }}>
+      {verdictLabel(verdict)}
     </span>
   )
 }
@@ -54,7 +32,7 @@ function ComponentRow({ c }: { c: Component }) {
     <li className={styles.finding}>
       <span
         className={styles.findingBar}
-        style={{ background: VERDICT_COLOR[c.verdict ?? "unknown"] ?? "#6b7280" }}
+        style={{ background: verdictColor(c.verdict) }}
         aria-hidden="true"
       />
       <div className={styles.findingBody}>
