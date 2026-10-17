@@ -717,3 +717,47 @@
   list-style: none;
   padding: 0;
 }
+
+/* Mode switch above the single address field. Replaces a second form that sat
+   on the same page: two input boxes competing for the same paste, and the
+   page's narrative cut in half. */
+.modes {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface);
+}
+
+.mode,
+.modeOn {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mode:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.modeOn {
+  background: var(--brand);
+  color: #ffffff;
+}
+
+.mode:disabled,
+.modeOn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
