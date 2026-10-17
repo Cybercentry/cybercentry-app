@@ -309,7 +309,7 @@ describe("ReportView", () => {
     ])
     render(<ReportView report={r} onReset={noop} />)
     expect(screen.getByText(/What you.{0,3}d be paid in/)).toBeTruthy()
-    expect(screen.getByText(/a claim on 2 assets/)).toBeTruthy()
+    expect(screen.getByText(/2 assets via getComponents\(\)/)).toBeTruthy()
     expect(screen.getByText(/2 of 2 components verified/)).toBeTruthy()
     expect(screen.getAllByText("Verified tokenized stock").length).toBe(2)
   })
