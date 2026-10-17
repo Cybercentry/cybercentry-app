@@ -25,14 +25,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      # Pinned to a full commit SHA, not @v4. A tag is mutable: whoever controls
+      # the action can re-point it, and this step runs with access to the
+      # checkout. GitHub-owned actions above are left on tags because the trust
+      # boundary is already GitHub; a third-party action is a separate one.
+      # b906aff is the commit tag v4 resolved to on 2026-10-17.
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           # lockfileVersion 9.0 in pnpm-lock.yaml.
           version: 9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 24, matching the development environment, and NOT the 20 this was
+          # pinned to first. jsdom 30 pulls undici 8, which calls
+          # webidl.util.markAsUncloneable - absent on Node 20, so every test
+          # file failed to collect with "is not a function" while passing
+          # locally. The dependency tree already requires a newer Node than
+          # the workflow was offering it.
+          node-version: 24
           cache: pnpm
 
       - name: Install dependencies
