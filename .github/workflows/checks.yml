@@ -1,0 +1,55 @@
+# The only gate this repo has besides SonarCloud, which reads the code but does
+# not run it. These three steps are what was being run by hand on a laptop.
+#
+# Needs NO secrets. Every test mocks the payment lib and the service proxy, so
+# nothing here touches a wallet, a key or the network. A test that needs one has
+# drifted into integration territory.
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          # lockfileVersion 9.0 in pnpm-lock.yaml.
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        # Frozen, so a lockfile that does not match package.json fails here
+        # rather than resolving to something nobody tested.
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      # `next build` is deliberately NOT here. It reads runtime configuration,
+      # and a workflow that is red on day one for a missing env var teaches
+      # everyone to ignore the red. Add it with the env it needs, as its own
+      # job, when that is worth doing — not as a passenger on the test gate.
