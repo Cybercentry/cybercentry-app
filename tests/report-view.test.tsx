@@ -53,7 +53,7 @@ describe("ReportView", () => {
     render(<ReportView report={report({ findings: [attributedCounterfeit] })} onReset={noop} />)
     expect(screen.getByText("Yes")).toBeTruthy()
     // ...but never an unqualified Yes.
-    expect(screen.getByText(/never by ticker/)).toBeTruthy()
+    expect(screen.getByText(/by ADDRESS rather than by ticker/)).toBeTruthy()
   })
 
   it("says Unknown when the service also reports no venue priced it", () => {
@@ -88,7 +88,7 @@ describe("ReportView", () => {
     })
     render(<ReportView report={r} onReset={noop} />)
     expect(screen.getByText("Yes")).toBeTruthy()
-    expect(screen.getByText(/never by ticker/)).toBeTruthy()
+    expect(screen.getByText(/by ADDRESS rather than by ticker/)).toBeTruthy()
   })
 
   // The regression that motivated the caveat: clean on-chain, still unredeemable.
@@ -254,4 +254,23 @@ describe("ReportView", () => {
     render(<ReportView report={r} onReset={noop} />)
     expect(screen.getByText("No")).toBeTruthy()
   })
+
+  // The basket case: the counterfeit is a COMPONENT of the quote asset rather
+  // than the quote asset itself, so the note has to cover both shapes.
+  it("qualifies a Yes when the quote asset is a basket holding a counterfeit", () => {
+    const r = report({
+      findings: [
+        {
+          id: "VENUE-H-006",
+          severity: "high",
+          title: "Quote asset is a basket containing a counterfeit tokenized stock",
+          why: "2 of its components present the ticker of a Coinbase Tokenized Stock.",
+        },
+      ],
+    })
+    render(<ReportView report={r} onReset={noop} />)
+    expect(screen.getByText("Yes")).toBeTruthy()
+    expect(screen.getByText(/basket with such a contract among its components/)).toBeTruthy()
+  })
+
 })

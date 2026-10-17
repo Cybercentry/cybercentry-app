@@ -15,7 +15,7 @@ import styles from "./page.module.css"
 
 // Venue findings carry stable VENUE- ids; fall back to prose for an unknown one.
 const VENUE_REASON_RE =
-  /VENUE-C-001|VENUE-C-002|VENUE-H-003|VENUE-H-005|cannot be sold|sold back|honeypot|sells do not execute|counterfeit/i
+  /VENUE-C-001|VENUE-C-002|VENUE-H-003|VENUE-H-005|VENUE-H-006|cannot be sold|sold back|honeypot|sells do not execute|counterfeit/i
 
 function short(addr: string) {
   return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr
@@ -161,7 +161,7 @@ export function ReportView({ report, onReset }: { report: CbtvReport; onReset: (
   const counterfeitPair = reportCounterfeitPair(report)
   const counterfeitNote =
     counterfeitPair && !cannotSell
-      ? "One or more pools price this token against a contract wearing a tokenized stock\u2019s ticker at an address the issuer never published \u2014 backed by no share. A sell there executes and pays out that counterfeit, and the round-trip figure above was measured elsewhere. Check the other side of the pool by ADDRESS, never by ticker."
+      ? "A pool prices this token against something that is not what it appears to be: either a contract wearing a tokenized stock’s ticker at an address the issuer never published, or a basket with such a contract among its components — in both cases backed by no share. A sell there executes and pays out that counterfeit. Check the other side of the pool, and everything inside it, by ADDRESS rather than by ticker."
       : null
 
   // Amber for a conditional answer, green when nothing stands in the way. A
