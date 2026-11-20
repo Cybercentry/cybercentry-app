@@ -11,7 +11,7 @@ import {
   TREASURY,
   PAY_TESTNET,
 } from "@/lib/payments"
-import { claimPayment, claimFreeScan, setPayer, takePayer } from "@/lib/replay-store"
+import { claimPayment, claimFreeScan, setPayer, takePayer, countRequest } from "@/lib/replay-store"
 import { reportRiskLevel } from "@/lib/cbtv"
 import { notifyHighRisk } from "@/lib/notify"
 
@@ -71,6 +71,35 @@ async function verifyFreeSignature(
 
 function bad(status: number, error: string) {
   return NextResponse.json({ error }, { status })
+}
+
+/**
+ * 429 for a wallet that has gone too fast.
+ *
+ * 429 is right HERE, unlike upstream: this layer knows who is calling, so "you
+ * sent too many" is a true statement. CBTV itself has no per-caller identity
+ * and so answers a full pool with 503 ("at capacity") instead.
+ *
+ * Carries the standard RateLimit-* hints alongside Retry-After so a client can
+ * pace itself rather than discovering the wall by hitting it.
+ */
+function rateLimited(v: { limit: number; remaining: number; resetIn: number }) {
+  return NextResponse.json(
+    {
+      error: `Too many requests. Try again in ${v.resetIn}s.`,
+      retryAfter: v.resetIn,
+      limit: v.limit,
+    },
+    {
+      status: 429,
+      headers: {
+        "Retry-After": String(v.resetIn),
+        "RateLimit-Limit": String(v.limit),
+        "RateLimit-Remaining": String(v.remaining),
+        "RateLimit-Reset": String(v.resetIn),
+      },
+    },
+  )
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -224,6 +253,10 @@ export async function POST(request: Request) {
     if (!(await verifyFreeSignature(wallet, sig, chain, message))) {
       return bad(400, "Signature could not be verified")
     }
+    // Burst cap BEFORE claimFreeScan: a 429 must not consume the one free scan
+    // the caller would then be unable to use.
+    const burst = await countRequest(wallet)
+    if (!burst.allowed) return rateLimited(burst)
     // One free scan per wallet. Already used → 402 so the client falls back to paying.
     if (!(await claimFreeScan(wallet))) return bad(402, "Free verification already used")
     verified = { ok: true, sender: wallet }
@@ -238,6 +271,16 @@ export async function POST(request: Request) {
     return bad(402, "Payment required")
   }
   if (!verified.ok) return bad(402, verified.msg)
+
+  // Burst cap for the paid paths, counted BEFORE claimPayment so a 429 does not
+  // consume the payment: the caller can retry the same paymentId once the window
+  // rolls over. The free path is capped above, before its own claim.
+  // `verified.sender` is absent only when the payment could not be attributed,
+  // in which case the replay guard below is the protection that applies.
+  if (claimId && verified.sender) {
+    const burst = await countRequest(verified.sender)
+    if (!burst.allowed) return rateLimited(burst)
+  }
 
   // Replay-guard paid scans (Postgres, durable): first use → proceed; already used
   // → reject. Consumed before the CBTV kickoff so a failed kickoff can't re-use it.

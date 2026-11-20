@@ -148,6 +148,108 @@ export async function claimFreeScan(wallet: string): Promise<boolean> {
   }
 }
 
+// ── Per-wallet burst cap ─────────────────────────────────────────────────────
+// A short fixed window, not a spend cap. Payment already limits how much a
+// caller can do in total, so a daily ceiling would mostly inconvenience paying
+// customers; what the upstream service actually needs protecting from is a
+// fast burst. CBTV bounds its own concurrency (2 sync / 4 background / 4
+// quote-asset) and refuses beyond it with 503, so without a cap here a single
+// script can fill those pools and every other caller collects 503s.
+//
+// Deliberately set BELOW the upstream capacity, so this is the binding
+// constraint. Otherwise callers hit CBTV's 503 before this 429 and the error
+// stops being attributable — a partner cannot tell "I went too fast" from "the
+// service is busy", and neither can we from the logs.
+const BURST_LIMIT = Number(process.env.VERIFY_BURST_LIMIT ?? 10)
+const BURST_WINDOW_S = Number(process.env.VERIFY_BURST_WINDOW_S ?? 60)
+
+let burstTableReady = false
+// walletWindowKey → count. In-instance fast path and DB-outage fallback.
+const burstMem = new Map<string, number>()
+
+export type BurstVerdict = {
+  allowed: boolean
+  limit: number
+  remaining: number
+  /** Seconds until the current window rolls over. */
+  resetIn: number
+}
+
+/**
+ * Count one request against a wallet's burst allowance.
+ *
+ * Call this BEFORE consuming a payment or a free scan: a refused request must
+ * not burn an entitlement the caller then cannot use. On 429 the caller can
+ * retry the same paymentId once the window rolls over.
+ *
+ * Fails OPEN. A rate limiter is a protection mechanism, not a security
+ * boundary, and refusing paid traffic because Postgres hiccuped would be worse
+ * than briefly allowing a burst — so a DB error trips the shared breaker and
+ * falls back to per-instance counting, matching how the rest of this file
+ * degrades. Never throws.
+ */
+export async function countRequest(wallet: string): Promise<BurstVerdict> {
+  const now = Math.floor(Date.now() / 1000)
+  const windowStart = now - (now % BURST_WINDOW_S)
+  const resetIn = windowStart + BURST_WINDOW_S - now
+  const key = `${wallet.toLowerCase()}:${windowStart}`
+
+  const verdict = (count: number): BurstVerdict => ({
+    allowed: count <= BURST_LIMIT,
+    limit: BURST_LIMIT,
+    remaining: Math.max(0, BURST_LIMIT - count),
+    resetIn,
+  })
+
+  const bumpMem = () => {
+    const next = (burstMem.get(key) ?? 0) + 1
+    burstMem.set(key, next)
+    // The key embeds the window, so old entries are dead weight rather than
+    // wrong answers. Clear them out whenever the map gets untidy.
+    if (burstMem.size > 10_000) {
+      for (const k of burstMem.keys()) {
+        if (!k.endsWith(`:${windowStart}`)) burstMem.delete(k)
+      }
+    }
+    return next
+  }
+
+  const db = getSql()
+  if (!db) return verdict(bumpMem())
+
+  try {
+    if (!burstTableReady) {
+      await db`
+        CREATE TABLE IF NOT EXISTS verify_burst (
+          wallet text NOT NULL,
+          window_start bigint NOT NULL,
+          count integer NOT NULL DEFAULT 0,
+          PRIMARY KEY (wallet, window_start)
+        )
+      `
+      burstTableReady = true
+    }
+    // One atomic statement, so concurrent replicas cannot read-then-write past
+    // the limit. RETURNING gives the post-increment count.
+    const rows = await db`
+      INSERT INTO verify_burst (wallet, window_start, count)
+      VALUES (${wallet.toLowerCase()}, ${windowStart}, 1)
+      ON CONFLICT (wallet, window_start)
+      DO UPDATE SET count = verify_burst.count + 1
+      RETURNING count
+    `
+    // Opportunistic cleanup: two windows back is already unreachable.
+    if (Math.random() < 0.01) {
+      void db`DELETE FROM verify_burst WHERE window_start < ${windowStart - BURST_WINDOW_S * 2}`
+        .catch(() => {})
+    }
+    return verdict(Number(rows[0]?.count ?? 1))
+  } catch (err) {
+    tripBreaker(err)
+    return verdict(bumpMem())
+  }
+}
+
 /**
  * Consume the payer for a job (returns the wallet once, then forgets it — so a
  * repeated poll can't fire a duplicate notification). Reads the durable row when
