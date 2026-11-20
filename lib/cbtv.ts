@@ -150,7 +150,13 @@ export type Chain = "base" | "base-sepolia"
 
 /** Poll response shape from GET /api/verify. */
 export type VerifyStatus =
-  | { status: "running" }
+  /**
+   * Still waiting. `phase` distinguishes a scan that is underway from one that
+   * has not started because the upstream scan pool is saturated, and
+   * `retryAfter` (seconds) is upstream's own hint for how long to wait — longer
+   * when queued, since polling faster cannot make a queue move.
+   */
+  | { status: "running"; phase?: "queued" | "running"; retryAfter?: number }
   | { status: "done"; report: CbtvReport }
   | { status: "error"; error: string }
 
