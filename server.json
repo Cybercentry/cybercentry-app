@@ -1,0 +1,26 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "uk.co.cybercentry/b20-verification",
+  "title": "Cybercentry B20 Token Verification",
+  "description": "Can you actually sell it? Verify a B20 tokenized stock on Base before you buy: pool-hook honeypots, whitelisted exits, freeze-and-seize, live pauses, fakes and issuer controls. Also settles any token address — a quote asset, a basket, an ERC-4626 wrapper — against the issuer's published tokenized-stock list and reads what it is a claim on. $1 USDC per verification; reading a finished report is free.",
+  "repository": {
+    "url": "https://github.com/Cybercentry/cybercentry-app",
+    "source": "github",
+    "id": "1073285032"
+  },
+  "version": "0.1.0",
+  "websiteUrl": "https://app.cybercentry.co.uk",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://app.cybercentry.co.uk/api/mcp"
+    }
+  ],
+  "icons": [
+    {
+      "src": "https://app.cybercentry.co.uk/icon-1024.png",
+      "sizes": ["1024x1024"],
+      "mimeType": "image/png"
+    }
+  ]
+}
