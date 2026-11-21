@@ -22,6 +22,8 @@ import { facilitator as cdpFacilitator } from "@coinbase/x402"
 import { HTTPFacilitatorClient, x402ResourceServer } from "@x402/core/server"
 import type { PaymentRequirements } from "@x402/core/types"
 import { registerExactEvmScheme } from "@x402/evm/exact/server"
+import { bazaarResourceServerExtension, declareDiscoveryExtension } from "@x402/extensions/bazaar"
+import { TOOLS } from "@/lib/mcp"
 
 /** CAIP-2 chain id, e.g. eip155:8453. The x402 types require this shape. */
 type Caip2 = `${string}:${string}`
@@ -110,8 +112,38 @@ export function getResourceServer(): Promise<x402ResourceServer> {
     resourceServerPromise = (async () => {
       const server = new x402ResourceServer(new HTTPFacilitatorClient(cdpFacilitator))
       registerExactEvmScheme(server, {})
+      registerBazaar(server)
       return server
     })()
   }
   return resourceServerPromise
+}
+
+/**
+ * Bazaar discovery, declared per paid tool.
+ *
+ * The MCP registry makes this server findable by MCP clients in general.
+ * Bazaar is narrower and more useful here: it is where agents that hold a
+ * wallet go looking for x402 services they can pay for. Being in the registry
+ * but not the Bazaar means the agents most able to buy a scan are the ones
+ * least likely to find it.
+ *
+ * Declared from the same TOOLS array the server advertises, so a tool cannot
+ * be listed for sale with a schema that differs from the one it actually
+ * accepts.
+ */
+export function discoveryExtensionFor(toolName: string): Record<string, unknown> {
+  const tool = TOOLS.find((t) => t.name === toolName)
+  if (!tool) return {}
+  return declareDiscoveryExtension({
+    toolName,
+    description: tool.description,
+    transport: "streamable-http",
+    inputSchema: tool.inputSchema as Record<string, unknown>,
+  }) as unknown as Record<string, unknown>
+}
+
+/** Registered once on the resource server so declared extensions are served. */
+export function registerBazaar(server: x402ResourceServer) {
+  server.registerExtension(bazaarResourceServerExtension)
 }

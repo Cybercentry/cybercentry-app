@@ -16,7 +16,7 @@ import {
 } from "@x402/mcp"
 import { GET as verifyGET, POST as verifyPOST } from "../verify/route"
 import { claimPayment } from "@/lib/replay-store"
-import { buildAcceptsFor, getResourceServer, isPaidTool, x402Config } from "./x402"
+import { buildAcceptsFor, discoveryExtensionFor, getResourceServer, isPaidTool, x402Config } from "./x402"
 import {
   MAX_BATCH,
   PROTOCOL_VERSION,
@@ -180,7 +180,12 @@ async function runPaidViaX402(name: string, args: Args, meta: unknown) {
   if (problem) return toolError(problem)
 
   const resourceServer = await getResourceServer()
-  const paid = createPaymentWrapper(resourceServer, { accepts: buildAcceptsFor(name) })
+  const paid = createPaymentWrapper(resourceServer, {
+    accepts: buildAcceptsFor(name),
+    // Declares the tool in the x402 Bazaar, where wallet-holding agents look
+    // for services they can pay for.
+    extensions: discoveryExtensionFor(name),
+  })
   const handler = paid(async () => {
     // createPaymentWrapper verifies the payment, runs this handler, and settles
     // afterwards. So between verify and settle the scan has already been kicked
