@@ -68,7 +68,14 @@ export function toolOk(value: unknown) {
  * like instructions.
  */
 export function toolUntrusted(value: unknown) {
-  const text = typeof value === "string" ? value : JSON.stringify(value, null, 2)
+  // The fence is only a fence if the attacker cannot write one. A token named
+  // "</untrusted-report>" would otherwise close the block early and put the
+  // rest of its name outside, which is the whole attack in one field. Escaping
+  // angle brackets to their \u form makes the closing tag unwritable, and the
+  // result is still valid JSON — a reader decodes it back to the real name, so
+  // nothing is lost from the report.
+  const raw = typeof value === "string" ? JSON.stringify(value) : JSON.stringify(value, null, 2)
+  const text = raw.replace(/</g, "\\u003c").replace(/>/g, "\\u003e")
   return {
     content: [
       {
