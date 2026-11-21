@@ -10,10 +10,12 @@
 import { NextResponse } from "next/server"
 import {
   createPaymentWrapper,
+  extractPaymentFromMeta,
   extractPaymentRequiredFromError,
   MCP_PAYMENT_REQUIRED_CODE,
 } from "@x402/mcp"
 import { GET as verifyGET, POST as verifyPOST } from "../verify/route"
+import { claimPayment } from "@/lib/replay-store"
 import { buildAcceptsFor, getResourceServer, isPaidTool } from "./x402"
 import {
   MAX_BATCH,
@@ -22,6 +24,7 @@ import {
   SERVER_INFO,
   TOOLS,
   isKnownTool,
+  targetProblem,
   rpcError,
   rpcResult,
   toolError,
@@ -165,12 +168,65 @@ async function runPaidDirect(name: string, address: string, chain: string) {
  * turns into a JSON-RPC error carrying the payment requirements.
  */
 async function runPaidViaX402(name: string, args: Args, meta: unknown) {
+  const address = str(args, "address")
+  const chain = str(args, "chain") || "base"
+
+  // Validate BEFORE the wrapper runs. /api/verify rejects a bad address before
+  // it looks at payment, and an x402 caller must get the same deal — otherwise
+  // it pays, then learns its address was malformed, and is out a dollar for
+  // work we never attempted.
+  const problem = targetProblem(address, chain)
+  if (problem) return toolError(problem)
+
   const resourceServer = await getResourceServer()
   const paid = createPaymentWrapper(resourceServer, { accepts: buildAcceptsFor(name) })
-  const handler = paid(async (a: Args) =>
-    runPaidDirect(name, str(a, "address"), str(a, "chain") || "base"),
-  )
+  const handler = paid(async () => {
+    // createPaymentWrapper verifies the payment, runs this handler, and settles
+    // afterwards. So between verify and settle the scan has already been kicked
+    // off upstream, and a payer who invalidates its authorization in that window
+    // gets the work without the money landing.
+    //
+    // A single-use claim on the authorization closes the cheap version of that:
+    // the same signed payload cannot buy two scans. It does not close the
+    // settle-after-execute window itself, which is the library's ordering, not
+    // ours — the exposure there is bounded at one scan per distinct payment.
+    // Fail closed. If a payment is present but no claim key can be derived
+    // from it, we cannot tell a first use from a replay — and the safe answer
+    // to "I don't know" when money is involved is no.
+    const payment = extractPaymentFromMeta({ name, _meta: meta } as never)
+    const claim = payment ? paymentClaimKey(payment) : null
+    if (payment && !claim) {
+      return toolError("This payment could not be identified for replay protection.")
+    }
+    if (claim && !(await claimPayment(claim))) {
+      return toolError("This payment authorization has already been used.")
+    }
+    return runPaidDirect(name, address, chain)
+  })
   return handler(args, { _meta: meta })
+}
+
+/**
+ * A stable, single-use key for an x402 payment.
+ *
+ * Built ONLY from fields covered by the payer's signature: the EIP-3009
+ * authorization's `nonce` and `from`, scoped by network. The top-level `payer`
+ * field is deliberately not used — it sits outside the signed authorization,
+ * so a caller could vary it to mint a fresh claim key for the same nonce and
+ * replay the payment past this guard. Anything that decides whether money has
+ * already been spent has to come from the part the payer actually signed.
+ *
+ * Returns null when either signed field is missing, and the caller treats that
+ * as a refusal rather than a free pass.
+ */
+function paymentClaimKey(payment: unknown): string | null {
+  const p = payment as Record<string, unknown>
+  const payload = (p.payload ?? {}) as Record<string, unknown>
+  const auth = (payload.authorization ?? {}) as Record<string, unknown>
+  const nonce = typeof auth.nonce === "string" ? auth.nonce : ""
+  const from = typeof auth.from === "string" ? auth.from : ""
+  if (!nonce || !from) return null
+  return `x402:${String(p.network ?? "")}:${from.toLowerCase()}:${nonce.toLowerCase()}`
 }
 
 async function dispatch(method: string, params: Args, id: JsonRpcId) {

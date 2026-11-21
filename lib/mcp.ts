@@ -165,6 +165,22 @@ export const TOOLS = [
 
 export type ToolName = (typeof TOOLS)[number]["name"]
 
+/**
+ * The same shapes /api/verify enforces. Kept here so the MCP server can apply
+ * them BEFORE taking payment: an x402 caller that pays and then learns its
+ * address was malformed has been charged for nothing, which the web flow never
+ * does because it validates before the payment gate.
+ */
+const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
+const CHAINS = new Set(["base", "base-sepolia"])
+
+/** Null when the target is usable, otherwise the reason it is not. */
+export function targetProblem(address: string, chain: string): string | null {
+  if (!ADDRESS_RE.test(address)) return "Enter a valid 0x… token address (40 hex characters)."
+  if (!CHAINS.has(chain)) return "Unsupported chain. Use 'base' or 'base-sepolia'."
+  return null
+}
+
 export function isKnownTool(name: unknown): name is ToolName {
   return typeof name === "string" && TOOLS.some((t) => t.name === name)
 }
