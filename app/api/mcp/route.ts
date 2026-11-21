@@ -190,7 +190,14 @@ async function runPaidViaX402(name: string, args: Args, meta: unknown) {
     // the same signed payload cannot buy two scans. It does not close the
     // settle-after-execute window itself, which is the library's ordering, not
     // ours — the exposure there is bounded at one scan per distinct payment.
-    const claim = paymentClaimKey(meta)
+    // Fail closed. If a payment is present but no claim key can be derived
+    // from it, we cannot tell a first use from a replay — and the safe answer
+    // to "I don't know" when money is involved is no.
+    const payment = extractPaymentFromMeta({ name, _meta: meta } as never)
+    const claim = payment ? paymentClaimKey(payment) : null
+    if (payment && !claim) {
+      return toolError("This payment could not be identified for replay protection.")
+    }
     if (claim && !(await claimPayment(claim))) {
       return toolError("This payment authorization has already been used.")
     }
@@ -200,21 +207,26 @@ async function runPaidViaX402(name: string, args: Args, meta: unknown) {
 }
 
 /**
- * A stable, single-use key for an x402 payment: the EIP-3009 authorization
- * nonce, which the scheme requires to be unique per payment, scoped by payer so
- * two payers can never collide. Returns null when no payment is present — the
- * wrapper will reject that call anyway.
+ * A stable, single-use key for an x402 payment.
+ *
+ * Built ONLY from fields covered by the payer's signature: the EIP-3009
+ * authorization's `nonce` and `from`, scoped by network. The top-level `payer`
+ * field is deliberately not used — it sits outside the signed authorization,
+ * so a caller could vary it to mint a fresh claim key for the same nonce and
+ * replay the payment past this guard. Anything that decides whether money has
+ * already been spent has to come from the part the payer actually signed.
+ *
+ * Returns null when either signed field is missing, and the caller treats that
+ * as a refusal rather than a free pass.
  */
-function paymentClaimKey(meta: unknown): string | null {
-  const payment = extractPaymentFromMeta({ name: "", _meta: meta } as never)
-  if (!payment) return null
-  const p = payment as unknown as Record<string, unknown>
+function paymentClaimKey(payment: unknown): string | null {
+  const p = payment as Record<string, unknown>
   const payload = (p.payload ?? {}) as Record<string, unknown>
   const auth = (payload.authorization ?? {}) as Record<string, unknown>
   const nonce = typeof auth.nonce === "string" ? auth.nonce : ""
-  const payer = typeof p.payer === "string" ? p.payer : (typeof auth.from === "string" ? auth.from : "")
-  if (!nonce) return null
-  return `x402:${payer.toLowerCase()}:${nonce.toLowerCase()}`
+  const from = typeof auth.from === "string" ? auth.from : ""
+  if (!nonce || !from) return null
+  return `x402:${String(p.network ?? "")}:${from.toLowerCase()}:${nonce.toLowerCase()}`
 }
 
 async function dispatch(method: string, params: Args, id: JsonRpcId) {
