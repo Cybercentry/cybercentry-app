@@ -10,6 +10,7 @@
 import { NextResponse } from "next/server"
 import { GET as verifyGET, POST as verifyPOST } from "../verify/route"
 import {
+  MAX_BATCH,
   PROTOCOL_VERSION,
   RPC,
   SERVER_INFO,
@@ -19,6 +20,7 @@ import {
   rpcResult,
   toolError,
   toolOk,
+  toolUntrusted,
   type JsonRpcId,
   type JsonRpcRequest,
 } from "@/lib/mcp"
@@ -76,7 +78,8 @@ async function runTool(name: string, args: Args) {
     )
     const body = await readJson(res)
     if (!res.ok) return toolError(String(body.error ?? "Could not fetch that report."))
-    return toolOk(body)
+    // The report describes a contract someone else deployed — fence it.
+    return toolUntrusted(body)
   }
 
   // Both remaining tools are paid, and share one gate.
@@ -98,12 +101,14 @@ async function runTool(name: string, args: Args) {
     return toolError(String(body.error ?? "The verification could not be started."))
   }
   if (mode === "scan") {
+    // Our own jobId, not upstream content — safe to return plainly.
     return toolOk({
       jobId: body.jobId,
       next: "Call get_verification_report with this jobId. Scans typically take under a minute.",
     })
   }
-  return toolOk(body)
+  // A quote-asset result echoes the contract's own symbol and composition.
+  return toolUntrusted(body)
 }
 
 async function dispatch(method: string, params: Args, id: JsonRpcId) {
@@ -151,6 +156,17 @@ export async function POST(request: Request) {
   // of only notifications produces an empty body with 202, per the spec.
   const batch = Array.isArray(payload)
   const messages: JsonRpcRequest[] = Array.isArray(payload) ? payload : [payload]
+
+  // One request must not fan out into unbounded paid work. Refused as a whole
+  // rather than truncated, so a caller is never left guessing which of its
+  // messages ran — ambiguity about that is worse when calls cost money.
+  if (messages.length > MAX_BATCH) {
+    return NextResponse.json(
+      rpcError(null, RPC.INVALID_REQUEST, `Batch too large: at most ${MAX_BATCH} messages per request.`),
+      { status: 400 },
+    )
+  }
+
   const replies: unknown[] = []
 
   for (const msg of messages) {
