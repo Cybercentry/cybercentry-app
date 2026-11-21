@@ -40,11 +40,16 @@ const nextConfig = {
   },
 
   // The wagmi `baseAccount` connector pulls @coinbase/cdp-sdk, which statically
-  // references optional @x402/* packages (x402 payments) we never use. Stub them
+  // references optional @x402/* packages. The ones we do not install are stubbed
   // so the build resolves; the code path that would call them is never taken in
   // our wallet-connect / USDC-transfer flow.
+  //
+  // @x402/core, @x402/evm and @x402/mcp are NOT stubbed: the MCP server pays for
+  // itself with them (app/api/mcp/x402.ts). This used to ignore all of @x402/*,
+  // which silently deleted those imports and failed the build at page-data
+  // collection with MODULE_NOT_FOUND rather than at compile time.
   webpack: (config, { webpack }) => {
-    config.plugins.push(new webpack.IgnorePlugin({ resourceRegExp: /^@x402\// }))
+    config.plugins.push(new webpack.IgnorePlugin({ resourceRegExp: /^@x402\/(?!core|evm|mcp)/ }))
     return config
   },
 }

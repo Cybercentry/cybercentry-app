@@ -312,7 +312,25 @@ export async function GET(request: Request) {
     return bad(502, "Verification service is unreachable")
   }
 
-  if (res.status === 202) return NextResponse.json({ status: "running" })
+  // Still running. Pass through what upstream actually said rather than
+  // flattening it: "queued" means the scan pool is saturated and no scan has
+  // started yet, which is a different wait from "running", and upstream's
+  // Retry-After reflects which one it is. Collapsing both to "running" left
+  // the client unable to pace itself or to explain the delay to a user.
+  if (res.status === 202) {
+    let phase: "queued" | "running" = "running"
+    try {
+      const body = (await res.json()) as { status?: string }
+      if (body?.status === "queued") phase = "queued"
+    } catch {
+      /* no or non-JSON body — the status code alone still means "wait" */
+    }
+    const retryAfter = Number(res.headers.get("retry-after")) || 3
+    return NextResponse.json(
+      { status: "running", phase, retryAfter },
+      { headers: { "Retry-After": String(retryAfter) } },
+    )
+  }
   if (res.status === 404) return bad(404, "No such job")
   if (res.status === 502) return NextResponse.json({ status: "error", error: "The scan failed" })
   if (!res.ok) return bad(502, "Verification service error")

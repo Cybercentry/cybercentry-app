@@ -17,9 +17,13 @@
   },
   "dependencies": {
     "@base-org/account": "^2.5.10",
+    "@coinbase/x402": "2.1.0",
     "@tanstack/react-query": "^5.102.2",
     "@wagmi/connectors": "^5.11.2",
     "@wagmi/core": "^2.22.1",
+    "@x402/core": "2.23.0",
+    "@x402/evm": "2.23.0",
+    "@x402/mcp": "2.23.0",
     "next": "15.3.8",
     "ox": "^1.7.1",
     "postgres": "^3.4.9",

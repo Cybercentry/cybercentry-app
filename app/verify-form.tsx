@@ -105,13 +105,21 @@ export function VerifyForm() {
       if (cancelled.current) throw new Error("Cancelled")
       const res = await fetch(`/api/verify?jobId=${encodeURIComponent(jobId)}`)
       const data = (await res.json()) as VerifyStatus | { error: string }
+      let wait = POLL_INTERVAL_MS
       if ("status" in data) {
         if (data.status === "done") return data.report
         if (data.status === "error") throw new Error(data.error || "The scan failed")
+        // Honour the server's own hint when it sends one: a "queued" job is
+        // waiting on capacity rather than on a scan, and asks for a longer
+        // wait, because polling faster cannot make a queue move. Clamped so a
+        // bad value can neither busy-loop nor stall the UI.
+        if (data.status === "running" && data.retryAfter) {
+          wait = Math.min(Math.max(data.retryAfter * 1000, 1000), 15_000)
+        }
       } else if (!res.ok) {
         throw new Error(data.error || "The scan failed")
       }
-      await sleep(POLL_INTERVAL_MS)
+      await sleep(wait)
     }
     throw new Error("The scan timed out. Please try again.")
   }
