@@ -297,3 +297,30 @@ describe("failures", () => {
     expect(res.headers.get("Allow")).toBe("POST")
   })
 })
+
+describe("x402 input validation", () => {
+  // A paid caller must not be charged to discover its address was malformed.
+  // /api/verify rejects bad input before looking at payment; this is parity.
+  it("rejects a malformed address before any payment is taken", async () => {
+    process.env.X402_PAY_TO = "0xfEE13309251B632317ea2d475d6ABa7E7E0219e6"
+    const { body } = await call(
+      rpc("tools/call", { name: "verify_b20_token", arguments: { address: "not-an-address" } }),
+    )
+    expect(body.result.isError).toBe(true)
+    expect(body.result.content[0].text).toMatch(/valid 0x/i)
+    delete process.env.X402_PAY_TO
+  })
+
+  it("rejects an unsupported chain the same way", async () => {
+    process.env.X402_PAY_TO = "0xfEE13309251B632317ea2d475d6ABa7E7E0219e6"
+    const { body } = await call(
+      rpc("tools/call", {
+        name: "verify_b20_token",
+        arguments: { address: "0x" + "a".repeat(40), chain: "ethereum" },
+      }),
+    )
+    expect(body.result.isError).toBe(true)
+    expect(body.result.content[0].text).toMatch(/unsupported chain/i)
+    delete process.env.X402_PAY_TO
+  })
+})

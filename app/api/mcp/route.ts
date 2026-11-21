@@ -10,10 +10,12 @@
 import { NextResponse } from "next/server"
 import {
   createPaymentWrapper,
+  extractPaymentFromMeta,
   extractPaymentRequiredFromError,
   MCP_PAYMENT_REQUIRED_CODE,
 } from "@x402/mcp"
 import { GET as verifyGET, POST as verifyPOST } from "../verify/route"
+import { claimPayment } from "@/lib/replay-store"
 import { buildAcceptsFor, getResourceServer, isPaidTool } from "./x402"
 import {
   MAX_BATCH,
@@ -22,6 +24,7 @@ import {
   SERVER_INFO,
   TOOLS,
   isKnownTool,
+  targetProblem,
   rpcError,
   rpcResult,
   toolError,
@@ -165,12 +168,53 @@ async function runPaidDirect(name: string, address: string, chain: string) {
  * turns into a JSON-RPC error carrying the payment requirements.
  */
 async function runPaidViaX402(name: string, args: Args, meta: unknown) {
+  const address = str(args, "address")
+  const chain = str(args, "chain") || "base"
+
+  // Validate BEFORE the wrapper runs. /api/verify rejects a bad address before
+  // it looks at payment, and an x402 caller must get the same deal — otherwise
+  // it pays, then learns its address was malformed, and is out a dollar for
+  // work we never attempted.
+  const problem = targetProblem(address, chain)
+  if (problem) return toolError(problem)
+
   const resourceServer = await getResourceServer()
   const paid = createPaymentWrapper(resourceServer, { accepts: buildAcceptsFor(name) })
-  const handler = paid(async (a: Args) =>
-    runPaidDirect(name, str(a, "address"), str(a, "chain") || "base"),
-  )
+  const handler = paid(async () => {
+    // createPaymentWrapper verifies the payment, runs this handler, and settles
+    // afterwards. So between verify and settle the scan has already been kicked
+    // off upstream, and a payer who invalidates its authorization in that window
+    // gets the work without the money landing.
+    //
+    // A single-use claim on the authorization closes the cheap version of that:
+    // the same signed payload cannot buy two scans. It does not close the
+    // settle-after-execute window itself, which is the library's ordering, not
+    // ours — the exposure there is bounded at one scan per distinct payment.
+    const claim = paymentClaimKey(meta)
+    if (claim && !(await claimPayment(claim))) {
+      return toolError("This payment authorization has already been used.")
+    }
+    return runPaidDirect(name, address, chain)
+  })
   return handler(args, { _meta: meta })
+}
+
+/**
+ * A stable, single-use key for an x402 payment: the EIP-3009 authorization
+ * nonce, which the scheme requires to be unique per payment, scoped by payer so
+ * two payers can never collide. Returns null when no payment is present — the
+ * wrapper will reject that call anyway.
+ */
+function paymentClaimKey(meta: unknown): string | null {
+  const payment = extractPaymentFromMeta({ name: "", _meta: meta } as never)
+  if (!payment) return null
+  const p = payment as unknown as Record<string, unknown>
+  const payload = (p.payload ?? {}) as Record<string, unknown>
+  const auth = (payload.authorization ?? {}) as Record<string, unknown>
+  const nonce = typeof auth.nonce === "string" ? auth.nonce : ""
+  const payer = typeof p.payer === "string" ? p.payer : (typeof auth.from === "string" ? auth.from : "")
+  if (!nonce) return null
+  return `x402:${payer.toLowerCase()}:${nonce.toLowerCase()}`
 }
 
 async function dispatch(method: string, params: Args, id: JsonRpcId) {
