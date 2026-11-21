@@ -1,3 +1,7 @@
+import { createRequire } from "node:module"
+
+const pkg = createRequire(import.meta.url)("./package.json")
+
 /** @type {import('next').NextConfig} */
 
 // NOTE: deliberately no X-Frame-Options and no CSP `frame-ancestors` restriction.
@@ -44,12 +48,21 @@ const nextConfig = {
   // so the build resolves; the code path that would call them is never taken in
   // our wallet-connect / USDC-transfer flow.
   //
-  // @x402/core, @x402/evm and @x402/mcp are NOT stubbed: the MCP server pays for
-  // itself with them (app/api/mcp/x402.ts). This used to ignore all of @x402/*,
-  // which silently deleted those imports and failed the build at page-data
-  // collection with MODULE_NOT_FOUND rather than at compile time.
+  // The @x402 packages we actually depend on are NOT stubbed: the MCP server
+  // pays for itself with them (app/api/mcp/x402.ts). This used to ignore all of
+  // @x402/*, which silently deleted those imports and failed the build at
+  // page-data collection with MODULE_NOT_FOUND rather than at compile time.
+  //
+  // Anything added to package.json under @x402/ must be listed here too, or it
+  // typechecks, tests green, and then dies at build. That has now happened
+  // twice — first for core/evm/mcp, then for extensions — so the list is
+  // derived from package.json rather than hand-maintained.
   webpack: (config, { webpack }) => {
-    config.plugins.push(new webpack.IgnorePlugin({ resourceRegExp: /^@x402\/(?!core|evm|mcp)/ }))
+    const used = Object.keys(pkg.dependencies ?? {})
+      .filter((name) => name.startsWith("@x402/"))
+      .map((name) => name.slice("@x402/".length))
+    const keep = used.length ? `(?!${used.join("|")})` : ""
+    config.plugins.push(new webpack.IgnorePlugin({ resourceRegExp: new RegExp(`^@x402/${keep}`) }))
     return config
   },
 }

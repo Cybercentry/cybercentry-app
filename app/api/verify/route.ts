@@ -332,6 +332,11 @@ export async function GET(request: Request) {
     )
   }
   if (res.status === 404) return bad(404, "No such job")
+  // Upstream answers 400 for an id that is not even job-shaped. Our own regex
+  // is looser than theirs, so this is reachable with a well-formed-looking id
+  // and used to surface as "Verification service error" — which reads like our
+  // fault and tells the caller nothing about what to change.
+  if (res.status === 400) return bad(400, "No such job")
   if (res.status === 502) return NextResponse.json({ status: "error", error: "The scan failed" })
   if (!res.ok) return bad(502, "Verification service error")
 
