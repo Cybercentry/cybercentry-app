@@ -13,6 +13,7 @@ import {
   extractPaymentFromMeta,
   extractPaymentRequiredFromError,
   MCP_PAYMENT_REQUIRED_CODE,
+  MCP_PAYMENT_RESPONSE_META_KEY,
 } from "@x402/mcp"
 import { GET as verifyGET, POST as verifyPOST } from "../verify/route"
 import { claimPayment } from "@/lib/replay-store"
@@ -188,14 +189,9 @@ async function runPaidViaX402(name: string, args: Args, meta: unknown) {
   })
   const handler = paid(async () => {
     // createPaymentWrapper verifies the payment, runs this handler, and settles
-    // afterwards. So between verify and settle the scan has already been kicked
-    // off upstream, and a payer who invalidates its authorization in that window
-    // gets the work without the money landing.
+    // afterwards, so the scan is kicked off before the money lands. Two guards
+    // below, and a third (the settlement check) after the handler returns.
     //
-    // A single-use claim on the authorization closes the cheap version of that:
-    // the same signed payload cannot buy two scans. It does not close the
-    // settle-after-execute window itself, which is the library's ordering, not
-    // ours — the exposure there is bounded at one scan per distinct payment.
     // Fail closed. If a payment is present but no claim key can be derived
     // from it, we cannot tell a first use from a replay — and the safe answer
     // to "I don't know" when money is involved is no.
@@ -207,9 +203,53 @@ async function runPaidViaX402(name: string, args: Args, meta: unknown) {
     if (claim && !(await claimPayment(claim))) {
       return toolError("This payment authorization has already been used.")
     }
+    // An authorization that expires mid-scan settles for nothing while the work
+    // still happens. maxTimeoutSeconds only advertises an intent — the
+    // facilitator accepts anything valid for ~6 more seconds — so the floor has
+    // to be enforced here, before the upstream call is made.
+    if (payment && !authorizationOutlastsWork(payment)) {
+      return toolError(
+        "This payment authorization expires too soon to cover the scan. " +
+          `Sign one valid for at least ${MIN_VALIDITY_SECONDS} more seconds.`,
+      )
+    }
     return runPaidDirect(name, address, chain)
   })
-  return handler(args, { _meta: meta })
+  const result = await handler(args, { _meta: meta })
+
+  // The library only treats settlement as failed when the facilitator THROWS,
+  // which it does only on a non-2xx. A facilitator answering 200 with
+  // {success:false} — an expired or reverted authorization — flows straight
+  // through and the paid content is returned for free. Its own HTTP transport
+  // guards this; the MCP transport does not, so we do it here.
+  const settlement = (result as { _meta?: Record<string, unknown> })?._meta?.[
+    MCP_PAYMENT_RESPONSE_META_KEY
+  ] as { success?: boolean; errorReason?: string } | undefined
+  if (settlement && settlement.success === false) {
+    return toolError(
+      "Payment did not settle, so the result is withheld. " +
+        (settlement.errorReason ? `Reason: ${settlement.errorReason}. ` : "") +
+        "Sign a fresh authorization and try again.",
+    )
+  }
+  return result
+}
+
+/**
+ * Seconds of validity an authorization must still have for us to start work.
+ * The CBTV call is given 30s; anything shorter can expire before settlement.
+ */
+const MIN_VALIDITY_SECONDS = 60
+
+/** False when the authorization would expire before the work it pays for. */
+function authorizationOutlastsWork(payment: unknown): boolean {
+  const auth = ((payment as Record<string, unknown>)?.payload as Record<string, unknown> | undefined)
+    ?.authorization as Record<string, unknown> | undefined
+  const raw = auth?.validBefore
+  const validBefore = typeof raw === "string" || typeof raw === "number" ? Number(raw) : NaN
+  // No parseable deadline: treat as unusable rather than unlimited.
+  if (!Number.isFinite(validBefore)) return false
+  return validBefore >= Math.floor(Date.now() / 1000) + MIN_VALIDITY_SECONDS
 }
 
 
