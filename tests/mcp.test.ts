@@ -324,3 +324,66 @@ describe("x402 input validation", () => {
     delete process.env.X402_PAY_TO
   })
 })
+
+describe("free first scan over MCP", () => {
+  // The whole point of exposing this: an agent has a wallet and can sign, but
+  // cannot invent a SIWE message the server will accept. So the server issues it.
+  it("issues a signable SIWE challenge bound to this app, wallet and chain", async () => {
+    const wallet = "0xDBB90B3b3Ada7F69F63caddaCfc0EfBBC0FC9FDe"
+    const { body } = await call(
+      rpc("tools/call", { name: "get_free_scan_challenge", arguments: { wallet } }),
+    )
+    expect(body.result.isError).toBe(false)
+    const out = JSON.parse(body.result.content[0].text)
+    const { siweFieldsOk } = await import("../lib/free-scan-siwe")
+    // The real validator accepts it — not a lookalike assertion.
+    expect(siweFieldsOk(out.message, wallet, "base")).toBe(true)
+    expect(out.expiresInSeconds).toBe(300)
+  })
+
+  it("issues a base-sepolia challenge when asked", async () => {
+    const wallet = "0xDBB90B3b3Ada7F69F63caddaCfc0EfBBC0FC9FDe"
+    const { body } = await call(
+      rpc("tools/call", { name: "get_free_scan_challenge", arguments: { wallet, chain: "base-sepolia" } }),
+    )
+    const out = JSON.parse(body.result.content[0].text)
+    const { siweFieldsOk } = await import("../lib/free-scan-siwe")
+    expect(siweFieldsOk(out.message, wallet, "base-sepolia")).toBe(true)
+    // A sepolia challenge must not pass as a mainnet one.
+    expect(siweFieldsOk(out.message, wallet, "base")).toBe(false)
+  })
+
+  it("rejects a malformed wallet", async () => {
+    const { body } = await call(
+      rpc("tools/call", { name: "get_free_scan_challenge", arguments: { wallet: "nope" } }),
+    )
+    expect(body.result.isError).toBe(true)
+  })
+
+  it("passes freeSig through to the verify gate instead of demanding payment", async () => {
+    verifyPOST.mockResolvedValue(json({ jobId: "free-1" }))
+    const freeSig = { wallet: "0x" + "d".repeat(40), message: "siwe", signature: "0xabc" }
+    const { body } = await call(
+      rpc("tools/call", {
+        name: "verify_b20_token",
+        arguments: { address: "0x" + "a".repeat(40), freeSig },
+      }),
+    )
+    const sent = JSON.parse(await verifyPOST.mock.calls[0][0].text())
+    expect(sent.freeSig).toEqual(freeSig)
+    expect(body.result.isError).toBe(false)
+  })
+
+  // A half-formed freeSig must not count as authorisation and skip the paywall.
+  it("ignores a freeSig missing its signature", async () => {
+    const { body } = await call(
+      rpc("tools/call", {
+        name: "verify_b20_token",
+        arguments: { address: "0x" + "a".repeat(40), freeSig: { wallet: "0x" + "d".repeat(40) } },
+      }),
+    )
+    expect(body.result.isError).toBe(true)
+    expect(body.result.content[0].text).toMatch(/free|payment/i)
+    expect(verifyPOST).not.toHaveBeenCalled()
+  })
+})

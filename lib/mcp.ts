@@ -110,6 +110,11 @@ const PAYMENT_DESC =
   "for a $1 USDC transfer to the treasury) or `paymentId` (a Base Pay payment " +
   "id). Each is single-use. Without one the call returns 'Payment required'."
 
+const FREE_SIG_DESC =
+  "Your one free verification. Call get_free_scan_challenge first, sign the message it " +
+  "returns, then pass { wallet, message, signature } here. One per wallet, ever. " +
+  "Omit this and the call is paid: in-band over x402, or with txHash / paymentId."
+
 /** Tool definitions, exactly as `tools/list` returns them. */
 export const TOOLS = [
   {
@@ -126,8 +131,37 @@ export const TOOLS = [
         chain: { type: "string", enum: ["base", "base-sepolia"], description: CHAIN_DESC },
         txHash: { type: "string", description: PAYMENT_DESC },
         paymentId: { type: "string", description: PAYMENT_DESC },
+        freeSig: {
+          type: "object",
+          description: FREE_SIG_DESC,
+          properties: {
+            wallet: { type: "string" },
+            message: { type: "string" },
+            signature: { type: "string" },
+          },
+          required: ["wallet", "message", "signature"],
+        },
       },
       required: ["address"],
+    },
+  },
+  {
+    name: "get_free_scan_challenge",
+    description:
+      "Free. Your FIRST verification costs nothing — call this to get the exact message to " +
+      "sign, then pass the signature to verify_b20_token as `freeSig`. The message is a SIWE " +
+      "message bound to this app, your wallet and the chain, and it expires in 5 minutes, so " +
+      "sign and spend it promptly. One free verification per wallet, ever.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        wallet: {
+          type: "string",
+          description: "The wallet that will sign, as 0x followed by 40 hex characters.",
+        },
+        chain: { type: "string", enum: ["base", "base-sepolia"], description: CHAIN_DESC },
+      },
+      required: ["wallet"],
     },
   },
   {
@@ -157,6 +191,16 @@ export const TOOLS = [
         chain: { type: "string", enum: ["base", "base-sepolia"], description: CHAIN_DESC },
         txHash: { type: "string", description: PAYMENT_DESC },
         paymentId: { type: "string", description: PAYMENT_DESC },
+        freeSig: {
+          type: "object",
+          description: FREE_SIG_DESC,
+          properties: {
+            wallet: { type: "string" },
+            message: { type: "string" },
+            signature: { type: "string" },
+          },
+          required: ["wallet", "message", "signature"],
+        },
       },
       required: ["address"],
     },
