@@ -8,7 +8,13 @@
 // code for a second caller is exactly the mistake the verify route warns about,
 // so this module calls those handlers directly with a synthetic Request.
 import { NextResponse } from "next/server"
+import {
+  createPaymentWrapper,
+  extractPaymentRequiredFromError,
+  MCP_PAYMENT_REQUIRED_CODE,
+} from "@x402/mcp"
 import { GET as verifyGET, POST as verifyPOST } from "../verify/route"
+import { buildAcceptsFor, getResourceServer, isPaidTool } from "./x402"
 import {
   MAX_BATCH,
   PROTOCOL_VERSION,
@@ -27,6 +33,10 @@ import {
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
+
+/** Upstream CBTV, for calls already paid for over x402 (see runPaidDirect). */
+const CBTV_API_URL = (process.env.CBTV_API_URL ?? "").replace(/\/+$/, "")
+const CBTV_API_KEY = process.env.CBTV_API_KEY ?? ""
 
 /** Base URL for the synthetic Requests handed to the verify handlers. */
 const ORIGIN = (process.env.NEXT_PUBLIC_URL || "https://app.cybercentry.co.uk").replace(/\/+$/, "")
@@ -111,6 +121,58 @@ async function runTool(name: string, args: Args) {
   return toolUntrusted(body)
 }
 
+/**
+ * Run a paid tool for a caller who has ALREADY paid over x402.
+ *
+ * It calls CBTV directly rather than going through /api/verify, because that
+ * route's entire job is to answer "has this been paid for?" — and for an x402
+ * caller the facilitator has already answered it. Routing through it would mean
+ * inventing a bypass flag on the payment gate, which is a far more dangerous
+ * thing to add than this small duplicate of the upstream call.
+ *
+ * Note what is deliberately NOT reused here: claimPayment. The single-use
+ * replay guard exists because a Base Pay id or a tx hash can be replayed. An
+ * x402 payment payload is settled once by the facilitator and cannot be, so
+ * there is nothing for it to guard.
+ */
+async function runPaidDirect(name: string, address: string, chain: string) {
+  if (!CBTV_API_URL || !CBTV_API_KEY) return toolError("Verification service is not configured.")
+
+  const path = name === "verify_quote_asset" ? "/verify-quote-asset" : "/verify-b20/async"
+  const res = await fetch(`${CBTV_API_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-api-key": CBTV_API_KEY },
+    body: JSON.stringify({ address, chain }),
+    signal: AbortSignal.timeout(30_000),
+  })
+  if (!res.ok) return toolError("The verification service is unavailable.")
+
+  const body = (await res.json()) as Record<string, unknown>
+  if (name === "verify_quote_asset") return toolUntrusted(body)
+
+  const jobId = body.job_id ?? body.jobId
+  if (!jobId) return toolError("The verification service returned no job.")
+  return toolOk({
+    jobId,
+    next: "Call get_verification_report with this jobId. Scans typically take under a minute.",
+  })
+}
+
+/**
+ * Run a paid tool behind an x402 paywall. The wrapper reads the payment from
+ * `params._meta`, settles it with the facilitator, and throws a
+ * payment-required error when it is missing or insufficient — which the caller
+ * turns into a JSON-RPC error carrying the payment requirements.
+ */
+async function runPaidViaX402(name: string, args: Args, meta: unknown) {
+  const resourceServer = await getResourceServer()
+  const paid = createPaymentWrapper(resourceServer, { accepts: buildAcceptsFor(name) })
+  const handler = paid(async (a: Args) =>
+    runPaidDirect(name, str(a, "address"), str(a, "chain") || "base"),
+  )
+  return handler(args, { _meta: meta })
+}
+
 async function dispatch(method: string, params: Args, id: JsonRpcId) {
   switch (method) {
     case "initialize":
@@ -131,8 +193,26 @@ async function dispatch(method: string, params: Args, id: JsonRpcId) {
       if (!isKnownTool(name)) return rpcError(id, RPC.INVALID_PARAMS, `Unknown tool: ${String(name)}`)
       const args = (params.arguments ?? {}) as Args
       try {
+        // An x402-priced tool is paid for in-band, so it never reaches the
+        // txHash / paymentId gate. Callers holding a Base Pay id or a tx hash
+        // still use runTool — both routes stay open, because a browser-built
+        // payment and an agent's wallet are different callers, not a migration.
+        if (isPaidTool(name) && !str(args, "txHash") && !str(args, "paymentId")) {
+          return rpcResult(id, await runPaidViaX402(name, args, params._meta))
+        }
         return rpcResult(id, await runTool(name, args))
-      } catch {
+      } catch (err) {
+        // A missing or short payment arrives as a thrown payment-required
+        // error. It must reach the caller as JSON-RPC error data, not as tool
+        // text: the data IS the price list the client needs in order to pay.
+        const required = extractPaymentRequiredFromError(err)
+        if (required) {
+          return {
+            jsonrpc: "2.0",
+            id,
+            error: { code: MCP_PAYMENT_REQUIRED_CODE, message: "Payment required", data: required },
+          }
+        }
         // An exception here is our fault, not the caller's — report it as a tool
         // result so the model sees it, not as a transport error it cannot read.
         return rpcResult(id, toolError("The verification service is unreachable. Try again shortly."))
