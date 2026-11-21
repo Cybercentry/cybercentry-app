@@ -184,3 +184,35 @@ export function targetProblem(address: string, chain: string): string | null {
 export function isKnownTool(name: unknown): name is ToolName {
   return typeof name === "string" && TOOLS.some((t) => t.name === name)
 }
+
+/**
+ * A stable, single-use key for an x402 payment.
+ *
+ * Built ONLY from the EIP-3009 authorization's `nonce` and `from` — the fields
+ * the payer actually signed — scoped by the network the SERVER is configured
+ * for, which the caller passes in rather than it being read from the payload.
+ *
+ * Nothing top-level from the payload is used. Those fields sit outside the
+ * signed authorization, so a caller can set them freely: varying `payer` (or
+ * `network`) would mint a fresh claim key for the same nonce and replay the
+ * payment straight past the guard. Both have been that bug in turn.
+ *
+ * Both values are shape-checked too, because a key is only single-use if the
+ * same payment cannot be spelled two ways — an unpadded or differently-cased
+ * nonce would otherwise produce a second key for one authorization.
+ *
+ * Returns null when either signed field is missing or malformed; the caller
+ * treats that as a refusal, never as a free pass.
+ */
+const HEX_32 = /^0x[0-9a-fA-F]{64}$/
+const HEX_ADDR = /^0x[0-9a-fA-F]{40}$/
+
+export function paymentClaimKey(payment: unknown, network: string): string | null {
+  const p = (payment ?? {}) as Record<string, unknown>
+  const payload = (p.payload ?? {}) as Record<string, unknown>
+  const auth = (payload.authorization ?? {}) as Record<string, unknown>
+  const nonce = typeof auth.nonce === "string" ? auth.nonce : ""
+  const from = typeof auth.from === "string" ? auth.from : ""
+  if (!HEX_32.test(nonce) || !HEX_ADDR.test(from)) return null
+  return `x402:${network}:${from.toLowerCase()}:${nonce.toLowerCase()}`
+}

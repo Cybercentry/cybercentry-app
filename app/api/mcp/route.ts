@@ -16,7 +16,7 @@ import {
 } from "@x402/mcp"
 import { GET as verifyGET, POST as verifyPOST } from "../verify/route"
 import { claimPayment } from "@/lib/replay-store"
-import { buildAcceptsFor, getResourceServer, isPaidTool } from "./x402"
+import { buildAcceptsFor, getResourceServer, isPaidTool, x402Config } from "./x402"
 import {
   MAX_BATCH,
   PROTOCOL_VERSION,
@@ -24,6 +24,7 @@ import {
   SERVER_INFO,
   TOOLS,
   isKnownTool,
+  paymentClaimKey,
   targetProblem,
   rpcError,
   rpcResult,
@@ -194,7 +195,7 @@ async function runPaidViaX402(name: string, args: Args, meta: unknown) {
     // from it, we cannot tell a first use from a replay — and the safe answer
     // to "I don't know" when money is involved is no.
     const payment = extractPaymentFromMeta({ name, _meta: meta } as never)
-    const claim = payment ? paymentClaimKey(payment) : null
+    const claim = payment ? paymentClaimKey(payment, x402Config().network) : null
     if (payment && !claim) {
       return toolError("This payment could not be identified for replay protection.")
     }
@@ -206,28 +207,6 @@ async function runPaidViaX402(name: string, args: Args, meta: unknown) {
   return handler(args, { _meta: meta })
 }
 
-/**
- * A stable, single-use key for an x402 payment.
- *
- * Built ONLY from fields covered by the payer's signature: the EIP-3009
- * authorization's `nonce` and `from`, scoped by network. The top-level `payer`
- * field is deliberately not used — it sits outside the signed authorization,
- * so a caller could vary it to mint a fresh claim key for the same nonce and
- * replay the payment past this guard. Anything that decides whether money has
- * already been spent has to come from the part the payer actually signed.
- *
- * Returns null when either signed field is missing, and the caller treats that
- * as a refusal rather than a free pass.
- */
-function paymentClaimKey(payment: unknown): string | null {
-  const p = payment as Record<string, unknown>
-  const payload = (p.payload ?? {}) as Record<string, unknown>
-  const auth = (payload.authorization ?? {}) as Record<string, unknown>
-  const nonce = typeof auth.nonce === "string" ? auth.nonce : ""
-  const from = typeof auth.from === "string" ? auth.from : ""
-  if (!nonce || !from) return null
-  return `x402:${String(p.network ?? "")}:${from.toLowerCase()}:${nonce.toLowerCase()}`
-}
 
 async function dispatch(method: string, params: Args, id: JsonRpcId) {
   switch (method) {
