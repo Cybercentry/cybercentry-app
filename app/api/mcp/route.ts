@@ -17,6 +17,9 @@ import {
 } from "@x402/mcp"
 import { GET as verifyGET, POST as verifyPOST } from "../verify/route"
 import { claimPayment } from "@/lib/replay-store"
+import { createSiweMessage, generateSiweNonce } from "viem/siwe"
+import { APP_HOST, APP_ORIGIN, CHAIN_IDS } from "@/lib/free-scan-siwe"
+import { FREE_SCAN_MAX_AGE_MS, FREE_SCAN_STATEMENT } from "@/lib/payments"
 import { buildAcceptsFor, discoveryExtensionFor, getResourceServer, isPaidTool, x402Config } from "./x402"
 import {
   MAX_BATCH,
@@ -75,15 +78,68 @@ async function callVerify(body: Record<string, unknown>) {
   return { status: res.status, body: await readJson(res) }
 }
 
-function paymentFrom(args: Args) {
+/**
+ * How this call is authorised. One of three, in the order a caller would
+ * naturally try them: a free first scan proved by signature, a Base Pay id, or
+ * a transfer receipt.
+ *
+ * `freeSig` is passed straight through to /api/verify, which owns every check
+ * that makes it safe: the SIWE message must bind this domain, this chain and a
+ * recent timestamp, the signature must verify against the wallet, and
+ * claimFreeScan allows one per wallet, durably. Nothing here second-guesses
+ * that gate, and nothing here can weaken it.
+ */
+function authorizationFrom(args: Args) {
+  const free = args.freeSig
+  if (free && typeof free === "object") {
+    const f = free as Record<string, unknown>
+    if (typeof f.wallet === "string" && typeof f.signature === "string") {
+      return { freeSig: { wallet: f.wallet, message: String(f.message ?? ""), signature: f.signature } }
+    }
+  }
   const txHash = str(args, "txHash")
   const paymentId = str(args, "paymentId")
   return txHash ? { txHash } : paymentId ? { paymentId } : {}
 }
 
+/** True when the caller supplied any form of authorisation at all. */
+function hasAuthorization(args: Args): boolean {
+  const a = authorizationFrom(args)
+  return "freeSig" in a || "txHash" in a || "paymentId" in a
+}
+
 async function runTool(name: string, args: Args) {
   const address = str(args, "address")
   const chain = str(args, "chain") || "base"
+
+  if (name === "get_free_scan_challenge") {
+    const wallet = str(args, "wallet")
+    if (!/^0x[a-fA-F0-9]{40}$/.test(wallet)) {
+      return toolError("Supply `wallet` as 0x followed by 40 hex characters.")
+    }
+    const chainId = CHAIN_IDS[chain]
+    if (!chainId) return toolError("Unsupported chain. Use 'base' or 'base-sepolia'.")
+    // Built with viem's own encoder so it matches, byte for byte, what
+    // siweFieldsOk parses on the way back in. Hand-rolling the format here
+    // would drift from the validator the moment either side changed.
+    const message = createSiweMessage({
+      address: wallet as `0x${string}`,
+      chainId,
+      domain: APP_HOST,
+      issuedAt: new Date(),
+      nonce: generateSiweNonce(),
+      statement: FREE_SCAN_STATEMENT,
+      uri: APP_ORIGIN,
+      version: "1",
+    })
+    return toolOk({
+      message,
+      expiresInSeconds: Math.floor(FREE_SCAN_MAX_AGE_MS / 1000),
+      next:
+        "Sign this exact string with the wallet above (personal_sign / EIP-191), then call " +
+        "verify_b20_token with freeSig { wallet, message, signature }. One free scan per wallet.",
+    })
+  }
 
   if (name === "get_verification_report") {
     const jobId = str(args, "jobId")
@@ -98,12 +154,13 @@ async function runTool(name: string, args: Args) {
   }
 
   // Both remaining tools are paid, and share one gate.
-  const payment = paymentFrom(args)
-  if (!("txHash" in payment) && !("paymentId" in payment)) {
+  const payment = authorizationFrom(args)
+  if (!hasAuthorization(args)) {
     return toolError(
-      "Payment required. A verification costs $1 USDC. Supply either `txHash` (a Base " +
-        "transaction hash for a USDC transfer to the treasury) or `paymentId` (a Base Pay " +
-        "payment id). Each reference can only be used once.",
+      "Payment required. Your FIRST verification is free: sign the SIWE message this app " +
+        "issues and pass it as `freeSig` { wallet, message, signature }. After that a scan " +
+        "costs $1 USDC — pay in-band over x402, or supply `txHash` or `paymentId`. " +
+        "Each payment reference can only be used once, and the free scan once per wallet.",
     )
   }
 
@@ -277,7 +334,7 @@ async function dispatch(method: string, params: Args, id: JsonRpcId) {
         // txHash / paymentId gate. Callers holding a Base Pay id or a tx hash
         // still use runTool — both routes stay open, because a browser-built
         // payment and an agent's wallet are different callers, not a migration.
-        if (isPaidTool(name) && !str(args, "txHash") && !str(args, "paymentId")) {
+        if (isPaidTool(name) && !hasAuthorization(args)) {
           return rpcResult(id, await runPaidViaX402(name, args, params._meta))
         }
         return rpcResult(id, await runTool(name, args))
